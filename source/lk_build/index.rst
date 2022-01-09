@@ -3,14 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Rachel's E-book's
-===========================================
-
+linux 内核构建系统
+-----------------
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    
-   lk_base/index
-   lk_build/index
-   lk_debug/index
-
+   tmp1
 
