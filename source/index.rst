@@ -11,6 +11,13 @@ Rachel's E-book's
    
    lk_base/index
    lk_build/index
+   lk_comp/index
    lk_debug/index
+   lk_code/index
+   lk_code_dt/index
+   lk_sec/index
+   lk_net/index
+   os_base/index
+   csxj/index
 
 

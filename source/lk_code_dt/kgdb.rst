@@ -3,10 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核概述
---------------
+linux 内核跟踪调试代码架构
+--------------------------
 .. toctree::
    :maxdepth: 2
    
-   histry
 

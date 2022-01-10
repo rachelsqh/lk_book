@@ -3,10 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核概述
---------------
+linux 内核代码分析
+------------------
 .. toctree::
    :maxdepth: 2
    
-   histry
+   kernel_base/index
+   kernel_ps/index
+   kernel_mem/index
+   kernel_fs/index
+   kernel_cpu/index
+   kernel_driver/index
+
 

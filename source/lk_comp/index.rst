@@ -3,10 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核概述
+linux 内核编程
 --------------
 .. toctree::
    :maxdepth: 2
    
-   histry
+   comp_base
+   comp_as
+   comp_ld
+   comp_gcc
+   comp_elf
+   comp_uwind
+
 
