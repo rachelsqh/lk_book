@@ -1,0 +1,159 @@
+/*
+ * Allocate and initialize an mm_struct.
+ */
+struct mm_struct *mm_alloc(void)
+{
+	struct mm_struct *mm;
+
+	mm = allocate_mm();
+	if (!mm)
+		return NULL;
+
+	memset(mm, 0, sizeof(*mm));
+	return mm_init(mm, current, current_user_ns());
+}
+
+
+static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
+	struct user_namespace *user_ns)
+{
+	mm->mmap = NULL;
+	mm->mm_rb = RB_ROOT;
+	mm->vmacache_seqnum = 0;
+	atomic_set(&mm->mm_users, 1);
+	atomic_set(&mm->mm_count, 1);
+	seqcount_init(&mm->write_protect_seq);
+	mmap_init_lock(mm);
+	INIT_LIST_HEAD(&mm->mmlist);
+	mm->core_state = NULL;
+	mm_pgtables_bytes_init(mm);
+	mm->map_count = 0;
+	mm->locked_vm = 0;
+	atomic64_set(&mm->pinned_vm, 0);
+	memset(&mm->rss_stat, 0, sizeof(mm->rss_stat));
+	spin_lock_init(&mm->page_table_lock);
+	spin_lock_init(&mm->arg_lock);
+	mm_init_cpumask(mm);
+	mm_init_aio(mm);
+	mm_init_owner(mm, p);
+	mm_init_pasid(mm);
+	RCU_INIT_POINTER(mm->exe_file, NULL);
+	mmu_notifier_subscriptions_init(mm);
+	init_tlb_flush_pending(mm);
+#if defined(CONFIG_TRANSPARENT_HUGEPAGE) && !USE_SPLIT_PMD_PTLOCKS
+	mm->pmd_huge_pte = NULL;
+#endif
+	mm_init_uprobes_state(mm);
+	hugetlb_count_init(mm);
+
+	if (current->mm) {
+		mm->flags = current->mm->flags & MMF_INIT_MASK;
+		mm->def_flags = current->mm->def_flags & VM_INIT_DEF_MASK;
+	} else {
+		mm->flags = default_dump_filter;
+		mm->def_flags = 0;
+	}
+
+	if (mm_alloc_pgd(mm))  // 关注这个点
+		goto fail_nopgd;
+
+	if (init_new_context(p, mm))
+		goto fail_nocontext;
+
+	mm->user_ns = get_user_ns(user_ns);
+	return mm;
+
+fail_nocontext:
+	mm_free_pgd(mm);
+fail_nopgd:
+	free_mm(mm);
+	return NULL;
+}
+
+
+static inline int mm_alloc_pgd(struct mm_struct *mm)
+{
+	mm->pgd = pgd_alloc(mm);
+	if (unlikely(!mm->pgd))
+		return -ENOMEM;
+	return 0;
+}
+
+
+pgd_t *pgd_alloc(struct mm_struct *mm)
+{
+	pgd_t *pgd;
+	pmd_t *u_pmds[MAX_PREALLOCATED_USER_PMDS];
+	pmd_t *pmds[MAX_PREALLOCATED_PMDS];
+
+	pgd = _pgd_alloc();
+
+	if (pgd == NULL)
+		goto out;
+
+	mm->pgd = pgd;
+
+	if (preallocate_pmds(mm, pmds, PREALLOCATED_PMDS) != 0)
+		goto out_free_pgd;
+
+	if (preallocate_pmds(mm, u_pmds, PREALLOCATED_USER_PMDS) != 0)
+		goto out_free_pmds;
+
+	if (paravirt_pgd_alloc(mm) != 0)
+		goto out_free_user_pmds;
+
+	/*
+	 * Make sure that pre-populating the pmds is atomic with
+	 * respect to anything walking the pgd_list, so that they
+	 * never see a partially populated pgd.
+	 */
+	spin_lock(&pgd_lock);
+
+	pgd_ctor(mm, pgd); //我们注意这个函数
+	pgd_prepopulate_pmd(mm, pgd, pmds);
+	pgd_prepopulate_user_pmd(mm, pgd, u_pmds);
+
+	spin_unlock(&pgd_lock);
+
+	return pgd;
+
+out_free_user_pmds:
+	free_pmds(mm, u_pmds, PREALLOCATED_USER_PMDS);
+out_free_pmds:
+	free_pmds(mm, pmds, PREALLOCATED_PMDS);
+out_free_pgd:
+	_pgd_free(pgd);
+out:
+	return NULL;
+}
+
+
+static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
+{
+	/* If the pgd points to a shared pagetable level (either the
+	   ptes in non-PAE, or shared PMD in PAE), then just copy the
+	   references from swapper_pg_dir. */
+	if (CONFIG_PGTABLE_LEVELS == 2 ||
+	    (CONFIG_PGTABLE_LEVELS == 3 && SHARED_KERNEL_PMD) ||
+	    CONFIG_PGTABLE_LEVELS >= 4) {
+		clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY, //内核空家复制，所以每个进程都有自己的内核空间页表。
+				swapper_pg_dir + KERNEL_PGD_BOUNDARY,
+				KERNEL_PGD_PTRS);
+	}
+
+	/* list required to sync kernel mapping updates */
+	if (!SHARED_KERNEL_PMD) {
+		pgd_set_mm(pgd, mm);
+		pgd_list_add(pgd);
+	}
+}
+
+
+
+
+
+
+
+
+
+

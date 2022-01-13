@@ -6,7 +6,7 @@
 linux 内核代码分析
 ------------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    
    kernel_base/index
    kernel_ps/index
@@ -14,5 +14,7 @@ linux 内核代码分析
    kernel_fs/index
    kernel_cpu/index
    kernel_driver/index
+   lk_net/index
+   kernel_virt/index
 
 

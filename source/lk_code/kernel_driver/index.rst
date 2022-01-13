@@ -3,10 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核代码分析
+linux 驱动架构分析
 ------------------
 .. toctree::
    :maxdepth: 2
+
+   driver_arch
+   driver_pci
+   driver_acpi
+   driver_res_tree
+   driver_char
+   driver_block
+   driver_net
+   driver_bus_usb
+   driver_bus_i2c_smbus_spi
    
 
 

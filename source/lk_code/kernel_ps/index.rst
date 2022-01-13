@@ -3,10 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核代码分析
+linux 进程管理
 ------------------
 .. toctree::
    :maxdepth: 2
-   
+
+  ps_state_machine
+  ps_sched
+  ps_acct
+  ps_perf
 
 

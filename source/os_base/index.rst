@@ -8,5 +8,5 @@ linux 操作系统架构分析
 .. toctree::
    :maxdepth: 2
    
-   ps1
-
+   以kali linux 发行版为例进行说明
+   os_base

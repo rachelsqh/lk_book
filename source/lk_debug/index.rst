@@ -8,5 +8,7 @@ linux 内核调试
 .. toctree::
    :maxdepth: 2
    
-   tmp1
-
+   kcov
+   kdb_gdb
+   kernel_debug
+   perf
