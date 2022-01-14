@@ -11,4 +11,5 @@ linux 内核构建
    build_base
    k_build
    m_build
+   k_misc
 
