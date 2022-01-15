@@ -5,6 +5,8 @@
 
 linux 内核构建
 -----------------
+参考内核文档，总结linux 内核构建系统。
+
 .. toctree::
    :maxdepth: 2
    
@@ -12,4 +14,5 @@ linux 内核构建
    k_build
    m_build
    k_misc
+   faq
 
