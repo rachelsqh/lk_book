@@ -12,5 +12,6 @@ linux 进程管理
   ps_sched
   ps_acct
   ps_perf
+  ps_connector
 
 

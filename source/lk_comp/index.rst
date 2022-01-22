@@ -8,6 +8,7 @@ linux 内核编程基础
 .. toctree::
    :maxdepth: 2
    
+   comp_api
    comp_base
    comp_as
    comp_ld
