@@ -10,5 +10,7 @@ linux 内核开发
 .. toctree::
    :maxdepth: 2
    
-
+   lk_build/index
+   lk_comp/index
+   lk_debug/index
 

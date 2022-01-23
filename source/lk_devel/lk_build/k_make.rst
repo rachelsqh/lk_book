@@ -1,6 +1,7 @@
 
-make 参数分析
+内核make目标分析
 ------------
+除了我们常用的几个目标，还有很多深入内核开发需要掌握的目标。
 
 .. code-block:: sh
    :caption: make 参数
@@ -221,15 +222,11 @@ make 参数分析
 	a. nsdeps          - 生成缺少的符号命名空间依赖项
 
 - 内核自测：
-	a. kselftest         - Build and run kernel selftest
-	                      Build, install, and boot kernel before
-	                      running kselftest on it
-	                      Run as root for full coverage
-	b. kselftest-all     - Build kernel selftest
-	c. kselftest-install - Build and install kernel selftest
-	d. kselftest-clean   - Remove all generated kselftest files
-	e. kselftest-merge   - Merge all the config dependencies of
-			      kselftest to existing .config. 
+	a. kselftest         - 构建和运行内核 selftest 在运行 kselftest 之前构建、安装和引导内核 以 root 身份运行以获得全面覆盖
+	b. kselftest-all     - 构建内核自检
+	c. kselftest-install - 构建和安装内核自检
+	d. kselftest-clean   - 删除所有生成的 kselftest 文件
+	e. kselftest-merge   - 将 kselftest 的所有配置依赖项合并到现有的 .config 中。
 
 - 用户空间工具目标：
 	a. use "make tools/help"
@@ -237,26 +234,25 @@ make 参数分析
 
 
 - 内核打包：
-	a. rpm-pkg             - Build both source and binary RPM kernel packages
-	b. binrpm-pkg          - Build only the binary kernel RPM package
-	c. deb-pkg             - Build both source and binary deb kernel packages
-	d. bindeb-pkg          - Build only the binary kernel deb package
-	e. snap-pkg            - Build only the binary kernel snap package
-	                        (will connect to external hosts)
-	f. dir-pkg             - Build the kernel as a plain directory structure
-	g. tar-pkg             - Build the kernel as an uncompressed tarball
-	h. targz-pkg           - Build the kernel as a gzip compressed tarball
-	i. tarbz2-pkg          - Build the kernel as a bzip2 compressed tarball
-	j. tarxz-pkg           - Build the kernel as a xz compressed tarball
-	k. perf-tar-src-pkg    - Build perf-5.14.16.tar source tarball
-	l. perf-targz-src-pkg  - Build perf-5.14.16.tar.gz source tarball
-	m. perf-tarbz2-src-pkg - Build perf-5.14.16.tar.bz2 source tarball
-	n. perf-tarxz-src-pkg  - Build perf-5.14.16.tar.xz source tarball
+	a. rpm-pkg             - 构建源代码和二进制 RPM 内核包
+	b. binrpm-pkg          - 仅构建二进制内核 RPM 包
+	c. deb-pkg             - 构建源代码和二进制 deb 内核包
+	d. bindeb-pkg          - 仅构建二进制内核 deb 包
+	e. snap-pkg            - 仅构建二进制内核快照包（将连接到外部主机）
+	f. dir-pkg             - 将内核构建为普通目录结构
+	g. tar-pkg             - 将内核构建为未压缩的 tarball
+	h. targz-pkg           - 将内核构建为 gzip 压缩 tarball
+	i. tarbz2-pkg          - 将内核构建为 bgzip2 压缩 tarball
+	j. tarxz-pkg           - 将内核构建为 xz 压缩 tarball
+	k. perf-tar-src-pkg    - 构建 perf-5.14.16.tar 源 tarball
+	l. perf-targz-src-pkg  - 构建 perf-5.14.16.tar.gz 源 tarball
+	m. perf-tarbz2-src-pkg - 构建 perf-5.14.16.tar.bz2 源 tarball
+	n. perf-tarxz-src-pkg  - 构建 perf-5.14.16.tar.xz 源 tarball
 	
 
 - 文档目标
 
-	 Linux kernel internal documentation in different formats from ReST:
+	从ReST构建内核文档:
 	a. htmldocs        - HTML
 	b. latexdocs       - LaTeX
 	c. pdfdocs         - PDF
@@ -269,9 +265,9 @@ make 参数分析
 	h. cleandocs       - clean all generated files
 
 
-- Architecture specific targets (x86):
+- 架构相关目标 (x86):
 
-	a. * bzImage		- Compressed kernel image (arch/x86/boot/bzImage)
+	a. * bzImage		- 压缩后的内核镜像 (arch/x86/boot/bzImage)
 	b. install		- Install kernel using (your) ~/bin/installkernel or
 				  (distribution) /sbin/installkernel or install to 
 				  $(INSTALL_PATH) and run lilo
@@ -285,26 +281,25 @@ make 参数分析
 				  FDARGS="..."  arguments for the booted kernel
 	                  	  FDINITRD=file initrd for the booted kernel
 	
-	h. kvm_guest.config	- Enable Kconfig items for running this kernel as a KVM guest
-	i. xen.config		- Enable Kconfig items for running this kernel as a Xen guest
+	h. kvm_guest.config	- 启用 Kconfig 项以将此内核作为 KVM 客体运行
+	i. xen.config		- 启用 Kconfig 项以将此内核作为 Xen 客体运行
 	
 	j. i386_defconfig              - Build for i386
 	k. x86_64_defconfig            - Build for x86_64
 	
 	l. make V=0|1 [targets] 0 => quiet build (default), 1 => verbose build
-	m. make V=2   [targets] 2 => give reason for rebuild of target
+	m. make V=2   [targets] 2 => 给出重建目标的理由
 	n. make O=dir [targets] Locate all output files in "dir", including .config
-	o. make C=1   [targets] Check re-compiled c source with $CHECK
-	                       (sparse by default)
-	p. make C=2   [targets] Force check of all c source with $CHECK
-	q. make RECORDMCOUNT_WARN=1 [targets] Warn about ignored mcount sections
-	r. make W=n   [targets] Enable extra build checks, n=1,2,3 where
-			1. warnings which may be relevant and do not occur too often
-			2. warnings which occur quite often but may still be relevant
-			3. more obscure warnings, can most likely be ignored
-			Multiple levels can be combined with W=12 or W=123
+	o. make C=1   [targets] 使用 $CHECK 检查重新编译的 c 源代码 (sparse by default)
+	p. make C=2   [targets] 使用 $CHECK 强制检查所有 c 源代码
+	q. make RECORDMCOUNT_WARN=1 [targets] 警告忽略的 mcount 部分
+	r. make W=n   [targets] 启用额外的构建检查, n=1,2,3 where
+			1. 可能相关且不经常出现的警告
+			2. 经常出现但可能仍然相关的警告
+			3. 更模糊的警告，很可能会被忽略
+			多个级别可以结合 W=12 or W=123
 	
-	Execute "make" or "make all" to build all targets marked with [*] 
+	执行"make"或"make all"来构建所有加[*]的目标。
 
 
 
