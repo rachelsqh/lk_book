@@ -10,3 +10,4 @@ linux 操作系统架构分析
    
    以kali linux 发行版为例进行说明
    os_base
+   lk_base/index

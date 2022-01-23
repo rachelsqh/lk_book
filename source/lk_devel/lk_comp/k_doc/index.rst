@@ -3,16 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核构建
------------------
-参考内核文档，总结linux 内核构建系统。
-
+内核文档编写
+------------------
 .. toctree::
    :maxdepth: 2
    
-   build_base
-   k_build
-   m_build
-   k_misc
-   faq
 

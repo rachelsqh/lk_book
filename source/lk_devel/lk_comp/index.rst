@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核编程基础
+linux 内核编程
 ------------------
 .. toctree::
    :maxdepth: 2
@@ -15,5 +15,6 @@ linux 内核编程基础
    comp_gcc
    comp_elf
    comp_uwind
-
+   dev-tool/index
+   k_prog/index
 

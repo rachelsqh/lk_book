@@ -3,9 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核安全架构分析
----------------------
+linux 内核构建
+-----------------
+参考内核文档，总结linux 内核构建系统。
+
 .. toctree::
    :maxdepth: 2
    
-   https://www.kernel.org/doc/html/latest/security/index.html
+   k_make
+   build_base
+   k_build
+   m_build
+   k_misc
+   faq
+
