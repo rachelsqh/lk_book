@@ -1,0 +1,57 @@
+digraph G {
+  	concentrate=True;
+  	rankdir="TB";
+  	node [shape=record];
+
+	node [
+	fontsize = "16"
+	shape = "ellipse"
+	];
+	label = "系统调用流程图：OS负责处理栈切换"
+	
+	subgraph cluster_0 {
+		rankdir="LR"
+		label = "应用空间";
+		color = black;
+		D[ label = "应用软件中syscall下一条指令" ]		
+		A[ label = "应用软件" ]
+		B[ label = "syscall" ]
+		
+		A -> B [id = 1;]
+		
+		
+	}
+	
+	subgraph cluster_1 {
+		rankdir="TR"
+		label = "CPU上下文";
+		color = black;
+		C[label = "cpu syscall 上下文处理" ] 
+		J[label = "cpu sysret 上下文处理"];
+		C -> B [id = 2;dir = back]
+		J -> D[id = 3];
+	}
+
+
+	subgraph cluster_2 {
+		rankdir="TR"
+		label = "内核空间";
+		color = black;
+		
+		
+		E[label = "entry_SYSCALL_64" ];
+		F[label = "保存程序上下文" ];
+		H[label = "恢复程序上下文" ];
+		I[label = "sysret" ];
+		
+		
+		C -> E[id = 4];
+		E -> F[id = 5];
+		F -> G[id = 6];
+		G -> H[id = 7];
+		H -> I[id = 8];
+		I -> J[id = 9];
+		
+	}
+	
+}
