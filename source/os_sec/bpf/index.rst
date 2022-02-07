@@ -3,15 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核开发
------------------
-内核构建系统，变成基础，开发工具及测试方法描述
-
+linux eBPF总结
+---------------------
+操作系统安全总结
 .. toctree::
    :maxdepth: 2
-   
-   k_doc
-   lk_build/index
-   lk_comp/index
-   lk_debug/index
+  
+
 

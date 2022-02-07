@@ -1,0 +1,50 @@
+digraph g {
+graph [
+rankdir = "LR"
+];
+node [
+fontsize = "16"
+shape = "ellipse"
+];
+edge [
+];
+label = "kset与kobject关系图"
+"kset" [
+label = "<f0> kset| <f1> list| <f2> kobj| <f3> uevent_ops";
+shape = "record";
+];
+
+"kobject0" [
+label = "<f0> kobject0| <f1> name| <f2> entry| <f3> parent| <f4> kset | <f5> ktype | <f6> sd | <f7> kref";
+shape = "record";
+];
+
+"kobject1" [
+label = "<f0> kobject1| <f1> name| <f2> entry| <f3> parent| <f4> kset | <f5> ktype | <f6> sd | <f7> kref";
+shape = "record";
+];
+
+"kobject2" [
+label = "<f0> kobject2| <f1> name| <f2> entry| <f3> parent| <f4> kset | <f5> ktype | <f6> sd | <f7> kref";
+shape = "record";
+];
+
+
+"kset":f1 -> "kobject0":f2 [
+id = 0;
+];
+
+"kobject0":f2 -> "kobject1":f2 [
+id = 4;
+];
+
+"kobject1":f2 -> "kobject2":f2 [
+id = 7;
+];
+
+"kobject2":f2 -> "kset":f1 [
+id = 11;
+color = blue;
+];
+
+}
