@@ -7,7 +7,7 @@ digraph G {
 	fontsize = "16"
 	shape = "ellipse"
 	];
-	label = "softirq执行时机"
+	label = "系统调用流程图：OS负责处理栈切换"
 	
 	subgraph cluster_0 {
 		rankdir="LR"

@@ -1,0 +1,24 @@
+digraph G {
+  	concentrate=True;
+  	rankdir="TB";
+  	node [shape=record];
+
+	node [
+	fontsize = "16"
+	shape = "ellipse"
+	];
+	label = "编译流程图"
+	
+	A[ shape = rect,label = "k_m1.c k_m2.c Makefile" ]
+	B[ shape = rect,label = "k_m1.c k_m2.c Makefile" ]
+	C[ shape = rect,label = "k_m1.c k_m2.c Makefile + k_m1.o k_m2.o k_m.o k_m.mod modules.order" ]
+	D[ shape = rect,label = "k_m1.c k_m2.c Makefile k_m1.o k_m2.o k_m.o k_m.mod modules.order  +  Module.symvers  k_m.mod.c " ]
+	E[ shape = rect,label = "k_m1.c k_m2.c Makefile k_m1.o k_m2.o k_m.o k_m.mod modules.order Module.symvers  k_m.mod.c +k_m.mod.o k_m.ko" ]
+	
+	
+	A -> B[ label = "Makefile" ] 
+	B -> C[ label = "Makefile.build" ] 
+	C -> D[ label = " Makefile.modpost" ]
+	D -> E[ label = " Makefile.modfinal" ]  	
+
+}
