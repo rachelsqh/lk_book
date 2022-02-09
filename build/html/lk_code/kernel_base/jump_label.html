@@ -41,7 +41,12 @@
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核基础</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="lock.html">linux 锁总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="extable.html">linux 异常表:extable</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">linux :jump_label 分析</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">linux :jump_label 分析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#jump-label">jump label应用场景</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">jump label实现原理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">总结</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="kexec_elf.html">linux 加载ELF 内核文件：kexec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="irq/index.html">linux 中断架构</a></li>
 <li class="toctree-l3"><a class="reference internal" href="resource.html">linux 资源管理: resource</a></li>
@@ -111,11 +116,32 @@
              
   <div class="section" id="linux-jump-label">
 <h1>linux :jump_label 分析<a class="headerlink" href="#linux-jump-label" title="Permalink to this headline">¶</a></h1>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
 </pre></div>
 </td></tr></table></div>
+</div>
+<div class="section" id="jump-label">
+<h2>jump label应用场景<a class="headerlink" href="#jump-label" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id1">
+<h2>jump label实现原理<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="gcc">
+<h3>编译器部分（gcc)<a class="headerlink" href="#gcc" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id2">
+<h3>架构依赖部分<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id3">
+<h3>通用部分<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>总结<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>lwn:https://lwn.net/Articles/412072/</p></li>
+</ul>
 </div>
 </div>
 
