@@ -15,7 +15,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="linux 内核符号原理:kallsyms" href="kallsyms.html" />
+    <link rel="next" title="linux 内核符号:kallsyms + 导出符号" href="kallsyms.html" />
     <link rel="prev" title="linux 工作队列: workqueue" href="workqueue.html" /> 
 </head>
 
@@ -42,7 +42,7 @@
 <li class="toctree-l3"><a class="reference internal" href="lock.html">linux 锁总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="extable.html">linux 异常表:extable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jump_label.html">linux :jump_label 分析</a></li>
-<li class="toctree-l3"><a class="reference internal" href="kexec_elf.html">linux 加载ELF 内核文件：kexec_file_load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kexec_elf.html">linux 加载ELF 内核文件：kexec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="irq/index.html">linux 中断架构</a></li>
 <li class="toctree-l3"><a class="reference internal" href="resource.html">linux 资源管理: resource</a></li>
 <li class="toctree-l3"><a class="reference internal" href="notifier.html">linux 内核通知链: notifier</a></li>
@@ -54,7 +54,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#id4">信号处理时机</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="kallsyms.html">linux 内核符号原理:kallsyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kallsyms.html">linux 内核符号:kallsyms + 导出符号</a></li>
 <li class="toctree-l3"><a class="reference internal" href="module.html">linux 内核模块实现原理分析</a></li>
 <li class="toctree-l3"><a class="reference internal" href="seccomp.html">linux 沙箱:seccomp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="trace/index.html">linux 内核跟踪调试代码架构</a></li>
@@ -178,7 +178,7 @@ kill –&gt; group_send_sig_info() –&gt; send_signal() –&gt; __send_signal()
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="workqueue.html" class="btn btn-neutral float-left" title="linux 工作队列: workqueue" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="kallsyms.html" class="btn btn-neutral float-right" title="linux 内核符号原理:kallsyms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="kallsyms.html" class="btn btn-neutral float-right" title="linux 内核符号:kallsyms + 导出符号" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

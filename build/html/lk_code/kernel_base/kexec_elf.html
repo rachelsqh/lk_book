@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>linux 加载ELF 内核文件：kexec_file_load &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>linux 加载ELF 内核文件：kexec &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -42,13 +42,20 @@
 <li class="toctree-l3"><a class="reference internal" href="lock.html">linux 锁总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="extable.html">linux 异常表:extable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jump_label.html">linux :jump_label 分析</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">linux 加载ELF 内核文件：kexec_file_load</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">linux 加载ELF 内核文件：kexec</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kexec">kexec应用场景</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">系统调用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kexec-file-load">kexec_file_load</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kexec-elf-load">kexec_elf_load</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">总结</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="irq/index.html">linux 中断架构</a></li>
 <li class="toctree-l3"><a class="reference internal" href="resource.html">linux 资源管理: resource</a></li>
-<li class="toctree-l3"><a class="reference internal" href="notifier.html">linux 通知链: notifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notifier.html">linux 内核通知链: notifier</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workqueue.html">linux 工作队列: workqueue</a></li>
 <li class="toctree-l3"><a class="reference internal" href="signal.html">linux 信号:signal</a></li>
-<li class="toctree-l3"><a class="reference internal" href="kallsyms.html">linux 内核符号原理:kallsyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kallsyms.html">linux 内核符号:kallsyms + 导出符号</a></li>
 <li class="toctree-l3"><a class="reference internal" href="module.html">linux 内核模块实现原理分析</a></li>
 <li class="toctree-l3"><a class="reference internal" href="seccomp.html">linux 沙箱:seccomp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="trace/index.html">linux 内核跟踪调试代码架构</a></li>
@@ -63,6 +70,7 @@
 <li class="toctree-l3"><a class="reference internal" href="rcu.html">linux rcu原理分析</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kcsan.html">linux KCSAN分析</a></li>
 <li class="toctree-l3"><a class="reference internal" href="power.html">linux 电源管理:power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="softirq.html">linux 软中断：softirq</a></li>
 <li class="toctree-l3"><a class="reference internal" href="syscall.html">linux 系统调用原理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alg_base.html">linux 基础算法总结</a></li>
 </ul>
@@ -98,7 +106,7 @@
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../index.html">linux 内核代码分析</a> &raquo;</li>
           <li><a href="index.html">linux 内核基础</a> &raquo;</li>
-      <li>linux 加载ELF 内核文件：kexec_file_load</li>
+      <li>linux 加载ELF 内核文件：kexec</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/lk_code/kernel_base/kexec_elf.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -108,13 +116,711 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="linux-elf-kexec-file-load">
-<h1>linux 加载ELF 内核文件：kexec_file_load<a class="headerlink" href="#linux-elf-kexec-file-load" title="Permalink to this headline">¶</a></h1>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+  <div class="section" id="linux-elf-kexec">
+<h1>linux 加载ELF 内核文件：kexec<a class="headerlink" href="#linux-elf-kexec" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="kexec">
+<h2>kexec应用场景<a class="headerlink" href="#kexec" title="Permalink to this headline">¶</a></h2>
+<p>demo分析：linux-source-5.14/tools/testing/selftests/kexec</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">test_kexec_load.sh</span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cp">#!/bin/sh</span>
+     <span class="cp"># SPDX-License-Identifier: GPL-2.0</span>
+     <span class="cp">#</span>
+<span class="hll">     <span class="cp"># Prevent loading a kernel image via the kexec_load syscall when</span>
+</span><span class="hll">     <span class="cp"># signatures are required.  (Dependent on CONFIG_IMA_ARCH_POLICY.)</span>
+</span>
+     <span class="n">TEST</span><span class="o">=</span><span class="s">&quot;$0&quot;</span>
+     <span class="p">.</span> <span class="p">.</span><span class="o">/</span><span class="n">kexec_common_lib</span><span class="p">.</span><span class="n">sh</span>
+
+     <span class="cp"># kexec requires root privileges</span>
+     <span class="n">require_root_privileges</span>
+
+     <span class="cp"># get the kernel config</span>
+     <span class="n">get_kconfig</span>
+
+     <span class="n">kconfig_enabled</span> <span class="s">&quot;CONFIG_KEXEC=y&quot;</span> <span class="s">&quot;kexec_load is enabled&quot;</span>
+     <span class="k">if</span> <span class="p">[</span> <span class="n">$</span><span class="o">?</span> <span class="o">-</span><span class="n">eq</span> <span class="mi">0</span> <span class="p">];</span> <span class="n">then</span>
+             <span class="n">log_skip</span> <span class="s">&quot;kexec_load is not enabled&quot;</span>
+     <span class="n">fi</span>
+
+     <span class="n">kconfig_enabled</span> <span class="s">&quot;CONFIG_IMA_APPRAISE=y&quot;</span> <span class="s">&quot;IMA enabled&quot;</span>
+     <span class="n">ima_appraise</span><span class="o">=</span><span class="n">$</span><span class="o">?</span>
+
+     <span class="n">kconfig_enabled</span> <span class="s">&quot;CONFIG_IMA_ARCH_POLICY=y&quot;</span> \
+             <span class="s">&quot;IMA architecture specific policy enabled&quot;</span>
+     <span class="n">arch_policy</span><span class="o">=</span><span class="n">$</span><span class="o">?</span>
+
+     <span class="n">get_secureboot_mode</span>
+     <span class="n">secureboot</span><span class="o">=</span><span class="n">$</span><span class="o">?</span>
+
+     <span class="cp"># kexec_load should fail in secure boot mode and CONFIG_IMA_ARCH_POLICY enabled</span>
+     <span class="n">kexec</span> <span class="o">--</span><span class="n">load</span> <span class="n">$KERNEL_IMAGE</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+     <span class="k">if</span> <span class="p">[</span> <span class="n">$</span><span class="o">?</span> <span class="o">-</span><span class="n">eq</span> <span class="mi">0</span> <span class="p">];</span> <span class="n">then</span>
+             <span class="n">kexec</span> <span class="o">--</span><span class="n">unload</span>
+             <span class="k">if</span> <span class="p">[</span> <span class="n">$secureboot</span> <span class="o">-</span><span class="n">eq</span> <span class="mi">1</span> <span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="p">[</span> <span class="n">$arch_policy</span> <span class="o">-</span><span class="n">eq</span> <span class="mi">1</span> <span class="p">];</span> <span class="n">then</span>
+                     <span class="n">log_fail</span> <span class="s">&quot;kexec_load succeeded&quot;</span>
+             <span class="n">elif</span> <span class="p">[</span> <span class="n">$ima_appraise</span> <span class="o">-</span><span class="n">eq</span> <span class="mi">0</span> <span class="o">-</span><span class="n">o</span> <span class="n">$arch_policy</span> <span class="o">-</span><span class="n">eq</span> <span class="mi">0</span> <span class="p">];</span> <span class="n">then</span>
+                     <span class="n">log_info</span> <span class="s">&quot;Either IMA or the IMA arch policy is not enabled&quot;</span>
+             <span class="n">fi</span>
+             <span class="n">log_pass</span> <span class="s">&quot;kexec_load succeeded&quot;</span>
+     <span class="k">else</span>
+             <span class="k">if</span> <span class="p">[</span> <span class="n">$secureboot</span> <span class="o">-</span><span class="n">eq</span> <span class="mi">1</span> <span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="p">[</span> <span class="n">$arch_policy</span> <span class="o">-</span><span class="n">eq</span> <span class="mi">1</span> <span class="p">]</span> <span class="p">;</span> <span class="n">then</span>
+                     <span class="n">log_pass</span> <span class="s">&quot;kexec_load failed&quot;</span>
+             <span class="k">else</span>
+                     <span class="n">log_fail</span> <span class="s">&quot;kexec_load failed&quot;</span>
+             <span class="n">fi</span>
+     <span class="n">fi</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>这里kexec对应git://git.kernel.org/pub/scm/utils/kernel/kexec/kexec-tools.git</p>
+<p>澄清自己的一个错误：加载的这个内核就是一个普通内核，不需要额外定制。直接分析原理。</p>
+<div class="section" id="kexec-load-kernel-image">
+<h3>kexec –load $KERNEL_IMAGE，就对这个程序进行分析<a class="headerlink" href="#kexec-load-kernel-image" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">kexec代码分析</span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="nl">kesec</span><span class="p">:</span><span class="n">main</span>
+
+     <span class="o">--</span><span class="n">load</span> <span class="o">--&gt;</span> <span class="n">OPT_LOAD</span>
+<span class="hll">                     <span class="n">has_opt_load</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class="hll">                     <span class="n">do_load</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span>                     <span class="n">do_exec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                     <span class="n">do_shutdown</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="n">do_load</span> <span class="o">&amp;&amp;</span>
+         <span class="p">((</span><span class="n">kexec_flags</span> <span class="o">&amp;</span> <span class="n">KEXEC_ON_CRASH</span><span class="p">)</span> <span class="o">||</span>
+          <span class="p">(</span><span class="n">kexec_file_flags</span> <span class="o">&amp;</span> <span class="n">KEXEC_FILE_ON_CRASH</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
+         <span class="o">!</span><span class="n">is_crashkernel_mem_reserved</span><span class="p">())</span> <span class="p">{</span>
+             <span class="n">die</span><span class="p">(</span><span class="s">&quot;Memory for crashkernel is not reserved</span><span class="se">\n</span><span class="s">&quot;</span>
+                 <span class="s">&quot;Please reserve memory by passing&quot;</span>
+                 <span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">crashkernel=Y@X</span><span class="se">\&quot;</span><span class="s"> parameter to kernel</span><span class="se">\n</span><span class="s">&quot;</span>
+                 <span class="s">&quot;Then try to loading kdump kernel</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+     <span class="p">}</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="n">do_load</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">kexec_flags</span> <span class="o">&amp;</span> <span class="n">KEXEC_PRESERVE_CONTEXT</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+         <span class="n">mem_max</span> <span class="o">==</span> <span class="n">ULONG_MAX</span><span class="p">)</span> <span class="p">{</span>
+             <span class="n">die</span><span class="p">(</span><span class="s">&quot;Please specify memory range used by kexeced kernel</span><span class="se">\n</span><span class="s">&quot;</span>
+                 <span class="s">&quot;to preserve the context of original kernel with </span><span class="se">\n</span><span class="s">&quot;</span>
+                 <span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">--mem-max</span><span class="se">\&quot;</span><span class="s"> parameter</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+     <span class="p">}</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="n">do_load</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">kexec_flags</span> <span class="o">&amp;</span> <span class="n">KEXEC_LIVE_UPDATE</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+         <span class="o">!</span><span class="n">xen_present</span><span class="p">())</span> <span class="p">{</span>
+             <span class="n">die</span><span class="p">(</span><span class="s">&quot;--load-live-update can only be used with xen</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+     <span class="p">}</span>
+
+
+     <span class="p">......</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">do_load</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
+             <span class="k">if</span> <span class="p">(</span><span class="n">do_kexec_file_syscall</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="n">result</span> <span class="o">=</span> <span class="n">do_kexec_file_load</span><span class="p">(</span><span class="n">fileind</span><span class="p">,</span> <span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">,</span>
+                                              <span class="n">kexec_file_flags</span><span class="p">);</span>
+                     <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="n">EFALLBACK</span> <span class="o">&amp;&amp;</span> <span class="n">do_kexec_fallback</span><span class="p">)</span> <span class="p">{</span>
+                             <span class="cm">/* Reset getopt for fallback */</span>
+                             <span class="n">opterr</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+                             <span class="n">optind</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+                             <span class="n">do_kexec_file_syscall</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                     <span class="p">}</span>
+             <span class="p">}</span>
+             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">do_kexec_file_syscall</span><span class="p">)</span>
+                     <span class="n">result</span> <span class="o">=</span> <span class="n">my_load</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">fileind</span><span class="p">,</span> <span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">,</span> <span class="c1">//最终到这儿</span>
+                                             <span class="n">kexec_flags</span><span class="p">,</span> <span class="n">skip_checks</span><span class="p">,</span> <span class="n">entry</span><span class="p">);</span>
+     <span class="p">}</span>
+
+     <span class="p">..........</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>现在我们看my_load()函数：</p>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">do_exec_load</span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/*</span>
+<span class="cm">     *       Load the new kernel</span>
+<span class="cm">     */</span>
+<span class="hll">     <span class="k">static</span> <span class="kt">int</span> <span class="n">my_load</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">type</span><span class="p">,</span> <span class="kt">int</span> <span class="n">fileind</span><span class="p">,</span> <span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">,</span>
+</span><span class="hll">                <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">kexec_flags</span><span class="p">,</span> <span class="kt">int</span> <span class="n">skip_checks</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">entry</span><span class="p">)</span>
+</span>   <span class="p">{</span>
+     <span class="kt">char</span> <span class="o">*</span><span class="n">kernel</span><span class="p">;</span>
+     <span class="kt">char</span> <span class="o">*</span><span class="n">kernel_buf</span><span class="p">;</span>
+     <span class="kt">off_t</span> <span class="n">kernel_size</span><span class="p">;</span>
+     <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+     <span class="kt">int</span> <span class="n">result</span><span class="p">;</span>
+     <span class="k">struct</span> <span class="nc">kexec_info</span> <span class="n">info</span><span class="p">;</span>
+     <span class="kt">long</span> <span class="n">native_arch</span><span class="p">;</span>
+     <span class="kt">int</span> <span class="n">guess_only</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+     <span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">info</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">info</span><span class="p">));</span>
+     <span class="n">info</span><span class="p">.</span><span class="n">kexec_flags</span> <span class="o">=</span> <span class="n">kexec_flags</span><span class="p">;</span>
+     <span class="n">info</span><span class="p">.</span><span class="n">skip_checks</span> <span class="o">=</span> <span class="n">skip_checks</span><span class="p">;</span>
+
+     <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">-</span> <span class="n">fileind</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+             <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;No kernel specified</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+             <span class="n">usage</span><span class="p">();</span>
+             <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+     <span class="p">}</span>
+     <span class="n">kernel</span> <span class="o">=</span> <span class="n">argv</span><span class="p">[</span><span class="n">fileind</span><span class="p">];</span>
+     <span class="cm">/* slurp in the input kernel */</span>
+     <span class="n">kernel_buf</span> <span class="o">=</span> <span class="n">slurp_decompress_file</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">kernel_size</span><span class="p">);</span> <span class="c1">//解压内核并读如内存</span>
+
+     <span class="n">dbgprintf</span><span class="p">(</span><span class="s">&quot;kernel: %p kernel_size: %#llx</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+               <span class="n">kernel_buf</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="kt">long</span><span class="p">)</span><span class="n">kernel_size</span><span class="p">);</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="n">get_memory_ranges</span><span class="p">(</span><span class="o">&amp;</span><span class="n">info</span><span class="p">.</span><span class="n">memory_range</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">info</span><span class="p">.</span><span class="n">memory_ranges</span><span class="p">,</span>
+             <span class="n">info</span><span class="p">.</span><span class="n">kexec_flags</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">info</span><span class="p">.</span><span class="n">memory_ranges</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+             <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get memory layout</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+             <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+     <span class="p">}</span>
+     <span class="cm">/* if a kernel type was specified, try to honor it */</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">type</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">file_types</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="k">if</span> <span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">file_type</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+                             <span class="k">break</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">file_types</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Unsupported kernel type %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">type</span><span class="p">);</span>
+                     <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                     <span class="cm">/* make sure our file is really of that type */</span>
+                     <span class="k">if</span> <span class="p">(</span><span class="n">file_type</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">probe</span><span class="p">(</span><span class="n">kernel_buf</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+                             <span class="n">guess_only</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+             <span class="p">}</span>
+     <span class="p">}</span>
+     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">type</span> <span class="o">||</span> <span class="n">guess_only</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">file_types</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="k">if</span> <span class="p">(</span><span class="n">file_type</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">probe</span><span class="p">(</span><span class="n">kernel_buf</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+                             <span class="k">break</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">file_types</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Cannot determine the file type &quot;</span>
+                                     <span class="s">&quot;of %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">kernel</span><span class="p">);</span>
+                     <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                     <span class="k">if</span> <span class="p">(</span><span class="n">guess_only</span><span class="p">)</span> <span class="p">{</span>
+                             <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Wrong file type %s, &quot;</span>
+                                     <span class="s">&quot;file matches type %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+                                     <span class="n">type</span><span class="p">,</span> <span class="n">file_type</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">name</span><span class="p">);</span>
+                             <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+                     <span class="p">}</span>
+             <span class="p">}</span>
+     <span class="p">}</span>
+     <span class="cm">/* Figure out our native architecture before load */</span>
+     <span class="n">native_arch</span> <span class="o">=</span> <span class="n">physical_arch</span><span class="p">();</span> <span class="c1">//</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">native_arch</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+     <span class="p">}</span>
+     <span class="n">info</span><span class="p">.</span><span class="n">kexec_flags</span> <span class="o">|=</span> <span class="n">native_arch</span><span class="p">;</span>
+
+     <span class="n">result</span> <span class="o">=</span> <span class="n">file_type</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">load</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">,</span> <span class="n">kernel_buf</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">info</span><span class="p">);</span><span class="c1">//</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">switch</span> <span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">case</span> <span class="nl">ENOCRASHKERNEL</span><span class="p">:</span>
+                     <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span>
+                             <span class="s">&quot;No crash kernel segment found in /proc/iomem</span><span class="se">\n</span><span class="s">&quot;</span>
+                             <span class="s">&quot;Please check the crashkernel= boot parameter.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+                     <span class="k">break</span><span class="p">;</span>
+             <span class="k">case</span> <span class="nl">EFAILED</span><span class="p">:</span>
+             <span class="k">default</span><span class="o">:</span>
+                     <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Cannot load %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">kernel</span><span class="p">);</span>
+                     <span class="k">break</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+     <span class="p">}</span>
+     <span class="cm">/* If we are not in native mode setup an appropriate trampoline */</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">arch_compat_trampoline</span><span class="p">(</span><span class="o">&amp;</span><span class="n">info</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+     <span class="p">}</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">kexec_flags</span> <span class="o">&amp;</span> <span class="n">KEXEC_PRESERVE_CONTEXT</span><span class="p">)</span> <span class="p">{</span>
+             <span class="n">add_backup_segments</span><span class="p">(</span><span class="o">&amp;</span><span class="n">info</span><span class="p">,</span> <span class="n">mem_min</span><span class="p">,</span> <span class="n">mem_max</span> <span class="o">-</span> <span class="n">mem_min</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+     <span class="p">}</span>
+     <span class="cm">/* Verify all of the segments load to a valid location in memory */</span>
+     <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">nr_segments</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">valid_memory_segment</span><span class="p">(</span><span class="o">&amp;</span><span class="n">info</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">segment</span> <span class="o">+</span><span class="n">i</span><span class="p">))</span> <span class="p">{</span>
+                     <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Invalid memory segment %p - %p</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+                             <span class="n">info</span><span class="p">.</span><span class="n">segment</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">mem</span><span class="p">,</span>
+                             <span class="p">((</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">info</span><span class="p">.</span><span class="n">segment</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">mem</span><span class="p">)</span> <span class="o">+</span>
+                             <span class="n">info</span><span class="p">.</span><span class="n">segment</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">memsz</span><span class="p">);</span>
+                     <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+             <span class="p">}</span>
+     <span class="p">}</span>
+     <span class="cm">/* Sort the segments and verify we don&#39;t have overlaps */</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">sort_segments</span><span class="p">(</span><span class="o">&amp;</span><span class="n">info</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+     <span class="p">}</span>
+     <span class="cm">/* if purgatory is loaded update it */</span>
+     <span class="n">update_purgatory</span><span class="p">(</span><span class="o">&amp;</span><span class="n">info</span><span class="p">);</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+             <span class="n">info</span><span class="p">.</span><span class="n">entry</span> <span class="o">=</span> <span class="n">entry</span><span class="p">;</span>
+
+     <span class="n">dbgprintf</span><span class="p">(</span><span class="s">&quot;kexec_load: entry = %p flags = 0x%lx</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+               <span class="n">info</span><span class="p">.</span><span class="n">entry</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">kexec_flags</span><span class="p">);</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">kexec_debug</span><span class="p">)</span>
+             <span class="n">print_segments</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">info</span><span class="p">);</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="n">xen_present</span><span class="p">())</span>
+             <span class="n">result</span> <span class="o">=</span> <span class="n">xen_kexec_load</span><span class="p">(</span><span class="o">&amp;</span><span class="n">info</span><span class="p">);</span>
+     <span class="k">else</span>
+             <span class="n">result</span> <span class="o">=</span> <span class="n">kexec_load</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">entry</span><span class="p">,</span>
+                                 <span class="n">info</span><span class="p">.</span><span class="n">nr_segments</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">segment</span><span class="p">,</span>
+                                 <span class="n">info</span><span class="p">.</span><span class="n">kexec_flags</span><span class="p">);</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+             <span class="cm">/* The load failed, print some debugging information */</span>
+             <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;kexec_load failed: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+                     <span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+             <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;entry       = %p flags = 0x%lx</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+                     <span class="n">info</span><span class="p">.</span><span class="n">entry</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">kexec_flags</span><span class="p">);</span>
+             <span class="n">print_segments</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">info</span><span class="p">);</span>
+     <span class="p">}</span>
+     <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>现在又进入函数kexec_load():</p>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text">do_exec_load</span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="kr">inline</span> <span class="kt">long</span> <span class="n">kexec_load</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">entry</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">nr_segments</span><span class="p">,</span>
+                     <span class="k">struct</span> <span class="nc">kexec_segment</span> <span class="o">*</span><span class="n">segments</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">flags</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="hll">     <span class="k">return</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span> <span class="n">syscall</span><span class="p">(</span><span class="n">__NR_kexec_load</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="n">nr_segments</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">flags</span><span class="p">);</span>
+</span><span class="hll"><span class="p">}</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id1">
+<h3>内核加载流程图<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<img alt="lk_code/img/kexec_load_flow.svg" class="align-center" src="lk_code/img/kexec_load_flow.svg" /></div>
+</div>
+<div class="section" id="id2">
+<h2>系统调用<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="kexec-load">
+<h3>kexec_load<a class="headerlink" href="#kexec-load" title="Permalink to this headline">¶</a></h3>
+<p>kexec.c: kexec_load系统调用：只有root可以调用，分为三部分：
+- 从当前地址空间加载新内核的通用部分，并非常小心地将数据放置在分配的页面中。
+- 与内核交互并告诉所有设备关闭的通用部分。 阻止正在进行的 dmas，并将设备置于一致状态，以便以后的内核可以重新初始化它们。
+- 包含系统调用号的机器特定部分，然后将映像复制到其最终目的地。 并在入口处跳转到内核镜像。
+- kexec 不同步或卸载文件系统，所以如果你需要这样做，你需要自己做。</p>
+<p>sys_kexec_load –&gt; do_exec_load(entry,nr_segments,segments,flags)</p>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text">do_exec_load</span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">int</span> <span class="n">do_kexec_load</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">entry</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">nr_segments</span><span class="p">,</span>
+             <span class="k">struct</span> <span class="nc">kexec_segment</span> <span class="n">__user</span> <span class="o">*</span><span class="n">segments</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">flags</span><span class="p">)</span>
+     <span class="p">{</span>
+<span class="hll">     <span class="k">struct</span> <span class="nc">kimage</span> <span class="o">**</span><span class="n">dest_image</span><span class="p">,</span> <span class="o">*</span><span class="n">image</span><span class="p">;</span>
+</span><span class="hll">     <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">i</span><span class="p">;</span>
+</span>     <span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">KEXEC_ON_CRASH</span><span class="p">)</span> <span class="p">{</span>
+             <span class="n">dest_image</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">kexec_crash_image</span><span class="p">;</span>
+             <span class="k">if</span> <span class="p">(</span><span class="n">kexec_crash_image</span><span class="p">)</span>
+                     <span class="n">arch_kexec_unprotect_crashkres</span><span class="p">();</span>
+     <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+             <span class="n">dest_image</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">kexec_image</span><span class="p">;</span>
+     <span class="p">}</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="n">nr_segments</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+             <span class="cm">/* Uninstall image */</span>
+             <span class="n">kimage_free</span><span class="p">(</span><span class="n">xchg</span><span class="p">(</span><span class="n">dest_image</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">));</span>
+             <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+     <span class="p">}</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">KEXEC_ON_CRASH</span><span class="p">)</span> <span class="p">{</span>
+             <span class="cm">/*</span>
+<span class="cm">              * Loading another kernel to switch to if this one</span>
+<span class="cm">              * crashes.  Free any current crash dump kernel before</span>
+<span class="cm">              * we corrupt it.</span>
+<span class="cm">              */</span>
+             <span class="n">kimage_free</span><span class="p">(</span><span class="n">xchg</span><span class="p">(</span><span class="o">&amp;</span><span class="n">kexec_crash_image</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">));</span>
+     <span class="p">}</span>
+
+     <span class="n">ret</span> <span class="o">=</span> <span class="n">kimage_alloc_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">image</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="n">nr_segments</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">flags</span><span class="p">);</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+             <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">KEXEC_PRESERVE_CONTEXT</span><span class="p">)</span>
+             <span class="n">image</span><span class="o">-&gt;</span><span class="n">preserve_context</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+     <span class="n">ret</span> <span class="o">=</span> <span class="n">machine_kexec_prepare</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+             <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+
+     <span class="cm">/*</span>
+<span class="cm">      * Some architecture(like S390) may touch the crash memory before</span>
+<span class="cm">      * machine_kexec_prepare(), we must copy vmcoreinfo data after it.</span>
+<span class="cm">      */</span>
+     <span class="n">ret</span> <span class="o">=</span> <span class="n">kimage_crash_copy_vmcoreinfo</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+             <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+
+     <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nr_segments</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+             <span class="n">ret</span> <span class="o">=</span> <span class="n">kimage_load_segment</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">image</span><span class="o">-&gt;</span><span class="n">segment</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+             <span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+                     <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+     <span class="p">}</span>
+
+     <span class="n">kimage_terminate</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+
+     <span class="n">ret</span> <span class="o">=</span> <span class="n">machine_kexec_post_load</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+             <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+
+     <span class="cm">/* Install the new kernel and uninstall the old */</span>
+     <span class="n">image</span> <span class="o">=</span> <span class="n">xchg</span><span class="p">(</span><span class="n">dest_image</span><span class="p">,</span> <span class="n">image</span><span class="p">);</span>
+
+     <span class="nl">out</span><span class="p">:</span>
+             <span class="k">if</span> <span class="p">((</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">KEXEC_ON_CRASH</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">kexec_crash_image</span><span class="p">)</span>
+                     <span class="n">arch_kexec_protect_crashkres</span><span class="p">();</span>
+
+     <span class="n">kimage_free</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+     <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h3>流程图<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<img alt="lk_code/img/do_kexec_load.svg" class="align-center" src="lk_code/img/do_kexec_load.svg" /></div>
+</div>
+<div class="section" id="kexec-file-load">
+<h2>kexec_file_load<a class="headerlink" href="#kexec-file-load" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">kexec_file_load</span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
 </pre></div>
 </td></tr></table></div>
+</div>
+<div class="section" id="id4">
+<h3>流程图<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<img alt="lk_code/img/kexec_file_load.svg" class="align-center" src="lk_code/img/kexec_file_load.svg" /></div>
+</div>
+<div class="section" id="kexec-elf-load">
+<h2>kexec_elf_load<a class="headerlink" href="#kexec-elf-load" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text">kexec_elf_load</span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="id5">
+<h3>原理流程图：<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>总结<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>应用场景及示意图
+- 应用场景
+- 示意图</p></li>
+<li><p>示例代码及工具
+- 内核自带tool自测：
+- kexec-tools：</p></li>
+</ul>
 </div>
 </div>
 
