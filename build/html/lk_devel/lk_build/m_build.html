@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内核模块编译 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="其他" href="k_misc.html" />
+    <link rel="prev" title="Kconfig配置" href="k_build.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核构建</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="k_make.html">内核make目标分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build_base.html">linux内核构建系统</a></li>
+<li class="toctree-l3"><a class="reference internal" href="k_build.html">Kconfig配置</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">内核模块编译</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">简介</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">如何构建外部模块</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kbuild">为外部模块创建 Kbuild 文件</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">包含文件</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id13">模块安装</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id14">模块版本控制</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id16">其他</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="k_misc.html">其他</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_comp/index.html">linux 内核编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="index.html">linux 内核构建</a> &raquo;</li>
+      <li>内核模块编译</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_devel/lk_build/m_build.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>内核模块编译<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>本文档描述了如何构建树外内核模块。</p>
+<div class="section" id="id2">
+<h2>简介<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>“kbuild”是 Linux 内核使用的构建系统。模块必须使用 kbuild 来与构建基础设施的变化保持兼容，并为“gcc”选择正确的标志。提供了在树内和树外构建模块的功能。构建两者的方法类似，所有模块最初都是在树外开发和构建的。</p>
+<p>本文档中涵盖的信息面向对构建树外（或“外部”）模块感兴趣的开发人员。外部模块的作者应该提供一个隐藏大部分复杂性的 makefile，因此只需键入“make”即可构建模块。这很容易实现，第 3 节将介绍一个完整的示例。</p>
+</div>
+<div class="section" id="id3">
+<h2>如何构建外部模块<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>要构建外部模块，您必须有一个可用的预构建内核，其中包含构建中使用的配置和头文件。此外，内核必须是在启用模块的情况下构建的。如果您使用的是发行版内核，您的发行版将为您运行的内核提供一个包。</p>
+<p>另一种方法是使用“make”目标“modules_prepare”。这将确保内核包含所需的信息。该目标仅作为一种简单的方法而存在，可以为构建外部模块准备内核源代码树。</p>
+<p>注意：即使设置了 CONFIG_MODVERSIONS，“modules_prepare”也不会构建 Module.symvers；因此，需要执行完整的内核构建以使模块版本控制工作。</p>
+<div class="section" id="id4">
+<h3>命令语法<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>构建外部模块的命令是：</p>
+<div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span> <span class="n">make</span> <span class="o">-</span><span class="n">C</span> <span class="o">&lt;</span><span class="n">path_to_kernel_src</span><span class="o">&gt;</span> <span class="n">M</span><span class="o">=</span><span class="n">$PWD</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>由于命令中给出的“M=&lt;dir&gt;”选项，kbuild 系统知道正在构建外部模块。</p>
+<p>要针对正在运行的内核进行构建，请使用：</p>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>$ make -C /lib/modules/`uname -r`/build M=$PWD
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>然后安装刚刚构建的模块，将目标“modules_install”添加到命令中：</p>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>$ make -C /lib/modules/`uname -r`/build M=$PWD modules_install
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>选项说明<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>（$KDIR 是指内核源目录的路径。）</p>
+<p>使 -C $KDIR M=$PWD</p>
+<ul class="simple">
+<li><p>-C $KDIR:内核源代码所在的目录。“make”在执行时实际上会改变到指定的目录，完成后会变回来。</p></li>
+<li><p>M=$PWD:通知 kbuild 正在构建外部模块。赋予“M”的值是外部模块（kbuild 文件）所在目录的绝对路径。</p></li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h3>目标<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>在构建外部模块时，只有一部分“make”目标可用。</p>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>make -C $KDIR M=$PWD [目标]
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>默认将构建位于当前目录中的模块，因此不需要指定目标。所有输出文件也将在此目录中生成。不尝试更新内核源代码，前提是内核已成功执行“make”。</p>
+<ul class="simple">
+<li><p>modules:外部模块的默认目标。它具有与未指定目标相同的功能。见上面的描述。</p></li>
+<li><p>modules_install: 安装外部模块。默认位置是 /lib/modules/&lt;kernel_release&gt;/extra/，但可以使用 INSTALL_MOD_PATH 添加前缀（在第 5 节中讨论）。</p></li>
+<li><p>clean: 仅删除模块目录中所有生成的文件。</p></li>
+<li><p>help: 列出外部模块的可用目标。</p></li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h3>构建单独的文件<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>可以构建作为模块一部分的单个文件。这同样适用于内核、模块，甚至外部模块。</p>
+<p>示例（模块 foo.ko，由 bar.o 和 baz.o 组成）：</p>
+<div class="literal-block-wrapper docutils container" id="id22">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="o">-</span><span class="n">C</span> <span class="n">$KDIR</span> <span class="n">M</span><span class="o">=</span><span class="n">$PWD</span> <span class="n">bar</span><span class="p">.</span><span class="n">lst</span>
+<span class="n">make</span> <span class="o">-</span><span class="n">C</span> <span class="n">$KDIR</span> <span class="n">M</span><span class="o">=</span><span class="n">$PWD</span> <span class="n">baz</span><span class="p">.</span><span class="n">o</span>
+<span class="n">make</span> <span class="o">-</span><span class="n">C</span> <span class="n">$KDIR</span> <span class="n">M</span><span class="o">=</span><span class="n">$PWD</span> <span class="n">foo</span><span class="p">.</span><span class="n">ko</span>
+<span class="hll"><span class="n">make</span> <span class="o">-</span><span class="n">C</span> <span class="n">$KDIR</span> <span class="n">M</span><span class="o">=</span><span class="n">$PWD</span> <span class="p">.</span><span class="o">/</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+</div>
+</div>
+<div class="section" id="kbuild">
+<h2>为外部模块创建 Kbuild 文件<a class="headerlink" href="#kbuild" title="Permalink to this headline">¶</a></h2>
+<p>在上一节中，我们看到了为正在运行的内核构建模块的命令。但是，该模块实际上并未构建，因为需要构建文件。此文件中包含正在构建的模块的名称，以及必需的源文件列表。该文件可能像一行一样简单：</p>
+<div class="literal-block-wrapper docutils container" id="id23">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">obj</span><span class="o">-</span><span class="nl">m</span> <span class="p">:</span><span class="o">=</span> <span class="o">&lt;</span><span class="n">module_name</span><span class="o">&gt;</span><span class="p">.</span><span class="n">o</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>kbuild 系统将从 &lt;module_name&gt;.c 构建 &lt;module_name&gt;.o，并在链接后生成内核模块 &lt;module_name&gt;.ko。上面的行可以放在“Kbuild”文件或“Makefile”中。当模块是从多个源构建的时，需要额外的一行来列出文件：</p>
+<div class="literal-block-wrapper docutils container" id="id24">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">module_name</span><span class="o">&gt;-</span><span class="nl">y</span> <span class="p">:</span><span class="o">=</span> <span class="o">&lt;</span><span class="n">src1</span><span class="o">&gt;</span><span class="p">.</span><span class="n">o</span> <span class="o">&lt;</span><span class="n">src2</span><span class="o">&gt;</span><span class="p">.</span><span class="n">o</span> <span class="p">...</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>注意：描述 kbuild 使用的语法的更多文档位于Linux Kernel Makefiles中。</p>
+<p>下面的示例演示如何为模块 8123.ko 创建构建文件，该构建文件由以下文件构建：</p>
+<div class="literal-block-wrapper docutils container" id="id25">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="mi">8123</span><span class="n">_if</span><span class="p">.</span><span class="n">c</span>
+<span class="mi">8123</span><span class="n">_if</span><span class="p">.</span><span class="n">h</span>
+<span class="mi">8123</span><span class="n">_pci</span><span class="p">.</span><span class="n">c</span>
+<span class="hll"><span class="mi">8123</span><span class="n">_bin</span><span class="p">.</span><span class="n">o_shipped</span>      <span class="o">&lt;=</span> <span class="n">Binary</span> <span class="n">blob</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="makefile">
+<h3>共享Makefile<a class="headerlink" href="#makefile" title="Permalink to this headline">¶</a></h3>
+<p>外部模块总是包含一个包装器生成文件，该文件支持使用不带参数的“make”构建模块。kbuild 不使用这个目标；这只是为了方便。可以包含其他功能，例如测试目标，但由于可能的名称冲突，应从 kbuild 中过滤掉。</p>
+<p>示例 1：</p>
+<div class="literal-block-wrapper docutils container" id="id26">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id26" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span></span>--&gt; filename: Makefile
+ifneq ($(KERNELRELEASE),)
+# kbuild part of makefile
+<span class="hll">obj-m  := 8123.o
+</span><span class="hll">8123-y := 8123_if.o 8123_pci.o 8123_bin.o
+</span>
+else
+# normal makefile
+KDIR ?= /lib/modules/`uname -r`/build
+
+default:
+        $(MAKE) -C $(KDIR) M=$$PWD
+
+# Module specific targets
+genbin:
+        echo &quot;X&quot; &gt; 8123_bin.o_shipped
+
+endif
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>检查 KERNELRELEASE 用于分隔生成文件的两个部分。在这个例子中，kbuild 只会看到两个赋值，而“make”会看到除了这两个赋值之外的所有内容。这是由于对文件进行了两次传递：第一次传递是由命令行上运行的“make”实例；第二遍由 kbuild 系统执行，由默认目标中的参数化“make”启动。</p>
+</div>
+<div class="section" id="kbuildmakefile">
+<h3>独立的Kbuild文件和Makefile<a class="headerlink" href="#kbuildmakefile" title="Permalink to this headline">¶</a></h3>
+<p>在较新版本的内核中，kbuild 将首先查找名为“Kbuild”的文件，只有在未找到时，它才会查找 makefile。利用“Kbuild”文件，我们可以将示例 1 中的 makefile 拆分为两个文件：</p>
+<p>示例 2：</p>
+<div class="literal-block-wrapper docutils container" id="id27">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span>--&gt; filename: Kbuild
+obj-m  := 8123.o
+8123-y := 8123_if.o 8123_pci.o 8123_bin.o
+<span class="hll">
+</span><span class="hll">--&gt; filename: Makefile
+</span>KDIR ?= /lib/modules/`uname -r`/build
+
+default:
+        $(MAKE) -C $(KDIR) M=$$PWD
+
+# Module specific targets
+genbin:
+        echo &quot;X&quot; &gt; 8123_bin.o_shipped
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>由于每个文件的简单性，示例 2 中的拆分是有问题的；但是，一些外部模块使用由数百行组成的 makefile，在这里将 kbuild 部分与其他部分分开确实是值得的。</p>
+<p>下一个示例显示了向后兼容的版本。</p>
+<p>示例 3：</p>
+<div class="literal-block-wrapper docutils container" id="id28">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></div></td><td class="code"><div class="highlight"><pre><span></span>--&gt; filename: Kbuild
+obj-m  := 8123.o
+8123-y := 8123_if.o 8123_pci.o 8123_bin.o
+<span class="hll">
+</span><span class="hll">--&gt; filename: Makefile
+</span>ifneq ($(KERNELRELEASE),)
+# kbuild part of makefile
+include Kbuild
+
+else
+# normal makefile
+KDIR ?= /lib/modules/`uname -r`/build
+
+default:
+       $(MAKE) -C $(KDIR) M=$$PWD
+
+# Module specific targets
+genbin:
+        echo &quot;X&quot; &gt; 8123_bin.o_shipped
+
+endif
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>这里的“Kbuild”文件包含在 makefile 中。当“make”和 kbuild 部分被拆分为单独的文件时，这允许使用只知道 makefile 的旧版本的 kbuild。</p>
+</div>
+<div class="section" id="blob">
+<h3>二进制 Blob<a class="headerlink" href="#blob" title="Permalink to this headline">¶</a></h3>
+<p>一些外部模块需要包含一个对象文件作为 blob。kbuild 对此提供支持，但需要将 blob 文件命名为 &lt;filename&gt;_shipped。当 kbuild 规则启动时，&lt;filename&gt;_shipped 的副本被创建，而 _shipped 被剥离，给我们 &lt;filename&gt;。这个缩短的文件名可以用于分配给模块。</p>
+<p>在本节中，8123_bin.o_shipped 一直用于构建内核模块 8123.ko；它已作为 8123_bin.o 包含在内：</p>
+<div class="literal-block-wrapper docutils container" id="id29">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="mi">8123</span><span class="o">-</span><span class="nl">y</span> <span class="p">:</span><span class="o">=</span> <span class="mi">8123</span><span class="n">_if</span><span class="p">.</span><span class="n">o</span> <span class="mi">8123</span><span class="n">_pci</span><span class="p">.</span><span class="n">o</span> <span class="mi">8123</span><span class="n">_bin</span><span class="p">.</span><span class="n">o</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>虽然普通源文件和二进制文件没有区别，但是在为模块创建目标文件时，kbuild 会选择不同的规则。</p>
+</div>
+<div class="section" id="id8">
+<h3>构建多个模块<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>kbuild 支持使用单个构建文件构建多个模块。例如，如果您想构建两个模块 foo.ko 和 bar.ko，则 kbuild 行将是：</p>
+<div class="literal-block-wrapper docutils container" id="id30">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">obj</span><span class="o">-</span><span class="nl">m</span> <span class="p">:</span><span class="o">=</span> <span class="n">foo</span><span class="p">.</span><span class="n">o</span> <span class="n">bar</span><span class="p">.</span><span class="n">o</span>
+<span class="n">foo</span><span class="o">-</span><span class="nl">y</span> <span class="p">:</span><span class="o">=</span> <span class="o">&lt;</span><span class="n">foo_srcs</span><span class="o">&gt;</span>
+<span class="n">bar</span><span class="o">-</span><span class="nl">y</span> <span class="p">:</span><span class="o">=</span> <span class="o">&lt;</span><span class="n">bar_srcs</span><span class="o">&gt;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+</div>
+<div class="section" id="id9">
+<h2>包含文件<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<p>在内核中，头文件根据以下规则保存在标准位置：</p>
+<ul class="simple">
+<li><p>如果头文件只描述一个模块的内部接口，那么该文件与源文件放在同一目录下。</p></li>
+<li><p>如果头文件描述了位于不同目录的内核其他部分使用的接口，则该文件位于 include/linux/ 中。</p></li>
+</ul>
+<p>注意：此规则有两个值得注意的例外：较大的子系统在 include/ 下有自己的目录，例如 include/scsi；架构特定的头文件位于 arch/$(SRCARCH)/include/ 下。</p>
+<div class="section" id="id10">
+<h3>内核包含<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p>要包含位于 include/linux/ 下的头文件，只需使用：</p>
+<div class="literal-block-wrapper docutils container" id="id31">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id31" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp"></span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>kbuild 将向“gcc”添加选项，以便搜索相关目录。</p>
+</div>
+<div class="section" id="id11">
+<h3>单个子目录<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<p>外部模块倾向于将头文件放在其源代码所在的单独的 include/ 目录中，尽管这不是通常的内核样式。要通知 kbuild 目录，请使用 ccflags-y 或 CFLAGS_&lt;filename&gt;.o。</p>
+<p>使用第 3 节中的示例，如果我们将 8123_if.h 移动到名为 include 的子目录，生成的 kbuild 文件将如下所示：</p>
+<div class="literal-block-wrapper docutils container" id="id32">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id32" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">--&gt;</span> <span class="nl">filename</span><span class="p">:</span> <span class="n">Kbuild</span>
+<span class="n">obj</span><span class="o">-</span><span class="nl">m</span> <span class="p">:</span><span class="o">=</span> <span class="mf">8123.</span><span class="n">o</span>
+
+<span class="hll"><span class="n">ccflags</span><span class="o">-</span><span class="nl">y</span> <span class="p">:</span><span class="o">=</span> <span class="o">-</span><span class="n">Iinclude</span>
+</span><span class="hll"><span class="mi">8123</span><span class="o">-</span><span class="nl">y</span> <span class="p">:</span><span class="o">=</span> <span class="mi">8123</span><span class="n">_if</span><span class="p">.</span><span class="n">o</span> <span class="mi">8123</span><span class="n">_pci</span><span class="p">.</span><span class="n">o</span> <span class="mi">8123</span><span class="n">_bin</span><span class="p">.</span><span class="n">o</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+<p>请注意，在分配中，-I 和路径之间没有空格。这是 kbuild 的一个限制：必须没有空间存在。</p>
+</div>
+<div class="section" id="id12">
+<h3>几个子目录<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<p>kbuild 可以处理分布在多个目录中的文件。考虑以下示例：</p>
+<div class="literal-block-wrapper docutils container" id="id33">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id33" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">.</span>
+<span class="o">|</span><span class="n">__</span> <span class="n">src</span>
+<span class="o">|</span>   <span class="o">|</span><span class="n">__</span> <span class="n">complex_main</span><span class="p">.</span><span class="n">c</span>
+<span class="hll"><span class="o">|</span>   <span class="o">|</span><span class="n">__</span> <span class="n">hal</span>
+</span><span class="hll"><span class="o">|</span>       <span class="o">|</span><span class="n">__</span> <span class="n">hardwareif</span><span class="p">.</span><span class="n">c</span>
+</span><span class="o">|</span>       <span class="o">|</span><span class="n">__</span> <span class="n">include</span>
+<span class="o">|</span>           <span class="o">|</span><span class="n">__</span> <span class="n">hardwareif</span><span class="p">.</span><span class="n">h</span>
+<span class="o">|</span><span class="n">__</span> <span class="n">include</span>
+<span class="o">|</span><span class="n">__</span> <span class="k">complex</span><span class="p">.</span><span class="n">h</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>要构建模块 complex.ko，我们需要以下 kbuild 文件：</p>
+<div class="literal-block-wrapper docutils container" id="id34">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id34" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">--&gt;</span> <span class="nl">filename</span><span class="p">:</span> <span class="n">Kbuild</span>
+<span class="n">obj</span><span class="o">-</span><span class="nl">m</span> <span class="p">:</span><span class="o">=</span> <span class="k">complex</span><span class="p">.</span><span class="n">o</span>
+<span class="k">complex</span><span class="o">-</span><span class="nl">y</span> <span class="p">:</span><span class="o">=</span> <span class="n">src</span><span class="o">/</span><span class="n">complex_main</span><span class="p">.</span><span class="n">o</span>
+<span class="hll"><span class="k">complex</span><span class="o">-</span><span class="n">y</span> <span class="o">+=</span> <span class="n">src</span><span class="o">/</span><span class="n">hal</span><span class="o">/</span><span class="n">hardwareif</span><span class="p">.</span><span class="n">o</span>
+</span><span class="hll">
+</span><span class="n">ccflags</span><span class="o">-</span><span class="nl">y</span> <span class="p">:</span><span class="o">=</span> <span class="o">-</span><span class="n">I$</span><span class="p">(</span><span class="n">src</span><span class="p">)</span><span class="o">/</span><span class="n">include</span>
+<span class="n">ccflags</span><span class="o">-</span><span class="n">y</span> <span class="o">+=</span> <span class="o">-</span><span class="n">I$</span><span class="p">(</span><span class="n">src</span><span class="p">)</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">hal</span><span class="o">/</span><span class="n">include</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>如您所见，kbuild 知道如何处理位于其他目录中的目标文件。诀窍是指定相对于 kbuild 文件位置的目录。话虽如此，这不是推荐的做法。</p>
+<p>对于头文件，必须明确告知 kbuild 在哪里查找。当 kbuild 执行时，当前目录始终是内核树的根目录（“-C”的参数），因此需要一个绝对路径。$(src) 通过指向当前执行的 kbuild 文件所在的目录来提供绝对路径。</p>
+</div>
+</div>
+<div class="section" id="id13">
+<h2>模块安装<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
+<p>内核中包含的模块安装在目录中：</p>
+<div class="literal-block-wrapper docutils container" id="id35">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id35" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>/lib/modules/$(KERNELRELEASE)/内核/
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>外部模块安装在：</p>
+<div class="literal-block-wrapper docutils container" id="id36">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id36" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">$</span><span class="p">(</span><span class="n">KERNELRELEASE</span><span class="p">)</span><span class="o">/</span><span class="n">extra</span><span class="o">/</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="install-mod-path">
+<h3>INSTALL_MOD_PATH<a class="headerlink" href="#install-mod-path" title="Permalink to this headline">¶</a></h3>
+<p>以上是默认目录，但始终可以进行某种程度的自定义。可以使用变量 INSTALL_MOD_PATH 将前缀添加到安装路径：</p>
+<div class="literal-block-wrapper docutils container" id="id37">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id37" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span> <span class="n">make</span> <span class="n">INSTALL_MOD_PATH</span><span class="o">=/</span><span class="n">frodo</span> <span class="n">modules_install</span>
+<span class="o">=&gt;</span> <span class="n">Install</span> <span class="nl">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">frodo</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">$</span><span class="p">(</span><span class="n">KERNELRELEASE</span><span class="p">)</span><span class="o">/</span><span class="n">kernel</span><span class="o">/</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>INSTALL_MOD_PATH 可以设置为普通的 shell 变量，或者如上所示，可以在调用“make”时在命令行中指定。这在安装树内和树外模块时会起作用。</p>
+</div>
+<div class="section" id="install-mod-dir">
+<h3>INSTALL_MOD_DIR<a class="headerlink" href="#install-mod-dir" title="Permalink to this headline">¶</a></h3>
+<p>外部模块默认安装在 /lib/modules/$(KERNELRELEASE)/extra/ 下的目录中，但您可能希望在单独的目录中找到特定功能的模块。为此，请使用 INSTALL_MOD_DIR 指定“extra”的替代名称。</p>
+<div class="literal-block-wrapper docutils container" id="id38">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id38" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span> <span class="n">make</span> <span class="n">INSTALL_MOD_DIR</span><span class="o">=</span><span class="n">gandalf</span> <span class="o">-</span><span class="n">C</span> <span class="n">$KDIR</span> \
+        <span class="n">M</span><span class="o">=</span><span class="n">$PWD</span> <span class="n">modules_install</span>
+<span class="o">=&gt;</span> <span class="n">Install</span> <span class="nl">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">$</span><span class="p">(</span><span class="n">KERNELRELEASE</span><span class="p">)</span><span class="o">/</span><span class="n">gandalf</span><span class="o">/</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+</div>
+<div class="section" id="id14">
+<h2>模块版本控制<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
+<p>模块版本控制由 CONFIG_MODVERSIONS 标签启用，并用作简单的 ABI 一致性检查。创建导出符号的完整原型的 CRC 值。当一个模块被加载/使用时，内核中包含的 CRC 值与模块中的相似值进行比较；如果它们不相等，内核将拒绝加载模块。</p>
+<p>Module.symvers 包含从内核构建中导出的所有符号的列表。</p>
+<div class="section" id="vmlinux">
+<h3>来自内核的符号（vmlinux + 模块）<a class="headerlink" href="#vmlinux" title="Permalink to this headline">¶</a></h3>
+<p>在内核构建期间，将生成一个名为 Module.symvers 的文件。Module.symvers 包含从内核和编译模块导出的所有符号。对于每个符号，还存储相应的 CRC 值。</p>
+<p>Module.symvers 文件的语法是：</p>
+<div class="literal-block-wrapper docutils container" id="id39">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id39" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">CRC</span><span class="o">&gt;</span>       <span class="o">&lt;</span><span class="n">Symbol</span><span class="o">&gt;</span>         <span class="o">&lt;</span><span class="n">Module</span><span class="o">&gt;</span>                         <span class="o">&lt;</span><span class="n">Export</span> <span class="n">Type</span><span class="o">&gt;</span>     <span class="o">&lt;</span><span class="n">Namespace</span><span class="o">&gt;</span>
+
+<span class="mh">0xe1cc2a05</span>  <span class="n">usb_stor_suspend</span> <span class="n">drivers</span><span class="o">/</span><span class="n">usb</span><span class="o">/</span><span class="n">storage</span><span class="o">/</span><span class="n">usb</span><span class="o">-</span><span class="n">storage</span>  <span class="n">EXPORT_SYMBOL_GPL</span> <span class="n">USB_STORAGE</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>字段由制表符分隔，值可以为空（例如，如果没有为导出的符号定义命名空间）。</p>
+<p>对于未启用 CONFIG_MODVERSIONS 的内核构建，CRC 将读取 0x00000000。</p>
+<p>Module.symvers 有两个目的：
+- 它列出了从 vmlinux 和所有模块导出的所有符号。
+- 如果启用了 CONFIG_MODVERSIONS，它会列出 CRC。</p>
+<blockquote>
+<div><p>构建外部模块时，构建系统需要访问内核中的符号以检查是否定义了所有外部符号。这是在 MODPOST 步骤中完成的。modpost 通过从内核源代码树中读取 Module.symvers 来获取符号。在 MODPOST 步骤中，将写入一个新的 Module.symvers 文件，其中包含从该外部模块导出的所有符号。</p>
+</div></blockquote>
+</div>
+<div class="section" id="id15">
+<h3>来自另一个外部模块的符号<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<p>有时，外部模块使用来自另一个外部模块的导出符号。Kbuild 需要完全了解所有符号，以避免发出有关未定义符号的警告。针对这种情况有两种解决方案。</p>
+<p>注意：建议使用顶级 kbuild 文件的方法，但在某些情况下可能不切实际。</p>
+<ul class="simple">
+<li><p>使用顶级 kbuild 文件
+如果你有两个模块，foo.ko 和 bar.ko，其中 foo.ko 需要来自 bar.ko 的符号，你可以使用一个通用的顶级 kbuild 文件，这样两个模块都在同一个构建中编译。考虑以下目录布局：</p></li>
+<li><p>使用“make”变量 KBUILD_EXTRA_SYMBOLS:如果添加顶级 kbuild 文件不切实际，您可以在构建文件中将空格分隔的文件列表分配给 KBUILD_EXTRA_SYMBOLS。这些文件将在 modpost 的符号表初始化期间加载。</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id16">
+<h2>其他<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="config-foo-bar">
+<h3>测试 CONFIG_FOO_BAR<a class="headerlink" href="#config-foo-bar" title="Permalink to this headline">¶</a></h3>
+<p>模块通常需要检查某些CONFIG_选项以确定模块中是否包含特定功能。在 kbuild 中，这是通过直接引用CONFIG_变量来完成的：</p>
+<div class="literal-block-wrapper docutils container" id="id40">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id40" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#fs/ext2/Makefile</span>
+<span class="n">obj</span><span class="o">-</span><span class="n">$</span><span class="p">(</span><span class="n">CONFIG_EXT2_FS</span><span class="p">)</span> <span class="o">+=</span> <span class="n">ext2</span><span class="p">.</span><span class="n">o</span>
+
+<span class="hll"><span class="n">ext2</span><span class="o">-</span><span class="nl">y</span> <span class="p">:</span><span class="o">=</span> <span class="n">balloc</span><span class="p">.</span><span class="n">o</span> <span class="n">bitmap</span><span class="p">.</span><span class="n">o</span> <span class="n">dir</span><span class="p">.</span><span class="n">o</span>
+</span><span class="hll"><span class="n">ext2</span><span class="o">-</span><span class="n">$</span><span class="p">(</span><span class="n">CONFIG_EXT2_FS_XATTR</span><span class="p">)</span> <span class="o">+=</span> <span class="n">xattr</span><span class="p">.</span><span class="n">o</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+<p>外部模块传统上使用“grep”直接在 .config中检查特定的CONFIG_设置。这种用法被打破了。如前所述，外部模块应该使用 kbuild 进行构建，因此在测试CONFIG_定义时可以使用与树内模块相同的方法。</p>
+</div>
+<div class="section" id="id17">
+<h3>内核模块原理分析<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<p>参考分析：<a class="reference external" href="https://">https://</a></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="k_build.html" class="btn btn-neutral float-left" title="Kconfig配置" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="k_misc.html" class="btn btn-neutral float-right" title="其他" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

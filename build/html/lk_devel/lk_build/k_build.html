@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kconfig配置 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="内核模块编译" href="m_build.html" />
+    <link rel="prev" title="linux内核构建系统" href="build_base.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核构建</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="k_make.html">内核make目标分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build_base.html">linux内核构建系统</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Kconfig配置</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">输出文件</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">环境变量</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Kconfig语法</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Kconfig宏</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">变量</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">内置函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#make-kconfig">make 与 Kconfig 函数调用方式比较</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">注意：（这个注意选项，需要很多地方确认）</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8">make kconfig:配置内核</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="m_build.html">内核模块编译</a></li>
+<li class="toctree-l3"><a class="reference internal" href="k_misc.html">其他</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_comp/index.html">linux 内核编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="index.html">linux 内核构建</a> &raquo;</li>
+      <li>Kconfig配置</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_devel/lk_build/k_build.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="kconfig">
+<h1>Kconfig配置<a class="headerlink" href="#kconfig" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>输出文件<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>modules.order:</p></li>
+<li><p>modules.builtin:</p></li>
+<li><p>modules.builtin.modinfo</p></li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="id2">
+<h2>环境变量<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>KCPPFLAGS：</p></li>
+<li><p>KAFLAGS：</p></li>
+<li><p>AFLAGS_MODULE:</p></li>
+<li><p>AFLAGS_KERNEL:</p></li>
+<li><p>KCFLAGS:</p></li>
+<li><p>CFLAGS_KERNEL:</p></li>
+<li><p>CFLAGS_MODULE:</p></li>
+<li><p>LDFLAGS_MODULE:</p></li>
+<li><p>HOSTCFLAGS:</p></li>
+<li><p>HOSTCXXFLAGS:</p></li>
+<li><p>HOSTLDFLAGS:</p></li>
+<li><p>HOSTLDLIBS:</p></li>
+<li><p>KBUILD_KCONFIG:</p></li>
+<li><p>KBUILD_VERBOSE:</p></li>
+<li><p>KBUILD_EXTMOD:</p></li>
+<li><p>KBUILD_OUTPUT:</p></li>
+<li><p>KBUILD_EXTRA_WARN:</p></li>
+<li><p>KBUILD_DEBARCH:</p></li>
+<li><p>ARCH:</p></li>
+<li><p>CROSS_COMPILE:</p></li>
+<li><p>CF</p></li>
+<li><p>INSTALL_PATH:</p></li>
+<li><p>INSTALLKERNEL:</p></li>
+<li><p>MODLIB</p></li>
+<li><p>INSTALL_MOD_PATH</p></li>
+<li><p>INSTALL_MOD_STRIP</p></li>
+<li><p>INSTALL_HDR_PATH</p></li>
+<li><p>KBUILD_ABS_SRCTREE</p></li>
+<li><p>KBUILD_SIGN_PIN</p></li>
+<li><p>KBUILD_MODPOST_WARN</p></li>
+<li><p>KBUILD_MODPOST_NOFINAL</p></li>
+<li><p>KBUILD_EXTRA_SYMBOLS</p></li>
+<li><p>ALLSOURCE_ARCHS</p></li>
+<li><p>KBUILD_BUILD_TIMESTAMP</p></li>
+<li><p>KBUILD_BUILD_USER,KBUILD_BUILD_HOST</p></li>
+<li><p>LLVM</p></li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="id3">
+<h2>Kconfig语法<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>Kconfig作为Kbuild的配置数据库分散在需要编译的内核文件路径中，是配置选项以树形结构进行组织的集合。</p>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">Kconfig配置选项</span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">+-</span> <span class="n">Code</span> <span class="n">maturity</span> <span class="n">level</span> <span class="n">options</span>
+<span class="o">|</span>  <span class="o">+-</span> <span class="n">Prompt</span> <span class="k">for</span> <span class="n">development</span> <span class="n">and</span><span class="o">/</span><span class="n">or</span> <span class="n">incomplete</span> <span class="n">code</span><span class="o">/</span><span class="n">drivers</span>
+<span class="o">+-</span> <span class="n">General</span> <span class="n">setup</span>
+<span class="hll"><span class="o">|</span>  <span class="o">+-</span> <span class="n">Networking</span> <span class="n">support</span>
+</span><span class="hll"><span class="o">|</span>  <span class="o">+-</span> <span class="n">System</span> <span class="n">V</span> <span class="n">IPC</span>
+</span><span class="o">|</span>  <span class="o">+-</span> <span class="n">BSD</span> <span class="n">Process</span> <span class="n">Accounting</span>
+<span class="o">|</span>  <span class="o">+-</span> <span class="n">Sysctl</span> <span class="n">support</span>
+<span class="o">+-</span> <span class="n">Loadable</span> <span class="n">module</span> <span class="n">support</span>
+<span class="o">|</span>  <span class="o">+-</span> <span class="n">Enable</span> <span class="n">loadable</span> <span class="n">module</span> <span class="n">support</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Set</span> <span class="n">version</span> <span class="n">information</span> <span class="n">on</span> <span class="n">all</span> <span class="n">module</span> <span class="n">symbols</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Kernel</span> <span class="n">module</span> <span class="n">loader</span>
+<span class="o">+-</span> <span class="p">...</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>对Kconfig的理解其实很简单，不要往复杂了想，Kconfig文件只是根据定义的格式来存储配置。</p>
+<p>其具体语法参考：<a class="reference external" href="https://docs.kernel.org/kbuild/kconfig-language.html">https://docs.kernel.org/kbuild/kconfig-language.html</a></p>
+</div>
+<div class="section" id="id4">
+<h2>Kconfig宏<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>类似与C语言中的预处理阶段，将Kconfig宏经过处理后产生最终构建系统需要的数据库文件数据：</p>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text">Kconfig宏</span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nl">CC</span> <span class="p">:</span><span class="o">=</span> <span class="n">gcc</span>
+
+<span class="n">config</span> <span class="n">CC_HAS_FOO</span>
+<span class="hll">     <span class="n">def_bool</span> <span class="n">$</span><span class="p">(</span><span class="n">shell</span><span class="p">,</span> <span class="n">$</span><span class="p">(</span><span class="n">srctree</span><span class="p">)</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">gcc</span><span class="o">-</span><span class="n">check</span><span class="o">-</span><span class="n">foo</span><span class="p">.</span><span class="n">sh</span> <span class="n">$</span><span class="p">(</span><span class="n">CC</span><span class="p">))</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+<p>预处理后：</p>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text">Kconfig 宏扩展后</span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="n">CC_HAS_FOO</span>
+     <span class="n">def_bool</span> <span class="n">y</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>此时Kbuild可以直接用于解决依赖关系。</p>
+</div>
+<div class="section" id="id5">
+<h2>变量<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>包含在$()中，分为简单扩展变量和递归扩展变量。</dt><dd><ol class="arabic simple">
+<li><p>:= 赋值运算符定义一个简单扩展变量，从Kconfig读取后，立即进行扩展；</p></li>
+<li><p>=  定义递归扩展变量。不立即展开，只简单存储，使用变量时进行展开；</p></li>
+<li><p>+= 将文本附加到变量。由第一次赋值方式决定是简单变量还是递归扩展变量。</p></li>
+</ol>
+</dd>
+</dl>
+<p>变量引用可以采用以下形式的参数：</p>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">Kconfig 宏扩展后</span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">arg1</span><span class="p">,</span><span class="n">arg2</span><span class="p">,</span><span class="n">arg3</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>可以将参数化引用视为一个函数。（更准确地说，“用户定义的函数”与下面列出的“内置函数”形成对比）。</p>
+<p>有用的函数在使用时必须扩展，因为如果传递不同的参数，相同的函数会以不同的方式扩展。因此，用户定义的函数是使用 = 赋值运算符定义的。在主体定义中使用 $(1)、$(2) 等来引用参数。</p>
+<p>事实上，递归扩展的变量和用户定义的函数在内部是一样的。（换句话说，“变量”是“零参数的函数”。）当我们说广义的“变量”时，它包括“用户定义的函数”。</p>
+</div>
+<div class="section" id="id6">
+<h2>内置函数<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>Kconfig 提供了几个内置函数。每个函数都接受特定数量的参数。允许内置函数使用零参数，例如 $(filename)、$(lineno)。您可以将它们视为“内置变量”，支持的内置函数有：</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>$(shell,command):command作为子shell进行执行。然后读取命令的标准输出并将其作为函数的值返回。输出中的每个换行符都替换为一个空格。任何尾随的换行符都将被删除。不返回标准错误，也不返回任何程序退出状态。</p></li>
+<li><p>$(info,text)：“info”函数接受一个参数并将其打印到标准输出。它评估为一个空字符串。</p></li>
+<li><p>$(warning-if,condition,text)：“warning-if”函数有两个参数。如果条件部分是“y”，则将文本部分发送到 stderr。该文本以当前 Kconfig 文件的名称和当前行号为前缀。</p></li>
+<li><p>$(error-if,condition,text)：“error-if”函数类似于“warning-if”，但如果条件部分是“y”，它会立即终止解析。</p></li>
+<li><p>$(filename)：’filename’ 不带参数，$(filename) 被扩展为被解析的文件名。</p></li>
+<li><p>$(lineno)：’lineno’ 不带参数，并且 $(lineno) 被扩展为被解析的行号。</p></li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="make-kconfig">
+<h2>make 与 Kconfig 函数调用方式比较<a class="headerlink" href="#make-kconfig" title="Permalink to this headline">¶</a></h2>
+<p>make中函数调用方式如下：</p>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text">Kconfig 宏扩展后</span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span><span class="p">(</span><span class="n">func</span><span class="o">-</span><span class="n">name</span> <span class="n">arg1</span><span class="p">,</span><span class="n">arg2</span><span class="p">,</span><span class="n">arg3</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>函数名和第一个参数至少用一个空格分隔。然后，从第一个参数中删除前导空格，而保留其他参数中的空格。您需要使用一种技巧来以空格开头第一个参数。例如，如果要让“info”函数打印“hello”，可以这样写：</p>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text">Kconfig 宏扩展后</span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nl">empty</span> <span class="p">:</span><span class="o">=</span>
+<span class="nl">space</span> <span class="p">:</span><span class="o">=</span> <span class="n">$</span><span class="p">(</span><span class="n">empty</span><span class="p">)</span> <span class="n">$</span><span class="p">(</span><span class="n">empty</span><span class="p">)</span>
+<span class="n">$</span><span class="p">(</span><span class="n">info</span> <span class="n">$</span><span class="p">(</span><span class="n">space</span><span class="p">)</span><span class="n">$</span><span class="p">(</span><span class="n">space</span><span class="p">)</span><span class="n">hello</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>Kconfig 仅使用逗号作为分隔符，并在函数调用中保留所有空格。有些人喜欢在每个逗号分隔符后放置一个空格：</p>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text">Kconfig 宏扩展后</span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span><span class="p">(</span><span class="n">func</span><span class="o">-</span><span class="n">name</span><span class="p">,</span> <span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">,</span> <span class="n">arg3</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>在这种情况下，“func-name”将收到“arg1”、“arg2”、“arg3”。前导空格的存在可能很重要，具体取决于功能。</p>
+<p>make中,使用内置函数”call”来引用用户定义的函数：</p>
+<div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span><span class="p">(</span><span class="n">call</span> <span class="n">my</span><span class="o">-</span><span class="n">func</span><span class="p">,</span><span class="n">arg1</span><span class="p">,</span><span class="n">arg2</span><span class="p">,</span><span class="n">arg3</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>Kconfig以相同的方式调用用户定义的函数和内置函数，区别只是省略了‘call’。</p>
+<p>在 Make 中，一些函数逐字处理逗号而不是参数分隔符。例如，$(shell echo hello, world) 运行命令“echo hello, world”。同样，$(info hello, world) 将“hello, world”打印到标准输出。你可以说这是_有用_不一致。</p>
+<p>在 Kconfig 中，为了更简单的实现和语法一致性，出现在 $( ) 上下文中的逗号始终是分隔符。它的意思是：</p>
+<div class="literal-block-wrapper docutils container" id="id17">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id17" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span><span class="p">(</span><span class="n">shell</span><span class="p">,</span> <span class="n">echo</span> <span class="n">hello</span><span class="p">,</span> <span class="n">world</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>并不能正确解析。Kconfig中固定把“,”作为分割符。所以无法输出“,”，要想输出逗号，可以以如下方式处理：</p>
+<div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nl">comma</span> <span class="p">:</span><span class="o">=</span> <span class="p">,</span>
+<span class="n">$</span><span class="p">(</span><span class="n">shell</span><span class="p">,</span> <span class="n">echo</span> <span class="n">hello$</span><span class="p">(</span><span class="n">comma</span><span class="p">)</span> <span class="n">world</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>注意：（这个注意选项，需要很多地方确认）<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p>变量（函数）不能跨标记扩展。不能扩展为Kconfig中的任何关键字。</p>
+</div>
+<div class="section" id="id8">
+<h2>make kconfig:配置内核<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<p>xconfig,menuconfig,nconfig:</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="build_base.html" class="btn btn-neutral float-left" title="linux内核构建系统" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="m_build.html" class="btn btn-neutral float-right" title="内核模块编译" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

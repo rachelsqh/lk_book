@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内核汇编 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ld 在linux中的应用" href="comp_ld.html" />
+    <link rel="prev" title="内核编程概述" href="comp_base.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_build/index.html">linux 内核构建</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核编程</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html">linux 二进制接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id47">程序加载和动态链接</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id53">库</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id64">开发环境</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id65">约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id66">linux 约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_base.html">内核编程概述</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">内核汇编</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html">GCC 在linux 内核中的应用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#id3">重要选项</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#c">C实现定义的行为</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#gcov">gcov</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#linux-gcc">linux 内核编程中GCC的高级应用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">内核与ELF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_uwind.html">UWIND</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev-tool/index.html">内核开发工具</a></li>
+<li class="toctree-l3"><a class="reference internal" href="k_prog/index.html">内核编程示例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="index.html">linux 内核编程</a> &raquo;</li>
+      <li>内核汇编</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_devel/lk_comp/comp_as.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>内核汇编<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>汇编器注解
+版权所有 (c) 2017-2019 Jiri Slaby</p>
+<p>本文档描述了用于在汇编中注释数据和代码的新宏。特别是，它包含有关SYM_FUNC_START、 SYM_FUNC_END、SYM_CODE_START和类似的信息。</p>
+<p>基本原理
+某些代码（如条目、蹦床或引导代码）需要用汇编语言编写。与 C 相同，此类代码被分组为函数并伴随数据。标准汇编器不会强迫用户将这些片段精确地标记为代码、数据，甚至指定它们的长度。然而，汇编器为开发人员提供了这样的注释，以帮助调试器在整个汇编过程中。最重要的是，开发人员还希望将某些功能标记为全局，以便在其翻译单元之外可见。</p>
+<p>随着时间的推移，Linux 内核采用了来自各种项目（如 binutils）的宏来促进此类注释。因此，出于历史原因，开发人员一直在汇编中使用ENTRY、END、ENDPROC和其他注释。由于缺乏文档，这些宏在某些位置被用在相当错误的上下文中。显然，ENTRY它旨在表示全局符号的开始（无论是数据还是代码）。 END用于标记数据的结束或具有 非标准调用约定的特殊函数的结束。相反，ENDPROC应该只注释标准函数的末端。</p>
+<p>当正确使用这些宏时，它们可以帮助汇编程序生成一个大小和类型都设置正确的漂亮对象。例如，结果 arch/x86/lib/putuser.S：</p>
+<dl class="simple">
+<dt>Num:    Value          Size Type    Bind   Vis      Ndx Name</dt><dd><p>25: 0000000000000000    33 FUNC    GLOBAL DEFAULT    1 __put_user_1
+29: 0000000000000030    37 FUNC    GLOBAL DEFAULT    1 __put_user_2
+32: 0000000000000060    36 FUNC    GLOBAL DEFAULT    1 __put_user_4
+35: 0000000000000090    37 FUNC    GLOBAL DEFAULT    1 __put_user_8</p>
+</dd>
+</dl>
+<p>这不仅对调试很重要。当有像这样正确注释的对象时，可以在它们上运行工具以生成更多有用的信息。特别是，在正确注释objtool的对象上，如果需要，可以运行以检查和修复对象。目前，objtool可以在函数中报告丢失的帧指针设置/破坏。它还可以 为大多数代码自动生成ORC unwinder的注解。这两者对于支持可靠的堆栈跟踪尤其重要，而这又是内核实时修补所必需的。</p>
+<p>警告和讨论
+正如人们可能意识到的那样，以前只有三个宏。这确实不足以涵盖所有案例组合：</p>
+<p>标准/非标准功能</p>
+<p>代码/数据</p>
+<p>全局/局部符号</p>
+<p>进行了讨论，而不是扩展当前的ENTRY/END* 宏，而是决定应该引入全新的宏：</p>
+<p>So how about using macro names that actually show the purpose, instead
+of importing all the crappy, historic, essentially randomly chosen
+debug symbol macro names from the binutils and older kernels?
+宏说明
+新宏以前缀为SYM_前缀，可分为三个主要组：</p>
+<p>SYM_FUNC_*– 注释类 C 函数。这意味着具有标准 C 调用约定的函数。例如，在 x86 上，这意味着堆栈在预定义的位置包含一个返回地址，并且函数的返回可以以标准方式发生。当启用帧指针时，帧指针的保存/恢复也应分别发生在函数的开始/结束处。</p>
+<p>检查工具之类的objtool应确保此类标记的功能符合这些规则。这些工具还可以轻松地使用调试信息（如ORC 数据）自动注释这些函数。</p>
+<p>SYM_CODE_*– 使用特殊堆栈调用的特殊函数。无论是具有特殊堆栈内容、蹦床或启动功能的中断处理程序。</p>
+<p>检查工具大多忽略对这些功能的检查。但是一些调试信息仍然可以自动生成。对于正确的调试数据，此代码需要UNWIND_HINT_REGS开发人员提供的提示。</p>
+<p>SYM_DATA*– 显然属于.data部分而不是的 数据.text。数据不包含指令，因此工具必须对其进行特殊处理：它们不应将字节视为指令，也不应为其分配任何调试信息。</p>
+<p>指令宏
+本节涵盖SYM_FUNC_*并SYM_CODE_*列举如上。</p>
+<p>objtool要求所有代码都必须包含在 ELF 符号中。具有.L前缀的符号名称不会发出符号表条目。.L 前缀符号可以在代码区域内使用，但应避免通过SYM_*_START/END注释表示代码范围。</p>
+<p>SYM_FUNC_START并且SYM_FUNC_START_LOCAL应该是最常见的标记。它们用于具有标准调用约定的函数——全局和本地。就像在 C 中一样，它们都将函数与体系结构特定的__ALIGN字节对齐。_NOALIGN对于开发人员不希望这种隐式对齐的特殊情况，还有一些变体。</p>
+<p>SYM_FUNC_START_WEAK和SYM_FUNC_START_WEAK_NOALIGN标记也作为 C 中已知的弱属性的汇编程序对应物提供。</p>
+<p>所有这些都应与SYM_FUNC_END. 首先，它将指令序列标记为一个函数，并将其大小计算到生成的目标文件中。其次，它还简化了检查和处理此类目标文件，因为这些工具可以轻松找到确切的功能边界。</p>
+<p>因此，在大多数情况下，开发人员应该编写类似于以下示例的内容，当然，在宏之间有一些 asm 指令：</p>
+<dl class="simple">
+<dt>SYM_FUNC_START(memset)</dt><dd><p>… asm insns …</p>
+</dd>
+</dl>
+<p>SYM_FUNC_END(memset)
+事实上，这种注解对应现在已弃用的ENTRY 和ENDPROC宏。</p>
+<p>SYM_FUNC_START_ALIAS并SYM_FUNC_START_LOCAL_ALIAS为那些决定为一个功能使用两个或多个名称的人服务。典型的用途是：</p>
+<p>SYM_FUNC_START_ALIAS(__memset)
+SYM_FUNC_START(memset)</p>
+<blockquote>
+<div><p>… asm insns …</p>
+</div></blockquote>
+<p>SYM_FUNC_END(memset)
+SYM_FUNC_END_ALIAS(__memset)
+在此示例中，可以调用__memset或memset得到相同的结果，除了指令的调试信息只生成到目标文件一次——对于非ALIAS大小写。</p>
+<p>SYM_CODE_START并且SYM_CODE_START_LOCAL应该只在特殊情况下使用——如果你知道你在做什么。这专门用于中断处理程序以及调用约定不是 C 的类似处理程序。_NOALIGN变种也存在。用途与上述FUNC 类别相同：</p>
+<dl class="simple">
+<dt>SYM_CODE_START_LOCAL(bad_put_user)</dt><dd><p>… asm insns …</p>
+</dd>
+</dl>
+<p>SYM_CODE_END(bad_put_user)
+同样，everySYM_CODE_START* 应由耦合SYM_CODE_END。</p>
+<p>在某种程度上，这个类别对应于 deprecatedENTRY和 END. 除了END还有其他几个含义。</p>
+<p>SYM_INNER_LABEL*用于表示 some SYM_{CODE,FUNC}_START和中的标签SYM_{CODE,FUNC}_END。它们与 C 标签非常相似，只是它们可以是全局的。使用示例：</p>
+<dl class="simple">
+<dt>SYM_CODE_START(ftrace_caller)</dt><dd><p>/* save_mcount_regs fills in first two parameters <a href="#id2"><span class="problematic" id="id3">*</span></a>/
+…</p>
+</dd>
+<dt>SYM_INNER_LABEL(ftrace_caller_op_ptr, SYM_L_GLOBAL)</dt><dd><p>/* Load the ftrace_ops into the 3rd parameter <a href="#id4"><span class="problematic" id="id5">*</span></a>/
+…</p>
+</dd>
+<dt>SYM_INNER_LABEL(ftrace_call, SYM_L_GLOBAL)</dt><dd><p>call ftrace_stub
+…
+retq</p>
+</dd>
+</dl>
+<p>SYM_CODE_END(ftrace_caller)
+数据宏
+与指令类似，有几个宏来描述程序集中的数据。</p>
+<p>SYM_DATA_START并SYM_DATA_START_LOCAL标记某些数据的开始，应与SYM_DATA_END或 结合使用SYM_DATA_END_LABEL。后者还在末尾添加了一个标签，以便人们可以在以下示例中使用lstackand (local) ：lstack_end</p>
+<dl class="simple">
+<dt>SYM_DATA_START_LOCAL(lstack)</dt><dd><p>.skip 4096</p>
+</dd>
+</dl>
+<p>SYM_DATA_END_LABEL(lstack, SYM_L_LOCAL, lstack_end)
+SYM_DATA并且SYM_DATA_LOCAL是简单的，主要是单行数据的变体：</p>
+<p>SYM_DATA(HEAP,     .long rm_heap)
+SYM_DATA(heap_end, .long rm_stack)
+最后，它们扩展到SYM_DATA_START内部SYM_DATA_END 。</p>
+<p>支持宏
+SYM_START以上所有内容都归结为对, SYM_END或SYM_ENTRY最后的某种调用。通常，开发人员应避免使用这些。</p>
+<p>此外，在上述示例中，可以看到SYM_L_LOCAL。还有 SYM_L_GLOBAL和SYM_L_WEAK。所有这些都旨在表示由它们标记的符号的链接。它们要么用于_LABEL早期宏的变体，要么用于SYM_START.</p>
+<p>覆盖宏
+体系结构还可以覆盖它们自己的任何宏 asm/linkage.h，包括指定符号类型（SYM_T_FUNC、、SYM_T_OBJECT和SYM_T_NONE）的宏。#ifdef由于此文件中描述的每个宏都由+包围#endif，因此在上述依赖于体系结构的标头中以不同方式定义宏就足够了。</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="comp_base.html" class="btn btn-neutral float-left" title="内核编程概述" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="comp_ld.html" class="btn btn-neutral float-right" title="ld 在linux中的应用" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

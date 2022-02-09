@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>操作系统安全框架 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_code/index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>操作系统安全框架</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/os_sec/os_sec.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>操作系统安全框架<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>Linux 内核安全是一个非常复杂的话题。</p>
+<p>有许多概念之间存在有趣的关系：</p>
+<p>漏洞类别
+开发技术
+错误检测机制
+防御技术
+Linux内核主线提供了一些防御技术。其他的出于各种原因（例如，其中一些是商业性的）正在脱离树。此外，还有一些依赖于特殊硬件特性的内核防御。</p>
+<p>拥有 Linux 内核安全性的图形表示会很方便。这就是为什么我创建了一个Linux 内核防御图来显示所有这些概念之间的关系。</p>
+<p>节点连接并不意味着“完全缓解”。相反，每个连接都代表某种关系。所以 Linux Kernel Defense Map 应该有助于浏览文档和 Linux 内核源。它还提供漏洞类别的通用弱点枚举 (CWE) 编号。</p>
+<p>该映射描述了内核安全加固。它不包括切割攻击面、用户空间安全特性和各种 Linux 安全模块 (LSM) 强制执行的策略。</p>
+<p>安全功能</p>
+<ul class="simple">
+<li><p>[Grsecurity features](<a class="reference external" href="https://grsecurity.net/features.php">https://grsecurity.net/features.php</a>)</p></li>
+<li><p>[The State of Kernel Self Protection](<a class="reference external" href="https://outflux.net/slides/2021/lss/kspp.pdf">https://outflux.net/slides/2021/lss/kspp.pdf</a>) by Kees Cook</p></li>
+<li><p>Linux kernel [security documentation](<a class="reference external" href="https://www.kernel.org/doc/html/latest/security/self-protection.html">https://www.kernel.org/doc/html/latest/security/self-protection.html</a>)</p></li>
+<li><p>Linux kernel [mitigation checklist](<a class="reference external" href="https://github.com/hardenedlinux/grsecurity-101-tutorials/blob/master/kernel_mitigation.md">https://github.com/hardenedlinux/grsecurity-101-tutorials/blob/master/kernel_mitigation.md</a>) by Shawn C</p></li>
+<li><p>[Trends, challenge, and shifts in software vulnerability mitigation](<a class="reference external" href="https://github.com/Microsoft/MSRC-Security-Research/tree/master/presentations/2019_02_BlueHatIL">https://github.com/Microsoft/MSRC-Security-Research/tree/master/presentations/2019_02_BlueHatIL</a>) by MSRC</p></li>
+<li><p>[Pursuing Durable Safety for Systems Software](<a class="reference external" href="https://www.sstic.org/2020/presentation/ouverture_2020/">https://www.sstic.org/2020/presentation/ouverture_2020/</a>) by Matt Miller</p></li>
+<li><p>[A Decade of Linux Kernel Vulnerabilities, their Mitigation and Open Problems](<a class="reference external" href="https://github.com/maxking/linux-vulnerabilities-10-years">https://github.com/maxking/linux-vulnerabilities-10-years</a>) by Abhilash Raj</p></li>
+<li><p>[Spectre &amp; Meltdown Checker](<a class="reference external" href="https://github.com/speed47/spectre-meltdown-checker">https://github.com/speed47/spectre-meltdown-checker</a>) by Stéphane Lesimple</p></li>
+</ul>
+<div class="section" id="kconfig-hardened-check">
+<h2>kconfig-hardened-check<a class="headerlink" href="#kconfig-hardened-check" title="Permalink to this headline">¶</a></h2>
+<p>帮助我根据我的安全强化首选项检查 Linux 内核 Kconfig 选项列表，这些首选项基于
+<a class="reference external" href="https://github.com/a13xp0p0v/kconfig-hardened-check">https://github.com/a13xp0p0v/kconfig-hardened-check</a></p>
+</div>
+<div class="section" id="grsecurity">
+<h2>grsecurity<a class="headerlink" href="#grsecurity" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://grsecurity.net/features">https://grsecurity.net/features</a></p>
+<p>内核安全：
+- 访问控制（如SELinux);
+- attack surface reduction(e.g. seccomp)
+- bug fixing(eg.g. CVEs);
+- 用户空间保护
+- 内存完整性；</p>
+<p>风险不是理论上的。 攻击者正在观察提交，他们比我们更善于发现错误：</p>
+</div>
+<div class="section" id="bug">
+<h2>bug<a class="headerlink" href="#bug" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h3>查找bug<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>静态检查：gcc,Clang,Coccinelle,smatch,sparse,Coverity</p></li>
+<li><p>动态检查：kernel,KASan-family,syzkaller,stress-ng,trinity</p></li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h3>确定bug<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="kspp">
+<h3>KSPP<a class="headerlink" href="#kspp" title="Permalink to this headline">¶</a></h3>
+<p>Kernel Self-Protection Project</p>
+</div>
+<div class="section" id="id4">
+<h3>定位bug举例<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>building with -Wimplicit-fallthrough by default for GCC! (last 69 marked</p>
+</div></blockquote>
+<p>and 7 missing breaks found)
+● 2 refcount_t conversions (1 bug found via refcount_t)
+● pidfd from pidfd_open()
+● CR4, CR0 pinning on x86
+● heap variable auto initialization via init_on_{alloc,free}=1 boot parameter
+● additional kfree() sanity checking
+● KASLR enabled by default on arm64
+● hardware security embargo documentation</p>
+<p><a class="reference external" href="https://outflux.net/slides/2021/lss/kspp.pdf">https://outflux.net/slides/2021/lss/kspp.pdf</a></p>
+<p>针对gcc各种选项的实际应用问题非常关键。
+注意我们要保持对内核的专注。</p>
+<p>只专注内核。
+Various soon and not-so-soon features
+● more hardware memory tagging
+● x86 CET/IBT
+● x86 SMAP emulation
+● execve() brute force detection
+● write-rarely memory
+● arm32 feature parity
+● eXclusive Page Frame Owner
+● arithmetic overflow detection
+● memcpy() bounds checks
+● Function Granular KASLR
+● eXecute Only Memory
+● read-only page tables
+● type-aware slab allocator
+● hypervisor magic :)</p>
+<p>注意：</p>
+</div>
+</div>
+</div>
+<div class="section" id="id5">
+<h1>KSPP：这和自我保护项目：重点关注项目。<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="self-protection">
+<h1>self-protection:内核安全文档：重点部分<a class="headerlink" href="#self-protection" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://www.kernel.org/doc/html/latest/security/self-protection.html">https://www.kernel.org/doc/html/latest/security/self-protection.html</a></p>
+</div>
+<div class="section" id="id6">
+<h1>清单：<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/hardenedlinux/grsecurity-101-tutorials/blob/master/kernel_mitigation.md">https://github.com/hardenedlinux/grsecurity-101-tutorials/blob/master/kernel_mitigation.md</a></p>
+</div>
+<div class="section" id="msrc">
+<h1>MSRC<a class="headerlink" href="#msrc" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="matt-miller">
+<h1>追求系统软件的持久安全性 作者：Matt Miller<a class="headerlink" href="#matt-miller" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="linux">
+<h1>linux 内核漏洞、措施及当前问题总结<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
+<p>我们从其中看出针对linux安全的问题。</p>
+<p>图：
+.. image:: ./linux-kernel-defence-map.svg</p>
+<p>// Linux Kernel Defense Map 显示以下之间的关系：
+//   - 漏洞类
+//   - 开发技术
+//   - 错误检测机制
+//   - 防御技术</p>
+<p>绿色标记：Linux内核的主线防御
+白色标记：通用防御技术
+深蓝色标记：主线不支持的防御
+紫色标记：bug检测
+灰色标记：商用防御
+粉色标记：漏洞
+浅蓝色标记：硬件防御
+黄色标记：利用技术</p>
+<div class="section" id="id7">
+<h2>Linux内核的主线防御<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p>RANDOMIZE_{BASE,MEMORY}:</p>
+<p>RANDSTRUCT:
+LATENT_ENTROPY:
+RANDOMIZE_KSTACK_OFFSET_DEFAULT:
+__ro_after_init:
+REFCOUNT_FULL:
+Read-only swapper_pg_dir:
+SCHED_STACK_END_CHECK:</p>
+<p>VMAP_STACK:
+THREAD_INFO_IN_TASK:
+STACKLEAK:</p>
+<p>X86: X86_INTEL_UMIP
+kptr_restrict:</p>
+<p>SCURITY_DMESG_RESTRICT:
+INIT_STACK_ALL_ZERO:
+STRUCTLEAK_BYREF_ALL:</p>
+<p>slub_debug=P</p>
+<p>init_on_free</p>
+<p>PAGE_POISONING</p>
+<p>init_on_alloc</p>
+<p>HARDENED_USERCOPY:</p>
+<p>重点参考:     <a class="reference external" href="https://www.anquanke.com/post/id/238363">https://www.anquanke.com/post/id/238363</a></p>
+<p>分析：
+- Layout Randomization:
+-</p>
+</div>
+</div>
+<div class="section" id="id8">
+<h1>引用<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/bsauce/kernel-security-learning">https://github.com/bsauce/kernel-security-learning</a>
+<a class="reference external" href="https://www.jianshu.com/p/4bc65d4477d3">https://www.jianshu.com/p/4bc65d4477d3</a></p>
+<hr class="docutils" />
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

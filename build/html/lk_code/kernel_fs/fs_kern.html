@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内存文件系统 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>内存文件系统</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_code/kernel_fs/fs_kern.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>内存文件系统<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>这部分主要实现内核与用户空间的信息交换。
+我们主要利用其提供的接口实现信息传递目的。</p>
+<p>目的：总结对内存文件系统编程调用</p>
+<p>kernfs/sysfs/procfs/debugfs/configfs综述</p>
+<dl class="simple">
+<dt>config SYSFS</dt><dd><p>select KERNFS</p>
+</dd>
+<dt>config CONFIGFS</dt><dd><p>select CONFIGFS</p>
+</dd>
+</dl>
+<div class="section" id="procfs">
+<h2>procfs<a class="headerlink" href="#procfs" title="Permalink to this headline">¶</a></h2>
+<p>proc的实现方法与其他方法是不相同的，需要注意。
+导出符号：
+“”””””””</p>
+<p>EXPORT_SYMBOL(proc_symlink)：
+EXPORT_SYMBOL_GPL(_proc_mkdir)：
+EXPORT_SYMBOL_GPL(proc_mkdir_data)：
+EXPORT_SYMBOL(proc_mkdir_mode)：
+EXPORT_SYMBOL(proc_mkdir)：
+EXPORT_SYMBOL(proc_create_mount_point)：
+EXPORT_SYMBOL(proc_create_data);
+EXPORT_SYMBOL(proc_create);
+EXPORT_SYMBOL(proc_create_seq_private);
+EXPORT_SYMBOL(proc_create_single_data);
+EXPORT_SYMBOL(proc_set_size);
+EXPORT_SYMBOL(proc_set_user);
+EXPORT_SYMBOL(remove_proc_entry);
+EXPORT_SYMBOL(remove_proc_subtree);
+EXPORT_SYMBOL_GPL(proc_get_parent_data);
+EXPORT_SYMBOL(proc_remove);
+EXPORT_SYMBOL(PDE_DATA);
+EXPORT_SYMBOL_GPL(proc_create_net_data);
+EXPORT_SYMBOL_GPL(proc_create_net_data_write);
+EXPORT_SYMBOL_GPL(proc_create_net_single);
+EXPORT_SYMBOL_GPL(proc_create_net_single_write);
+EXPORT_SYMBOL(sysctl_vals);
+EXPORT_SYMBOL(register_sysctl);
+EXPORT_SYMBOL(register_sysctl_paths);
+EXPORT_SYMBOL(register_sysctl_table);
+EXPORT_SYMBOL(unregister_sysctl_table);
+EXPORT_SYMBOL_GPL(register_oldmem_pfn_is_ram);
+EXPORT_SYMBOL_GPL(unregister_oldmem_pfn_is_ram);
+EXPORT_SYMBOL(vmcore_add_device_dump);</p>
+<p>proc_create:需要初始化的操作句柄为：</p>
+<div class="section" id="proc">
+<h3>proc文件系统初始化<a class="headerlink" href="#proc" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="proc-ops">
+<h3>从系统调用到 proc_ops方法调用<a class="headerlink" href="#proc-ops" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id2">
+<h3>重要目录应用<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>注意，这个实现方式的方法实现最应该弄清楚</p>
+<div class="section" id="kcore">
+<h4>kcore<a class="headerlink" href="#kcore" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="sysctl">
+<h4>sysctl<a class="headerlink" href="#sysctl" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="iomem">
+<h4>iomem<a class="headerlink" href="#iomem" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+<div class="section" id="id3">
+<h3>总结<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>以前疑问，现在总结：</p>
+</div>
+</div>
+<div class="section" id="kernfs">
+<h2>kernfs<a class="headerlink" href="#kernfs" title="Permalink to this headline">¶</a></h2>
+<p>描述kernfs的实现机制及应用场景。</p>
+</div>
+<div class="section" id="sysfs">
+<h2>sysfs<a class="headerlink" href="#sysfs" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="debugfs">
+<h2>debugfs<a class="headerlink" href="#debugfs" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux 内核模块实现原理分析 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="linux 沙箱:seccomp" href="seccomp.html" />
+    <link rel="prev" title="linux 内核符号原理:kallsyms" href="kallsyms.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核代码分析</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核基础</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="lock.html">linux 锁总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extable.html">linux 异常表:extable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jump_label.html">linux :jump_label 分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kexec_elf.html">linux 加载ELF 内核文件：kexec_file_load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="irq/index.html">linux 中断架构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="resource.html">linux 资源管理: resource</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notifier.html">linux 内核通知链: notifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workqueue.html">linux 工作队列: workqueue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="signal.html">linux 信号:signal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kallsyms.html">linux 内核符号原理:kallsyms</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">linux 内核模块实现原理分析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kbuild">内核模块编译：kbuild</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">内核模块编译流程原理分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">构建模块过程中的的符号处理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">内核模块加载过程分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">内核模块卸载</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id11">内核模块中可调用的函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id12">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="seccomp.html">linux 沙箱:seccomp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="trace/index.html">linux 内核跟踪调试代码架构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lk_sec/index.html">linux 内核安全架构分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="func_injection.html">linux fail_function分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sysctl.html">linux 通用linux系统控制接口:sysctl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sys.html">linux 系统级接口：sys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="static_call.html">linux static_call 分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stacktrace.html">linux 栈跟踪管理函数：stacktrace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stackleak.html">linux stackleak</a></li>
+<li class="toctree-l3"><a class="reference internal" href="printk.html">linux printk实现原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rcu.html">linux rcu原理分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kcsan.html">linux KCSAN分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="power.html">linux 电源管理:power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="softirq.html">linux 软中断：softirq</a></li>
+<li class="toctree-l3"><a class="reference internal" href="syscall.html">linux 系统调用原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="alg_base.html">linux 基础算法总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_ps/index.html">linux 进程管理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_mem/index.html">linux 内存管理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_fs/index.html">linux 文件系统分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_cpu/index.html">linux CPU管理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_driver/index.html">linux 驱动架构分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_net/index.html">linux 内核网络代码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_virt/index.html">linux 内核虚拟化技术</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kobject.html">kobject理解</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">linux 内核代码分析</a> &raquo;</li>
+          <li><a href="index.html">linux 内核基础</a> &raquo;</li>
+      <li>linux 内核模块实现原理分析</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_code/kernel_base/module.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux">
+<h1>linux 内核模块实现原理分析<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="kbuild">
+<h2>内核模块编译：kbuild<a class="headerlink" href="#kbuild" title="Permalink to this headline">¶</a></h2>
+<p>内核编译参考：</p>
+<iframe src="../../lk_devel/lk_build/m_build.html" height="345px" width="100%"></iframe><p>内核调试参考：</p>
+<iframe src="../../lk_devel/lk_build/m_build.html" height="345px" width="100%"></iframe></div>
+<div class="section" id="id1">
+<h2>内核模块编译流程原理分析<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h3>构建过程分析<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="make">
+<h4>make流程分析<a class="headerlink" href="#make" title="Permalink to this headline">¶</a></h4>
+<p>A.make:$(MAKE) -C $(KDIR) M=$(PWD) modules</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>cd $(KDIR)</p></li>
+<li><p>$M = $(PWD)</p></li>
+<li><p>make modules</p></li>
+</ol>
+</div></blockquote>
+<ol class="upperalpha" start="2">
+<li><p>kernel/Makefile</p>
+<ol class="arabic">
+<li><p>KBUILD_EXTMOD := $(M) : make M=dir (外部模块目录)</p></li>
+<li><p>KBUILD_MODULES := 1</p></li>
+<li><p>build-dirs := $(KBUILD_EXTMOD)</p></li>
+<li><p>Makefile: modules:$(MODORDER) 等价于: modules: /root/for_work/rootkit/demo1/k_mod</p>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></div></td><td class="code"><div class="highlight"><pre><span></span>        # External module support.
+        # When building external modules the kernel used as basis is considered
+        # read-only, and no consistency checks are made and the make
+<span class="hll">        # system is not used on the basis kernel. If updates are required
+</span><span class="hll">        # in the basis kernel ordinary make commands (without M=...) must
+</span>        # be used.
+        #
+        # The following are the only valid targets when building external
+        # modules.
+        # make M=dir clean     Delete all automatically generated files
+        # make M=dir modules   Make all modules in specified dir
+        # make M=dir           Same as &#39;make M=dir modules&#39;
+        # make M=dir modules_install
+        #                      Install the modules built in the module directory
+        #                      Assumes install directory is already created
+
+        # We are always building only modules.
+        KBUILD_BUILTIN :=
+        KBUILD_MODULES := 1
+
+        build-dirs := $(KBUILD_EXTMOD)
+        PHONY += modules
+        modules: $(MODORDER)
+                $(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+
+        $(MODORDER): descend
+                @:
+
+        descend: $(build-dirs)
+        $(build-dirs): prepare      #此处prepare为空
+                $(Q)$(MAKE) $(build)=$@ \
+                single-build=$(if $(filter-out $@/, $(filter $@/%, $(KBUILD_SINGLE_TARGETS))),1) \
+                need-builtin=1 need-modorder=1
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>Makefile中modules的前提条件:$(MODORDER)
+以上指令等价于 /root/for_work/rootkit/demo1/k_mod: make -f ./scripts/Makefile.build obj=/root/for_work/rootkit/demo1/k_mod  single-build=  need-builtin=1 need-modorder=1</p>
+</li>
+<li><p>Makefile.build相关片段:</p>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span>        __build: $(if $(KBUILD_BUILTIN), $(targets-for-builtin)) \
+                 $(if $(KBUILD_MODULES), $(targets-for-modules)) \
+                 $(subdir-ym) $(always-y)
+<span class="hll">                @echo &quot;target:&quot; $(if $(KBUILD_BUILTIN), $(targets-for-builtin)) \  #(额外添加)
+</span><span class="hll">                $(if $(KBUILD_MODULES), $(targets-for-modules)) \
+</span>                 $(subdir-ym) $(always-y)
+                @:
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>结果:#make</p>
+<p>等价于:</p>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>        <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">k_m</span><span class="p">.</span><span class="nl">mod</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">k_m</span><span class="p">.</span><span class="n">o</span> <span class="n">FORCE</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>通过/path/k_mod/Makefile我们知道k_m.o依赖:</p>
+<div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">obj</span><span class="o">-</span><span class="nl">m</span> <span class="p">:</span><span class="o">=</span> <span class="n">k_m</span><span class="p">.</span><span class="n">o</span>
+<span class="n">k_m</span><span class="o">-</span><span class="nl">m</span> <span class="p">:</span><span class="o">=</span> <span class="n">k_m1</span><span class="p">.</span><span class="n">o</span> <span class="n">k_m2</span><span class="p">.</span><span class="n">o</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>而Makefile.build中对*.o定义如下:编译目标文件:<a href="#id3"><span class="problematic" id="id4">*</span></a>.c –&gt; <a href="#id5"><span class="problematic" id="id6">*</span></a>.o</p>
+<div class="literal-block-wrapper docutils container" id="id17">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id17" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span># Built-in and composite module parts
+$(obj)/%.o: $(src)/%.c $(recordmcount_source) $(objtool_dep) FORCE
+        $(call if_changed_rule,cc_o_c)
+<span class="hll">        @echo $(rule_cc_o_c)    #额外添加,具体信息在下一条说明
+</span><span class="hll">        $(call cmd,force_checksrc)
+</span></pre></div>
+</td></tr></table></div>
+</div>
+<p>其规则展开为:</p>
+<div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span>        echo    @set -e;  echo &#39;  CC [M]  /root/for_work/rootkit/demo1/k_mod/k_m1.o&#39;; gcc -Wp,-MMD,/root/for_work/rootkit/demo1/k_mod/.k_m1.o.d -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/10/include -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -fmacro-prefix-map=./= -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Wno-format-security -std=gnu89 -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -DCONFIG_X86_X32_ABI -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -fno-jump-tables -fno-delete-null-pointer-checks -Wno-frame-address -Wno-format-truncation -Wno-format-overflow -Wno-address-of-packed-member -O2 -fno-allow-store-data-races -Wframe-larger-than=2048 -fstack-protector-strong -Wno-unused-but-set-variable -Wimplicit-fallthrough -Wno-unused-const-variable -g -pg -mrecord-mcount -mfentry -DCC_USING_FENTRY -Wdeclaration-after-statement -Wvla -Wno-pointer-sign -Wno-stringop-truncation -Wno-zero-length-bounds -Wno-array-bounds -Wno-stringop-overflow -Wno-restrict -Wno-maybe-uninitialized -fno-strict-overflow -fno-stack-check -fconserve-stack -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -fcf-protection=none -Wno-packed-not-aligned  -DMODULE  -DKBUILD_BASENAME=&#39;&quot;k_m1&quot;&#39; -DKBUILD_MODNAME=&#39;&quot;k_m&quot;&#39; -c -o /root/for_work/rootkit/demo1/k_mod/k_m1.o /root/for_work/rootkit/demo1/k_mod/k_m1.c; scripts/basic/fixdep /root/for_work/rootkit/demo1/k_mod/.k_m1.o.d /root/for_work/rootkit/demo1/k_mod/k_m1.o &#39;gcc -Wp,-MMD,/root/for_work/rootkit/demo1/k_mod/.k_m1.o.d -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/10/include -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -fmacro-prefix-map=./= -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Wno-format-security -std=gnu89 -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -DCONFIG_X86_X32_ABI -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -fno-jump-tables -fno-delete-null-pointer-checks -Wno-frame-address -Wno-format-truncation -Wno-format-overflow -Wno-address-of-packed-member -O2 -fno-allow-store-data-races -Wframe-larger-than=2048 -fstack-protector-strong -Wno-unused-but-set-variable -Wimplicit-fallthrough -Wno-unused-const-variable -g -pg -mrecord-mcount -mfentry -DCC_USING_FENTRY -Wdeclaration-after-statement -Wvla -Wno-pointer-sign -Wno-stringop-truncation -Wno-zero-length-bounds -Wno-array-bounds -Wno-stringop-overflow -Wno-restrict -Wno-maybe-uninitialized -fno-strict-overflow -fno-stack-check -fconserve-stack -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -fcf-protection=none -Wno-packed-not-aligned  -DMODULE  -DKBUILD_BASENAME=&#39;\&#39;&#39;&quot;k_m1&quot;&#39;\&#39;&#39; -DKBUILD_MODNAME=&#39;\&#39;&#39;&quot;k_m&quot;&#39;\&#39;&#39; -c -o /root/for_work/rootkit/demo1/k_mod/k_m1.o /root/for_work/rootkit/demo1/k_mod/k_m1.c&#39; &gt; /root/for_work/rootkit/demo1/k_mod/.k_m1.o.cmd; rm -f /root/for_work/rootkit/demo1/k_mod/.k_m1.o.d
+            @set -e
+              CC [M]  /root/for_work/rootkit/demo1/k_mod/k_m1.o
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>注意其中的中间文件:.k_m1.o.d  .k_m1.o.cmd k_m1.o,其force_checksrc展开为(此处没有使能):</p>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>        <span class="n">sparse</span> <span class="o">-</span><span class="n">D__linux__</span> <span class="o">-</span><span class="n">Dlinux</span> <span class="o">-</span><span class="n">D__STDC__</span> <span class="o">-</span><span class="n">Dunix</span> <span class="o">-</span><span class="n">D__unix__</span> <span class="o">-</span><span class="n">Wbitwise</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="k">return</span><span class="o">-</span><span class="kt">void</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">unknown</span><span class="o">-</span><span class="n">attribute</span> <span class="o">-</span><span class="n">D__x86_64__</span> <span class="o">--</span><span class="n">arch</span><span class="o">=</span><span class="n">x86</span> <span class="o">-</span><span class="n">mlittle</span><span class="o">-</span><span class="n">endian</span> <span class="o">-</span><span class="n">m64</span> <span class="o">-</span><span class="n">Wp</span><span class="p">,</span><span class="o">-</span><span class="n">MMD</span><span class="p">,</span><span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">rootkit</span><span class="o">/</span><span class="n">demo1</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="p">.</span><span class="n">k_m2</span><span class="p">.</span><span class="n">o</span><span class="p">.</span><span class="n">d</span> <span class="o">-</span><span class="n">nostdinc</span> <span class="o">-</span><span class="n">isystem</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">gcc</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="mi">10</span><span class="o">/</span><span class="n">include</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">include</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">generated</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">include</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">uapi</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">generated</span><span class="o">/</span><span class="n">uapi</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">uapi</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">generated</span><span class="o">/</span><span class="n">uapi</span> <span class="o">-</span><span class="n">include</span> <span class="p">.</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">kconfig</span><span class="p">.</span><span class="n">h</span> <span class="o">-</span><span class="n">include</span> <span class="p">.</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">compiler_types</span><span class="p">.</span><span class="n">h</span> <span class="o">-</span><span class="n">D__KERNEL__</span> <span class="o">-</span><span class="n">fmacro</span><span class="o">-</span><span class="n">prefix</span><span class="o">-</span><span class="n">map</span><span class="o">=</span><span class="p">.</span><span class="o">/=</span> <span class="o">-</span><span class="n">Wall</span> <span class="o">-</span><span class="n">Wundef</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">strict</span><span class="o">-</span><span class="n">prototypes</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">trigraphs</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">strict</span><span class="o">-</span><span class="n">aliasing</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">common</span> <span class="o">-</span><span class="n">fshort</span><span class="o">-</span><span class="n">wchar</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">PIE</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">implicit</span><span class="o">-</span><span class="n">function</span><span class="o">-</span><span class="n">declaration</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">implicit</span><span class="o">-</span><span class="kt">int</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="k">return</span><span class="o">-</span><span class="n">type</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">format</span><span class="o">-</span><span class="n">security</span> <span class="o">-</span><span class="n">std</span><span class="o">=</span><span class="n">gnu89</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">sse</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">mmx</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">sse2</span> <span class="o">-</span><span class="n">mno</span><span class="mi">-3</span><span class="n">dnow</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">avx</span> <span class="o">-</span><span class="n">m64</span> <span class="o">-</span><span class="n">falign</span><span class="o">-</span><span class="n">jumps</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span><span class="n">falign</span><span class="o">-</span><span class="n">loops</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span><span class="n">mno</span><span class="mi">-80387</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">fp</span><span class="o">-</span><span class="n">ret</span><span class="o">-</span><span class="n">in</span><span class="mi">-387</span> <span class="o">-</span><span class="n">mpreferred</span><span class="o">-</span><span class="n">stack</span><span class="o">-</span><span class="n">boundary</span><span class="o">=</span><span class="mi">3</span> <span class="o">-</span><span class="n">mskip</span><span class="o">-</span><span class="n">rax</span><span class="o">-</span><span class="n">setup</span> <span class="o">-</span><span class="n">mtune</span><span class="o">=</span><span class="n">generic</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">red</span><span class="o">-</span><span class="n">zone</span> <span class="o">-</span><span class="n">mcmodel</span><span class="o">=</span><span class="n">kernel</span> <span class="o">-</span><span class="n">DCONFIG_X86_X32_ABI</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">sign</span><span class="o">-</span><span class="n">compare</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">asynchronous</span><span class="o">-</span><span class="n">unwind</span><span class="o">-</span><span class="n">tables</span> <span class="o">-</span><span class="n">mindirect</span><span class="o">-</span><span class="n">branch</span><span class="o">=</span><span class="n">thunk</span><span class="o">-</span><span class="k">extern</span> <span class="o">-</span><span class="n">mindirect</span><span class="o">-</span><span class="n">branch</span><span class="o">-</span><span class="k">register</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">jump</span><span class="o">-</span><span class="n">tables</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">delete</span><span class="o">-</span><span class="n">null</span><span class="o">-</span><span class="n">pointer</span><span class="o">-</span><span class="n">checks</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">frame</span><span class="o">-</span><span class="n">address</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">format</span><span class="o">-</span><span class="n">truncation</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">format</span><span class="o">-</span><span class="n">overflow</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">address</span><span class="o">-</span><span class="n">of</span><span class="o">-</span><span class="n">packed</span><span class="o">-</span><span class="n">member</span> <span class="o">-</span><span class="n">O2</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">allow</span><span class="o">-</span><span class="n">store</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">races</span> <span class="o">-</span><span class="n">Wframe</span><span class="o">-</span><span class="n">larger</span><span class="o">-</span><span class="n">than</span><span class="o">=</span><span class="mi">2048</span> <span class="o">-</span><span class="n">fstack</span><span class="o">-</span><span class="n">protector</span><span class="o">-</span><span class="n">strong</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">unused</span><span class="o">-</span><span class="n">but</span><span class="o">-</span><span class="n">set</span><span class="o">-</span><span class="n">variable</span> <span class="o">-</span><span class="n">Wimplicit</span><span class="o">-</span><span class="n">fallthrough</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">unused</span><span class="o">-</span><span class="k">const</span><span class="o">-</span><span class="n">variable</span> <span class="o">-</span><span class="n">g</span> <span class="o">-</span><span class="n">pg</span> <span class="o">-</span><span class="n">mrecord</span><span class="o">-</span><span class="n">mcount</span> <span class="o">-</span><span class="n">mfentry</span> <span class="o">-</span><span class="n">DCC_USING_FENTRY</span> <span class="o">-</span><span class="n">Wdeclaration</span><span class="o">-</span><span class="n">after</span><span class="o">-</span><span class="n">statement</span> <span class="o">-</span><span class="n">Wvla</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">pointer</span><span class="o">-</span><span class="n">sign</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">stringop</span><span class="o">-</span><span class="n">truncation</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">zero</span><span class="o">-</span><span class="n">length</span><span class="o">-</span><span class="n">bounds</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">array</span><span class="o">-</span><span class="n">bounds</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">stringop</span><span class="o">-</span><span class="n">overflow</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="kr">restrict</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">maybe</span><span class="o">-</span><span class="n">uninitialized</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">strict</span><span class="o">-</span><span class="n">overflow</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">stack</span><span class="o">-</span><span class="n">check</span> <span class="o">-</span><span class="n">fconserve</span><span class="o">-</span><span class="n">stack</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">date</span><span class="o">-</span><span class="n">time</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">incompatible</span><span class="o">-</span><span class="n">pointer</span><span class="o">-</span><span class="n">types</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">designated</span><span class="o">-</span><span class="n">init</span> <span class="o">-</span><span class="n">fcf</span><span class="o">-</span><span class="n">protection</span><span class="o">=</span><span class="n">none</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">packed</span><span class="o">-</span><span class="n">not</span><span class="o">-</span><span class="n">aligned</span> <span class="o">-</span><span class="n">DMODULE</span> <span class="o">-</span><span class="n">DKBUILD_BASENAME</span><span class="o">=</span><span class="s">&quot;k_m2&quot;</span> <span class="o">-</span><span class="n">DKBUILD_MODNAME</span><span class="o">=</span><span class="s">&quot;k_m&quot;</span> <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">rootkit</span><span class="o">/</span><span class="n">demo1</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">k_m2</span><span class="p">.</span><span class="n">c</span> <span class="n">force</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>k_m1.o k_m2.o链接为k_m.o,根据k_m.o 产生k_m.mod  modules.order:依赖 k_m.o</p>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span>        # Rule to create modules.order file
+        #
+        # Create commands to either record .ko file or cat modules.order from
+<span class="hll">        # a subdirectory
+</span><span class="hll">        # Add $(obj-m) as the prerequisite to avoid updating the timestamp of
+</span>        # modules.order unless contained modules are updated.
+        cmd_modules_order = { $(foreach m, $(real-prereqs), \
+                $(if $(filter %/modules.order, $m), cat $m, echo $(patsubst %.o,%.ko,$m));) :; } \
+                | $(AWK) &#39;!x[$$0]++&#39; - &gt; $@
+        $(obj)/modules.order: $(obj-m) FORCE
+                $(call if_changed,modules_order)
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>产生modules.order,至此完成Makefile中modules前提条件$(MODORDER) 的处理.
+Makefile modules 菜单指令:</p>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nl">modules</span><span class="p">:</span> <span class="n">$</span><span class="p">(</span><span class="n">MODORDER</span><span class="p">)</span>
+        <span class="n">$</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span><span class="n">$</span><span class="p">(</span><span class="n">MAKE</span><span class="p">)</span> <span class="o">-</span><span class="n">f</span> <span class="n">$</span><span class="p">(</span><span class="n">srctree</span><span class="p">)</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">Makefile</span><span class="p">.</span><span class="n">modpost</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</li>
+<li><p>即接下来看指令 make -f Makefile.modpost
+Makefile.modpost编译外部模块内容</p>
+<div class="literal-block-wrapper docutils container" id="id22">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53</pre></div></td><td class="code"><div class="highlight"><pre><span></span>__modpost:
+include include/config/auto.conf
+include scripts/Kbuild.include
+<span class="hll">
+</span><span class="hll">MODPOST = scripts/mod/modpost                                                           \
+</span>        $(if $(CONFIG_MODVERSIONS),-m)                                                  \
+        $(if $(CONFIG_MODULE_SRCVERSION_ALL),-a)                                        \
+        $(if $(CONFIG_SECTION_MISMATCH_WARN_ONLY),,-E)                                  \
+        $(if $(KBUILD_MODPOST_WARN),-w) \
+        -o $@
+# set src + obj - they may be used in the modules&#39;s Makefile
+obj := $(KBUILD_EXTMOD)
+src := $(obj)
+
+# Include the module&#39;s Makefile to find KBUILD_EXTRA_SYMBOLS
+include $(if $(wildcard $(KBUILD_EXTMOD)/Kbuild), \
+             $(KBUILD_EXTMOD)/Kbuild, $(KBUILD_EXTMOD)/Makefile)
+
+# modpost option for external modules
+MODPOST += -e
+
+input-symdump := Module.symvers $(KBUILD_EXTRA_SYMBOLS)
+output-symdump := $(KBUILD_EXTMOD)/Module.symvers
+# modpost options for modules (both in-kernel and external)
+MODPOST += \
+        $(addprefix -i ,$(wildcard $(input-symdump))) \
+        $(if $(KBUILD_NSDEPS),-d $(MODULES_NSDEPS)) \
+        $(if $(CONFIG_MODULE_ALLOW_MISSING_NAMESPACE_IMPORTS)$(KBUILD_NSDEPS),-N)
+# &#39;make -i -k&#39; ignores compile errors, and builds as many modules as possible.
+ifneq ($(findstring i,$(filter-out --%,$(MAKEFLAGS))),)
+MODPOST += -n
+endif
+
+# Clear VPATH to not search for *.symvers in $(srctree). Check only $(objtree).
+VPATH :=
+$(input-symdump):
+        @echo &gt;&amp;2 &#39;WARNING: Symbol version dump &quot;$@&quot; is missing.&#39;
+        @echo &gt;&amp;2 &#39;         Modules may not have dependencies or modversions.&#39;
+
+# Read out modules.order to pass in modpost.
+# Otherwise, allmodconfig would fail with &quot;Argument list too long&quot;.
+quiet_cmd_modpost = MODPOST $@
+         cmd_modpost = sed &#39;s/ko$$/o/&#39; $&lt; | $(MODPOST) -T -
+
+ $(output-symdump): $(MODORDER) $(input-symdump) FORCE
+        $(call if_changed,modpost)
+
+targets += $(output-symdump)
+
+__modpost: $(output-symdump)
+ifneq ($(KBUILD_MODPOST_NOFINAL),1)
+        $(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modfinal :这一步通常情况下是要执行的
+endif
+</pre></div>
+</td></tr></table></div>
+</div>
+<ol class="arabic">
+<li><p>第一步
+1. 创建单独的.o文件(如生成k_m1.o k_m2.o)
+2. 链接需要的.o 文件为&lt;module&gt;.o 文件(k_m1.o k_m2.o 链接为k_m.o)
+3. 生成&lt;module&gt;.mod文件,列出了初步的.o文件,(如k_m1.o k_m2.o)
+4. modules.order:列出所有的模块(k_m.ko)</p></li>
+<li><p>第二步
+1. 查找所有在modules.order中列出的模块</p></li>
+<li><p>第三步:修改模块ELF节中的信息,包含以下几个方面:与.mod.c相关
+1. Version magic(include/linux/vermagic.h来获取细节)</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Kernel release</p></li>
+<li><p>SMP is CONFIG_SMP</p></li>
+<li><p>PREEMPT is CONFIG_PREEMPT[_RT]</p></li>
+<li><p>GCC Version</p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Module info
+1. Module version(MODULE_VERSION)
+2. Module alias’es(MODULE_ALIAS)
+3. Module license(MODULE_LICENSE)
+4. 参考include/linux/module.h来获取更多哦细节</p></li>
+</ol>
+</li>
+<li><p>第四步:仅用于允许外部模块中的模块版本控制，其中每个模块的 CRC 从 Module.symvers 文件中检索</p></li>
+<li><p>Makefile.modpost参数设置:</p></li>
+</ol>
+<blockquote>
+<div><p>KBUILD_MODPOST_WARN:可以设置以避免在最终模块链接阶段出现未定义符号时出错.
+KBUILD_MODPOST_NOFINAL:可以设置用于忽略最后的模块链接.</p>
+</div></blockquote>
+<p>目前为止,我们完成了第一步,已经产生文件:k_m1.o k_m2.o k_m.o k_m.mod modules.order 现在进入第二步.
+Makefile.modpost关键信息:</p>
+<div class="literal-block-wrapper docutils container" id="id23">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span>$(output-symdump): $(MODORDER) $(input-symdump) FORCE
+        $(call if_changed,modpost)
+
+<span class="hll">targets += $(output-symdump)
+</span><span class="hll">
+</span>__modpost: $(output-symdump)
+ifneq ($(KBUILD_MODPOST_NOFINAL),1)
+        $(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modfinal :这一步通常情况下是要执行的
+endif
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>$(output-symdump)定义:</p>
+<div class="literal-block-wrapper docutils container" id="id24">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span><span class="p">(</span><span class="n">output</span><span class="o">-</span><span class="n">symdump</span><span class="p">)</span><span class="o">:</span> <span class="n">$</span><span class="p">(</span><span class="n">MODORDER</span><span class="p">)</span> <span class="n">$</span><span class="p">(</span><span class="n">input</span><span class="o">-</span><span class="n">symdump</span><span class="p">)</span> <span class="n">FORCE</span>
+        <span class="n">$</span><span class="p">(</span><span class="n">call</span> <span class="n">if_changed</span><span class="p">,</span><span class="n">modpost</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>等价于:</p>
+<div class="literal-block-wrapper docutils container" id="id25">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">Module</span><span class="p">.</span><span class="nl">symvers</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">kmod</span><span class="o">/</span><span class="n">modules</span><span class="p">.</span><span class="n">order</span> <span class="n">Module</span><span class="p">.</span><span class="n">symvers</span>
+        <span class="n">scripts</span><span class="o">/</span><span class="n">mod</span><span class="o">/</span><span class="n">modpost</span> <span class="o">-</span><span class="n">m</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">Module</span><span class="p">.</span><span class="n">symvers</span> <span class="o">-</span><span class="n">e</span> <span class="o">-</span><span class="n">i</span> <span class="n">Module</span><span class="p">.</span><span class="n">symvers</span> <span class="o">-</span><span class="n">T</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">k_m</span><span class="p">.</span><span class="n">o</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ol class="arabic simple">
+<li><p>Module.symvers:内核代码树文件,已经有了</p></li>
+<li><p>/path/kmod/modules.order:第一步中已经产生</p></li>
+<li><p>/path/k_mod/k_m.o: 第一步已经产生</p></li>
+<li><p>Module.symvers由指令 scripts/mod/modpost -m -o /path/k_mod/Module.symvers -e -i Module.symvers -T /path/k_mod/k_m.o产生.执行过程中产生文件 k_m.mod.c (scripts/mod/modpost.c代码段如下:),并产生 /path/k_mod/Module.symvers文件.</p></li>
+</ol>
+<div class="literal-block-wrapper docutils container" id="id26">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id26" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span>                <span class="n">err</span> <span class="o">|=</span> <span class="n">check_modname_len</span><span class="p">(</span><span class="n">mod</span><span class="p">);</span>
+                <span class="n">err</span> <span class="o">|=</span> <span class="n">check_exports</span><span class="p">(</span><span class="n">mod</span><span class="p">);</span>
+
+<span class="hll">                <span class="n">add_header</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="n">mod</span><span class="p">);</span>
+</span><span class="hll">                <span class="n">add_intree_flag</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="o">!</span><span class="n">external_module</span><span class="p">);</span>
+</span>                <span class="n">add_retpoline</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">);</span>
+                <span class="n">add_staging_flag</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="n">mod</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+                <span class="n">err</span> <span class="o">|=</span> <span class="n">add_versions</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="n">mod</span><span class="p">);</span>
+                <span class="n">add_depends</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="n">mod</span><span class="p">);</span>
+                <span class="n">add_moddevtable</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="n">mod</span><span class="p">);</span>
+                <span class="n">add_srcversion</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="n">mod</span><span class="p">);</span>
+
+                <span class="n">sprintf</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&quot;%s.mod.c&quot;</span><span class="p">,</span> <span class="n">mod</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+                <span class="n">write_if_changed</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="n">fname</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</li>
+<li><p>最后一步产生最终的内核模块文件:make -f Makefile.modfinal</p></li>
+</ol>
+<blockquote>
+<div><p>$(MAKE) -f $(srctree)/scripts/Makefile.modfinal,目前已经产生的文件有:k_m1.o k_m2.o k_m.o k_m.mod modules.order   Module.symvers  k_m.mod.c</p>
+<div class="literal-block-wrapper docutils container" id="id27">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span>__modfinal: $(modules)
+        @:
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>等价于</p>
+<div class="literal-block-wrapper docutils container" id="id28">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span>__modfinal:/path/k_mod/k_m.ko
+        @:
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>进一步依赖</p>
+<div class="literal-block-wrapper docutils container" id="id29">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span><span class="o">:</span> <span class="o">%</span><span class="p">.</span><span class="nl">ko</span><span class="p">:</span> <span class="o">%</span><span class="p">.</span><span class="n">o</span> <span class="o">%</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="n">o</span> <span class="n">$</span><span class="p">(</span><span class="n">ARCH_MODULE_LDS</span><span class="p">)</span> <span class="n">FORCE</span>
+        <span class="o">+</span><span class="n">$</span><span class="p">(</span><span class="n">call</span> <span class="n">if_changed</span><span class="p">,</span><span class="n">ld_ko_o</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>等价于</p>
+<div class="literal-block-wrapper docutils container" id="id30">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">k_m</span><span class="p">.</span><span class="nl">ko</span><span class="p">:</span> <span class="n">k_m</span><span class="p">.</span><span class="nl">ko</span><span class="p">:</span> <span class="n">k_m</span><span class="p">.</span><span class="n">o</span> <span class="n">k_m</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="n">o</span> <span class="n">scripts</span><span class="o">/</span><span class="n">module</span><span class="p">.</span><span class="n">lds</span> <span class="n">FORCE</span>
+        <span class="n">ld</span> <span class="o">-</span><span class="n">r</span> <span class="o">-</span><span class="n">m</span> <span class="n">elf_x86_64</span> <span class="o">--</span><span class="n">build</span><span class="o">-</span><span class="n">id</span><span class="o">=</span><span class="n">sha1</span> <span class="o">-</span><span class="n">T</span> <span class="n">scripts</span><span class="o">/</span><span class="n">module</span><span class="p">.</span><span class="n">lds</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">rootkit</span><span class="o">/</span><span class="n">demo1</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">k_m</span><span class="p">.</span><span class="n">ko</span> <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">rootkit</span><span class="o">/</span><span class="n">demo1</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">k_m</span><span class="p">.</span><span class="n">o</span> <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">rootkit</span><span class="o">/</span><span class="n">demo1</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">k_m</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="n">o</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>其中k_m.o scripts/module.lds都已经存在,只需要关注k_m.mo.o</p>
+<div class="literal-block-wrapper docutils container" id="id31">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id31" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span>quiet_cmd_cc_o_c = CC [M]  $@
+    cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $&lt;
+</pre></div>
+</td></tr></table></div>
+</div>
+<dl class="simple">
+<dt>%.mod.o: %.mod.c FORCE</dt><dd><p>$(call if_changed_dep,cc_o_c)</p>
+</dd>
+</dl>
+<p>等价于</p>
+<div class="literal-block-wrapper docutils container" id="id32">
+<div class="code-block-caption"><span class="caption-text">代码片段</span><a class="headerlink" href="#id32" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">k_m</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="nl">o</span><span class="p">:</span> <span class="n">k_m</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="n">c</span> <span class="n">FORCE</span>
+        <span class="n">gcc</span> <span class="o">-</span><span class="n">Wp</span><span class="p">,</span><span class="o">-</span><span class="n">MMD</span><span class="p">,</span><span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">rootkit</span><span class="o">/</span><span class="n">demo1</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="p">.</span><span class="n">k_m</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="n">o</span><span class="p">.</span><span class="n">d</span> <span class="o">-</span><span class="n">nostdinc</span> <span class="o">-</span><span class="n">isystem</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">gcc</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="mi">10</span><span class="o">/</span><span class="n">include</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">include</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">generated</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">include</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">uapi</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">generated</span><span class="o">/</span><span class="n">uapi</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">uapi</span> <span class="o">-</span><span class="n">I</span><span class="p">.</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">generated</span><span class="o">/</span><span class="n">uapi</span> <span class="o">-</span><span class="n">include</span> <span class="p">.</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">kconfig</span><span class="p">.</span><span class="n">h</span> <span class="o">-</span><span class="n">include</span> <span class="p">.</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">compiler_types</span><span class="p">.</span><span class="n">h</span> <span class="o">-</span><span class="n">D__KERNEL__</span> <span class="o">-</span><span class="n">fmacro</span><span class="o">-</span><span class="n">prefix</span><span class="o">-</span><span class="n">map</span><span class="o">=</span><span class="p">.</span><span class="o">/=</span> <span class="o">-</span><span class="n">Wall</span> <span class="o">-</span><span class="n">Wundef</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">strict</span><span class="o">-</span><span class="n">prototypes</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">trigraphs</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">strict</span><span class="o">-</span><span class="n">aliasing</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">common</span> <span class="o">-</span><span class="n">fshort</span><span class="o">-</span><span class="n">wchar</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">PIE</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">implicit</span><span class="o">-</span><span class="n">function</span><span class="o">-</span><span class="n">declaration</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">implicit</span><span class="o">-</span><span class="kt">int</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="k">return</span><span class="o">-</span><span class="n">type</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">format</span><span class="o">-</span><span class="n">security</span> <span class="o">-</span><span class="n">std</span><span class="o">=</span><span class="n">gnu89</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">sse</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">mmx</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">sse2</span> <span class="o">-</span><span class="n">mno</span><span class="mi">-3</span><span class="n">dnow</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">avx</span> <span class="o">-</span><span class="n">m64</span> <span class="o">-</span><span class="n">falign</span><span class="o">-</span><span class="n">jumps</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span><span class="n">falign</span><span class="o">-</span><span class="n">loops</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span><span class="n">mno</span><span class="mi">-80387</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">fp</span><span class="o">-</span><span class="n">ret</span><span class="o">-</span><span class="n">in</span><span class="mi">-387</span> <span class="o">-</span><span class="n">mpreferred</span><span class="o">-</span><span class="n">stack</span><span class="o">-</span><span class="n">boundary</span><span class="o">=</span><span class="mi">3</span> <span class="o">-</span><span class="n">mskip</span><span class="o">-</span><span class="n">rax</span><span class="o">-</span><span class="n">setup</span> <span class="o">-</span><span class="n">mtune</span><span class="o">=</span><span class="n">generic</span> <span class="o">-</span><span class="n">mno</span><span class="o">-</span><span class="n">red</span><span class="o">-</span><span class="n">zone</span> <span class="o">-</span><span class="n">mcmodel</span><span class="o">=</span><span class="n">kernel</span> <span class="o">-</span><span class="n">DCONFIG_X86_X32_ABI</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">sign</span><span class="o">-</span><span class="n">compare</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">asynchronous</span><span class="o">-</span><span class="n">unwind</span><span class="o">-</span><span class="n">tables</span> <span class="o">-</span><span class="n">mindirect</span><span class="o">-</span><span class="n">branch</span><span class="o">=</span><span class="n">thunk</span><span class="o">-</span><span class="k">extern</span> <span class="o">-</span><span class="n">mindirect</span><span class="o">-</span><span class="n">branch</span><span class="o">-</span><span class="k">register</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">jump</span><span class="o">-</span><span class="n">tables</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">delete</span><span class="o">-</span><span class="n">null</span><span class="o">-</span><span class="n">pointer</span><span class="o">-</span><span class="n">checks</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">frame</span><span class="o">-</span><span class="n">address</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">format</span><span class="o">-</span><span class="n">truncation</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">format</span><span class="o">-</span><span class="n">overflow</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">address</span><span class="o">-</span><span class="n">of</span><span class="o">-</span><span class="n">packed</span><span class="o">-</span><span class="n">member</span> <span class="o">-</span><span class="n">O2</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">allow</span><span class="o">-</span><span class="n">store</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">races</span> <span class="o">-</span><span class="n">Wframe</span><span class="o">-</span><span class="n">larger</span><span class="o">-</span><span class="n">than</span><span class="o">=</span><span class="mi">2048</span> <span class="o">-</span><span class="n">fstack</span><span class="o">-</span><span class="n">protector</span><span class="o">-</span><span class="n">strong</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">unused</span><span class="o">-</span><span class="n">but</span><span class="o">-</span><span class="n">set</span><span class="o">-</span><span class="n">variable</span> <span class="o">-</span><span class="n">Wimplicit</span><span class="o">-</span><span class="n">fallthrough</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">unused</span><span class="o">-</span><span class="k">const</span><span class="o">-</span><span class="n">variable</span> <span class="o">-</span><span class="n">g</span> <span class="o">-</span><span class="n">pg</span> <span class="o">-</span><span class="n">mrecord</span><span class="o">-</span><span class="n">mcount</span> <span class="o">-</span><span class="n">mfentry</span> <span class="o">-</span><span class="n">DCC_USING_FENTRY</span> <span class="o">-</span><span class="n">Wdeclaration</span><span class="o">-</span><span class="n">after</span><span class="o">-</span><span class="n">statement</span> <span class="o">-</span><span class="n">Wvla</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">pointer</span><span class="o">-</span><span class="n">sign</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">stringop</span><span class="o">-</span><span class="n">truncation</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">zero</span><span class="o">-</span><span class="n">length</span><span class="o">-</span><span class="n">bounds</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">array</span><span class="o">-</span><span class="n">bounds</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">stringop</span><span class="o">-</span><span class="n">overflow</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="kr">restrict</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">maybe</span><span class="o">-</span><span class="n">uninitialized</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">strict</span><span class="o">-</span><span class="n">overflow</span> <span class="o">-</span><span class="n">fno</span><span class="o">-</span><span class="n">stack</span><span class="o">-</span><span class="n">check</span> <span class="o">-</span><span class="n">fconserve</span><span class="o">-</span><span class="n">stack</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">date</span><span class="o">-</span><span class="n">time</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">incompatible</span><span class="o">-</span><span class="n">pointer</span><span class="o">-</span><span class="n">types</span> <span class="o">-</span><span class="n">Werror</span><span class="o">=</span><span class="n">designated</span><span class="o">-</span><span class="n">init</span> <span class="o">-</span><span class="n">fcf</span><span class="o">-</span><span class="n">protection</span><span class="o">=</span><span class="n">none</span> <span class="o">-</span><span class="n">Wno</span><span class="o">-</span><span class="n">packed</span><span class="o">-</span><span class="n">not</span><span class="o">-</span><span class="n">aligned</span> <span class="o">-</span><span class="n">DMODULE</span> <span class="o">-</span><span class="n">DKBUILD_BASENAME</span><span class="o">=</span><span class="s">&quot;k_m.mod&quot;</span> <span class="o">-</span><span class="n">DKBUILD_MODNAME</span><span class="o">=</span><span class="s">&quot;k_m&quot;</span> <span class="o">-</span><span class="n">c</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">rootkit</span><span class="o">/</span><span class="n">demo1</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">k_m</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="n">o</span> <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">rootkit</span><span class="o">/</span><span class="n">demo1</span><span class="o">/</span><span class="n">k_mod</span><span class="o">/</span><span class="n">k_m</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="n">c</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>至此,内核模块编译完成,有效文件包括:k_m1.o k_m2.o k_m.o k_m.mod modules.order   Module.symvers  k_m.mod.c k_m.mod.o k_m.ko</p>
+</div></blockquote>
+</li>
+<li><p>编译流程图</p></li>
+</ol>
+<img alt="../../_images/module_make.svg" class="align-center" src="../../_images/module_make.svg" /><p>总结</p>
+<blockquote>
+<div><p>本文对内核模块的编译过程进行流程性说明，下一章针对符号、认证、调试等信息的处理细节进行描述，会对内核模块的二进制格式进行更深入分析。</p>
+</div></blockquote>
+</div>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>构建模块过程中的的符号处理<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>demo 源文件</p>
+<p>k_m1.c</p>
+</div></blockquote>
+<div class="literal-block-wrapper docutils container" id="id33">
+<div class="code-block-caption"><span class="caption-text">k_m2.c</span><a class="headerlink" href="#id33" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">obj</span><span class="o">-</span><span class="nl">m</span> <span class="p">:</span><span class="o">=</span> <span class="n">k_m</span><span class="p">.</span><span class="n">o</span>
+<span class="n">k_m</span><span class="o">-</span><span class="nl">m</span> <span class="p">:</span><span class="o">=</span> <span class="n">k_m1</span><span class="p">.</span><span class="n">o</span> <span class="n">k_m2</span><span class="p">.</span><span class="n">o</span>
+        <span class="nl">KDIR</span><span class="p">:</span><span class="o">=/</span><span class="n">lib</span><span class="o">/</span><span class="n">modules</span><span class="o">/</span><span class="n">$</span><span class="p">(</span><span class="n">shell</span> <span class="n">uname</span> <span class="o">-</span><span class="n">r</span><span class="p">)</span><span class="o">/</span><span class="n">build</span>
+<span class="hll">        <span class="nl">PWD</span><span class="p">:</span><span class="o">=</span><span class="n">$</span><span class="p">(</span><span class="n">shell</span> <span class="n">pwd</span><span class="p">)</span>
+</span><span class="hll"><span class="k">default</span><span class="o">:</span>
+</span>        <span class="n">$</span><span class="p">(</span><span class="n">MAKE</span><span class="p">)</span> <span class="o">-</span><span class="n">C</span> <span class="n">$</span><span class="p">(</span><span class="n">KDIR</span><span class="p">)</span> <span class="n">M</span><span class="o">=</span><span class="n">$</span><span class="p">(</span><span class="n">PWD</span><span class="p">)</span> <span class="n">modules</span>
+<span class="nl">clean</span><span class="p">:</span>
+        <span class="n">$</span><span class="p">(</span><span class="n">MAKE</span><span class="p">)</span> <span class="o">-</span><span class="n">C</span> <span class="n">$</span><span class="p">(</span><span class="n">KDIR</span><span class="p">)</span> <span class="n">M</span><span class="o">=</span><span class="n">$</span><span class="p">(</span><span class="n">PWD</span><span class="p">)</span> <span class="n">clean</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>重点步骤</p>
+<ul class="simple">
+<li><p>k_m1.c/k_m2.c –&gt; k_m1.o/k_m2.o:</p></li>
+</ul>
+<ul>
+<li><p>k_m.o –&gt; Module.symvers + k_m.mod.c:输入文件:k_m.o,Module.symvers;输出文件:/path/k_mod/Module.symvers, k_m.mod.c</p>
+<p>modpost.c 代码分析(根据指令:scripts/mod/modpost -m -o /path/k_mod/Module.symvers -e -i Module.symvers -T  -)进行</p>
+<p>Module.symvers:</p>
+</li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id34">
+<div class="code-block-caption"><span class="caption-text">符号结构</span><a class="headerlink" href="#id34" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">buffer</span> <span class="p">{</span>
+        <span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">pos</span><span class="p">;</span>
+<span class="hll">        <span class="kt">int</span> <span class="n">size</span><span class="p">;</span>
+</span><span class="hll"><span class="p">};</span>
+</span><span class="k">struct</span> <span class="nc">symbol</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">symbol</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">module</span> <span class="o">*</span><span class="n">module</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">crc</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">crc_valid</span><span class="p">;</span>
+        <span class="kt">char</span> <span class="o">*</span><span class="n">namespace</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="nl">weak</span><span class="p">:</span><span class="mi">1</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="nl">is_static</span><span class="p">:</span><span class="mi">1</span><span class="p">;</span>  <span class="cm">/* 1 if symbol is not global */</span>
+        <span class="k">enum</span> <span class="n">export</span>  <span class="n">export</span><span class="p">;</span>       <span class="cm">/* Type of export */</span>
+        <span class="kt">char</span> <span class="n">name</span><span class="p">[];</span>
+<span class="p">};</span>
+<span class="k">enum</span> <span class="n">export</span> <span class="p">{</span>
+        <span class="n">export_plain</span><span class="p">,</span>      <span class="n">export_unused</span><span class="p">,</span>     <span class="n">export_gpl</span><span class="p">,</span>
+        <span class="n">export_unused_gpl</span><span class="p">,</span> <span class="n">export_gpl_future</span><span class="p">,</span> <span class="n">export_unknown</span>
+<span class="p">};</span>
+<span class="k">struct</span> <span class="nc">module</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">module</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">gpl_compatible</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">symbol</span> <span class="o">*</span><span class="n">unres</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">from_dump</span><span class="p">;</span>  <span class="cm">/* 1 if module was loaded from *.symvers */</span>
+        <span class="kt">int</span> <span class="n">is_vmlinux</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">seen</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">has_init</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">has_cleanup</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">buffer</span> <span class="n">dev_table_buf</span><span class="p">;</span>
+        <span class="kt">char</span>         <span class="n">srcversion</span><span class="p">[</span><span class="mi">25</span><span class="p">];</span>
+        <span class="c1">// Missing namespace dependencies</span>
+        <span class="k">struct</span> <span class="nc">namespace_list</span> <span class="o">*</span><span class="n">missing_namespaces</span><span class="p">;</span>
+        <span class="c1">// Actual imported namespaces</span>
+        <span class="k">struct</span> <span class="nc">namespace_list</span> <span class="o">*</span><span class="n">imported_namespaces</span><span class="p">;</span>
+        <span class="kt">char</span> <span class="n">name</span><span class="p">[];</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nc">elf_info</span> <span class="p">{</span>
+        <span class="kt">size_t</span> <span class="n">size</span><span class="p">;</span>
+        <span class="n">Elf_Ehdr</span>     <span class="o">*</span><span class="n">hdr</span><span class="p">;</span>
+        <span class="n">Elf_Shdr</span>     <span class="o">*</span><span class="n">sechdrs</span><span class="p">;</span>
+        <span class="n">Elf_Sym</span>      <span class="o">*</span><span class="n">symtab_start</span><span class="p">;</span>
+        <span class="n">Elf_Sym</span>      <span class="o">*</span><span class="n">symtab_stop</span><span class="p">;</span>
+        <span class="n">Elf_Section</span>  <span class="n">export_sec</span><span class="p">;</span>
+        <span class="n">Elf_Section</span>  <span class="n">export_unused_sec</span><span class="p">;</span>
+        <span class="n">Elf_Section</span>  <span class="n">export_gpl_sec</span><span class="p">;</span>
+        <span class="n">Elf_Section</span>  <span class="n">export_unused_gpl_sec</span><span class="p">;</span>
+        <span class="n">Elf_Section</span>  <span class="n">export_gpl_future_sec</span><span class="p">;</span>
+        <span class="kt">char</span>         <span class="o">*</span><span class="n">strtab</span><span class="p">;</span>
+        <span class="kt">char</span>         <span class="o">*</span><span class="n">modinfo</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">modinfo_len</span><span class="p">;</span>
+
+        <span class="cm">/* support for 32bit section numbers */</span>
+
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">num_sections</span><span class="p">;</span> <span class="cm">/* max_secindex + 1 */</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">secindex_strings</span><span class="p">;</span>
+        <span class="cm">/* if Nth symbol table entry has .st_shndx = SHN_XINDEX,</span>
+<span class="cm">        * take shndx from symtab_shndx_start[N] instead */</span>
+        <span class="n">Elf32_Word</span>   <span class="o">*</span><span class="n">symtab_shndx_start</span><span class="p">;</span>
+        <span class="n">Elf32_Word</span>   <span class="o">*</span><span class="n">symtab_shndx_stop</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>流程图:</p>
+<p>重要过程描述:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>过程分析：</p>
+<ol class="arabic simple">
+<li><p>读取kernelsrc/Module.symvers;</p></li>
+<li><p>读取并path/k_mod/k_m.o，并对其文件中的节进行解析存储;</p></li>
+<li><p>根据第2步对符号进行校验（调用符号是否可用，借助第1步读取到的信息）；</p></li>
+<li><p>根据1,2两步生成的关于外部符号信息生成/path/k_mod/Module.symvers文件：</p></li>
+<li><p>如果有其他内核模块编译需要用到当前模块导出的符号，则需要第4步生成的文件。</p></li>
+</ol>
+</li>
+<li><p>k_m.mod.c：</p></li>
+</ul>
+</div></blockquote>
+<div class="section" id="k-m-mod-c-k-m-mod-o">
+<h3>k_m.mod.c –&gt; k_m.mod.o:<a class="headerlink" href="#k-m-mod-c-k-m-mod-o" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="k-m-o-k-m-mod-o-k-m-ko">
+<h3>k_m.o + k_m.mod.o –&gt; k_m.ko<a class="headerlink" href="#k-m-o-k-m-mod-o-k-m-ko" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="k-m-ko">
+<h3>k_m.ko二进制格式分析<a class="headerlink" href="#k-m-ko" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id35">
+<div class="code-block-caption"><span class="caption-text">k_m.mod.c</span><a class="headerlink" href="#id35" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td><td class="code"><div class="highlight"><pre><span></span>ELF 头：
+        Magic：  7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+        类别:                              ELF64
+<span class="hll">        数据:                              2 补码，小端序 (little endian)
+</span><span class="hll">        Version:                           1 (current)
+</span>        OS/ABI:                            UNIX - System V
+        ABI 版本:                          0
+        类型:                              REL (可重定位文件)
+        系统架构:                          Advanced Micro Devices X86-64
+        版本:                              0x1
+        入口点地址：              0x0
+        程序头起点：              0 (bytes into file)
+        Start of section headers:          256352 (bytes into file)
+        标志：             0x0
+        Size of this header:               64 (bytes)
+        Size of program headers:           0 (bytes)
+        Number of program headers:         0
+        Size of section headers:           64 (bytes)
+        Number of section headers:         56
+        Section header string table index: 55
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id8">
+<h3>总结<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>到这里生成了完整的ko文件，下一章我们总结模块加载过程。</p>
+</div>
+</div>
+<div class="section" id="id9">
+<h2>内核模块加载过程分析<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id10">
+<h2>内核模块卸载<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id11">
+<h2>内核模块中可调用的函数<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id12">
+<h2>总结<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="kallsyms.html" class="btn btn-neutral float-left" title="linux 内核符号原理:kallsyms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="seccomp.html" class="btn btn-neutral float-right" title="linux 沙箱:seccomp" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

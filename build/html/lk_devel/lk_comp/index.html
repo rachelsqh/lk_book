@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux 内核编程 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="linux 二进制接口" href="comp_api.html" />
+    <link rel="prev" title="FAQ" href="../lk_build/faq.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_build/index.html">linux 内核构建</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">linux 内核编程</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html">linux 二进制接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id47">程序加载和动态链接</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id53">库</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id64">开发环境</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id65">约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id66">linux 约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_base.html">内核编程概述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_as.html">内核汇编</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html">GCC 在linux 内核中的应用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#id3">重要选项</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#c">C实现定义的行为</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#gcov">gcov</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#linux-gcc">linux 内核编程中GCC的高级应用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">内核与ELF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_uwind.html">UWIND</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev-tool/index.html">内核开发工具</a></li>
+<li class="toctree-l3"><a class="reference internal" href="k_prog/index.html">内核编程示例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+      <li>linux 内核编程</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_devel/lk_comp/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux">
+<h1>linux 内核编程<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="comp_api.html">linux 二进制接口</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#debug-frame-dwarf">2. .debug_frame (DWARF) 详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#register-rule-instructions">3、Register Rule Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#row-state-instructions">4、Row State Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#padding-instruction">5、Padding Instruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#cfi-extensions">6、CFI Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#eh-frame">3. .eh_frame 详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#cfi-directives">4. CFI directives 详解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#kernel-unwind">5. kernel unwind 实现</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id2">6. 用户态常见取栈方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id3">函数调用序列</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id6">栈帧</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id7">参数传递</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id9">操作系统接口</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id19">处理器初始化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id26">编码示例</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#dwarf">DWARF定义</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id36">栈展开算法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#elf">ELF头</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id38">节</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id43">符号表</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id44">重定位</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_api.html#id47">程序加载和动态链接</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id48">程序加载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id50">动态链接</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_api.html#id53">库</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#c">C库</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#unwind">Unwind库接口</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id63">汇编代码中的展开</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_api.html#id64">开发环境</a></li>
+<li class="toctree-l1"><a class="reference internal" href="comp_api.html#id65">约定</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#gotip">GOT指针和IP相对寻址</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_api.html#id66">linux 约定</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#id67">32位程序执行</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_api.html#amd64-linux">AMD64 linux 内核约定</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_base.html">内核编程概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="comp_as.html">内核汇编</a></li>
+<li class="toctree-l1"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_ld.html#id1">命令行选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_ld.html#id2">环境变量</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_ld.html#id3">链接脚本</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_ld.html#id54">机器相关的功能</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_ld.html#bfd">BFD</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_gcc.html">GCC 在linux 内核中的应用</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#gccc">Gcc对C语言的支持</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_gcc.html#id3">重要选项</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id4">控制输出种类的选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id5">控制诊断消息格式的选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id6">控制静态分析的选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id7">调试程序选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id8">控制优化的选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id11">程序工具选项(3.12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id22">控制预处理器的选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id23">将选项传递给汇编器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id24">链接选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id25">目录搜索选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id26">代码生成约定的选项:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id33">机器相关的选项</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id34">指定子流程和传递给它们的开关</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id49">影响GCC的环境变量</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id50">使用预编译头</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_gcc.html#c">C实现定义的行为</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id51">表达式中的陈述和声明</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id52">本地声明的标签 （通过实验来理解）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id53">标签作为值</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id64">嵌套函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#gotos">非本地Gotos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id69">构造函数调用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#typeoftype">用typeof引用Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id70">省略操作数的条件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id71">命名地址空间</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id72">长度为零的数组</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id73">没有成员的结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id74">可变长度的数组</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id75">参数可变的宏</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id76">转义换行符的较宽松规则</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#non-lvalue">Non-Lvalue 数组可能带有下标</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id77">无效指针和函数指针的算法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id78">可变参数函数中的指针参数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id81">带有限定符的数组的指针按预期工作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id82">非常数初始化器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id83">复合字面量</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id86">指定的初始化程序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#case">case范围</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id87">转换为联合类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id88">混合声明，标签和代码</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id89">声明函数的属性</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id208">指定变量的属性</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id255">指定类型的属性</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id268">标签属性</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id271">枚举器属性</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id272">语句属性</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id273">属性语法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id284">原型和旧式函数定义</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id291">标识符名称中的美元符号</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#esc">常量中的字符ESC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id292">确定函数，类型或变量的对齐方式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id293">内联函数的速度与宏一样快</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id306">什么时候访问易失对象？</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id323">如何在C代码中使用内联汇编语言</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id326">备用关键字</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id327">不完整的枚举类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id328">函数名称为字符串</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id329">获取函数的返回地址或帧地址</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id332">通过内置函数使用矢量指令</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#offsetof">支持offsetof</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#sync">用于原子内存访问的旧版__sync内置函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id333">内存模型感知原子操作的内置函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id344">内置函数，可通过溢出检查执行算术运算</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id345">x86特定于事务性内存的内存模型扩展</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id346">对象大小检查内置函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id347">GCC提供的其他内置函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id362">特定于目标机器的内置函数</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id367">特定于特定目标计算机的格式检查</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id368">接受的用语说明</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id369">未命名的结构和联合字段</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#id370">线程本地存储</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#b">使用“ 0b”前缀的二进制常量</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#c-linux">C 扩展部分在linux 内核中的应用</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_gcc.html#gcov">gcov</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#gcov-tool">gcov-tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#gcov-dump">gcov-dump</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_gcc.html#lto-dump">lto-dump</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_gcc.html#linux-gcc">linux 内核编程中GCC的高级应用</a></li>
+<li class="toctree-l1"><a class="reference internal" href="comp_elf.html">内核与ELF</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_elf.html#id1">ELF文件格式理解</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_elf.html#id2">ELF文件类型</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_elf.html#elfvmlinux">ELF在vmlinux中的应用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_elf.html#ko">.ko 加载过程分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_elf.html#et-exec-et-dyn-exec">ET_EXEC/ET_DYN 加载过程分析（exec)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_elf.html#id15">ELF文件加载过程总结：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_elf.html#id16">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comp_uwind.html">UWIND</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comp_uwind.html#dwarf">DWARF 规范</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comp_uwind.html#orc">ORC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dev-tool/index.html">内核开发工具</a><ul>
+<li class="toctree-l2"><a class="reference external" href="https://www.kernel.org/doc/html/latest/dev-tools/index.html">https://www.kernel.org/doc/html/latest/dev-tools/index.html</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="k_prog/index.html">内核编程示例</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../lk_build/faq.html" class="btn btn-neutral float-left" title="FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="comp_api.html" class="btn btn-neutral float-right" title="linux 二进制接口" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

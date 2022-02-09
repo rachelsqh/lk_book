@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>其他 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="FAQ" href="faq.html" />
+    <link rel="prev" title="内核模块编译" href="m_build.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核构建</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="k_make.html">内核make目标分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build_base.html">linux内核构建系统</a></li>
+<li class="toctree-l3"><a class="reference internal" href="k_build.html">Kconfig配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="m_build.html">内核模块编译</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">其他</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">导出头文件供用户空间使用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">递归问题</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">可重现的构建</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gcc">GCC插件基础</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#clang-llvm">Clang/LLVM构建</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_comp/index.html">linux 内核编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="index.html">linux 内核构建</a> &raquo;</li>
+      <li>其他</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_devel/lk_build/k_misc.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>其他<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id2">
+<h2>导出头文件供用户空间使用<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>“make headers_install”命令以适合用户空间程序使用的形式导出内核的头文件。</p>
+<p>linux 内核导出的头文件描述了试图使用内核服务的用户空间程序的 API。系统的 C 库（例如 glibc 或 uClibc）使用这些内核头文件来定义可用的系统调用，以及与这些系统调用一起使用的常量和结构。C 库的头文件包括来自“linux”子目录的内核头文件。系统的 libc 头文件通常安装在默认位置 /usr/include 中，而内核头文件则安装在该位置下的子目录中（最值得注意的是 /usr/include/linux 和 /usr/include/asm）。</p>
+<p>内核标头向后兼容，但不向前兼容。这意味着使用旧内核头文件针对 C 库构建的程序应该在新内核上运行（尽管它可能无法访问新功能），但针对新内核头文件构建的程序可能无法在旧内核上运行。</p>
+<p>“make headers_install”命令可以在内核源代码的顶级目录中运行（或使用标准的树外构建）。它需要两个可选参数：</p>
+<p>ARCH 指示要为哪个体系结构生成标头，并且默认为当前体系结构。导出的内核头文件的 linux/asm 目录是特定于平台的，要查看支持的架构的完整列表，请使用以下命令：</p>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>ls -d include/asm-* | sed &#39;s/.*-//&#39;
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>INSTALL_HDR_PATH 指示安装头文件的位置。它默认为“./usr”。</p>
+<p>在 INSTALL_HDR_PATH 中会自动创建一个“include”目录，并且在“INSTALL_HDR_PATH/include”中安装头文件。</p>
+<p>内核标头导出基础结构由 David Woodhouse&lt; dwmw2 &#64; infradead 维护。组织&gt;。</p>
+</div>
+<div class="section" id="id3">
+<h2>递归问题<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://www.kernel.org/doc/html/latest/kbuild/issues.html">https://www.kernel.org/doc/html/latest/kbuild/issues.html</a></p>
+</div>
+<div class="section" id="id4">
+<h2>可重现的构建<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>通常希望使用相同的工具集构建相同的源代码是可重现的，即输出总是完全相同的。这使得验证二进制发行版或嵌入式系统的构建基础设施没有被破坏成为可能。这也可以更容易地验证源或工具更改不会对生成的二进制文件产生任何影响。</p>
+<p>Reproducible Builds 项目有关于这个一般主题的更多信息。本文档涵盖了构建内核可能无法重现的各种原因，以及如何避免这些原因。</p>
+<div class="section" id="id5">
+<h3>时间戳<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>内核在三个地方嵌入了时间戳：</p>
+<ul class="simple">
+<li><p>公开uname()并包含在 其中的版本字符串/proc/version</p></li>
+<li><p>嵌入式 initramfs 中的文件时间戳</p></li>
+<li><p>如果启用 via CONFIG_IKHEADERS，则嵌入在内核或相应模块中的内核头文件的文件时间戳，通过/sys/kernel/kheaders.tar.xz,默认情况下，时间戳是当前时间，在 kheaders各种文件的修改时间的情况下。这必须使用KBUILD_BUILD_TIMESTAMP变量覆盖。如果您是从 git 提交构建的，则可以使用其提交日期。</p></li>
+</ul>
+<p>内核并没有使用__DATE__和__TIME__宏，并启用警告如果使用它们。如果您合并使用这些的外部代码，则必须通过设置SOURCE_DATE_EPOCH环境变量来覆盖它们对应的时间戳。</p>
+</div>
+<div class="section" id="user-host">
+<h3>User, host<a class="headerlink" href="#user-host" title="Permalink to this headline">¶</a></h3>
+<p>内核将构建用户名和主机名嵌入到 /proc/version.这些必须使用KBUILD_BUILD_USER 和 KBUILD_BUILD_HOST变量覆盖 。如果你是从 git commit 构建的，你可以使用它的提交者地址。</p>
+</div>
+<div class="section" id="id6">
+<h3>绝对文件名<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>当内核在树外构建时，调试信息可能包括源文件的绝对文件名。这必须通过-fdebug-prefix-map在KCFLAGS变量中包含选项来覆盖。</p>
+<p>根据所使用的编译器，__FILE__宏还可以在树外构建中扩展为绝对文件名。-fmacro-prefix-map如果支持，Kbuild 会自动使用该选项来防止这种情况发生。</p>
+<p>Reproducible Builds 网站有更多关于这些 前缀映射选项的信息。</p>
+</div>
+<div class="section" id="id7">
+<h3>源包中生成的文件<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>子目录下某些程序的构建过程tools/ 不完全支持树外构建。这可能会导致稍后使用例如包含生成的文件的源包构建。您应该通过运行或在构建源代码包之前确保源代码树是原始的。make rpm-pkgmake mrpropergit clean -d -f -x</p>
+</div>
+<div class="section" id="id8">
+<h3>模块签名<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>如果启用CONFIG_MODULE_SIG_ALL，则默认行为是为每个构建生成不同的临时密钥，从而导致模块无法重现。但是，在您的源代码中包含签名密钥可能会破坏签名模块的目的。</p>
+<p>一种方法是划分构建过程，以便将不可重现的部分视为源：</p>
+<ol class="arabic simple">
+<li><p>生成持久签名密钥。将密钥的证书添加到内核源。</p></li>
+<li><p>将CONFIG_SYSTEM_TRUSTED_KEYS符号设置为包含签名密钥的证书，设置CONFIG_MODULE_SIG_KEY为空字符串，然后禁用CONFIG_MODULE_SIG_ALL。构建内核和模块。</p></li>
+<li><p>为模块创建分离的签名，并将它们作为源发布。</p></li>
+<li><p>执行附加模块签名的第二次构建。它可以重建模块或使用步骤 2 的输出</p></li>
+</ol>
+</div>
+<div class="section" id="id9">
+<h3>结构随机化<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>如果启用CONFIG_GCC_PLUGIN_RANDSTRUCT，则需要预先生成随机种子， scripts/gcc-plugins/randomize_layout_seed.h以便在重建中使用相同的值。</p>
+</div>
+<div class="section" id="id10">
+<h3>调试信息冲突<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p>这不是不可重现的问题，而是生成的文件过于重现的问题。</p>
+<p>一旦为可重现的构建设置了所有必要的变量，即使对于不同的内核版本，vDSO 的调试信息也可能相同。这可能导致不同内核版本的调试信息包之间的文件冲突。</p>
+<p>为避免这种情况，您可以通过在其中包含任意字符串“salt”来使不同内核版本的 vDSO 不同。这是由 Kconfig 符号指定的CONFIG_BUILD_SALT。</p>
+</div>
+</div>
+<div class="section" id="gcc">
+<h2>GCC插件基础<a class="headerlink" href="#gcc" title="Permalink to this headline">¶</a></h2>
+<p>GCC 插件是为编译器提供额外功能的可加载模块1。它们对于运行时检测和静态分析很有用。我们可以在编译期间通过回调2、GIMPLE 3、IPA 4和 RTL pass 5分析、更改和添加更多代码。</p>
+<p>内核的 GCC 插件基础结构支持构建树外模块、交叉编译和在单独的目录中构建。插件源文件必须可由 C++ 编译器编译。</p>
+<p>目前 GCC 插件基础架构仅支持某些架构。Grep “select HAVE_GCC_PLUGINS” 找出哪些架构支持 GCC 插件。</p>
+<p>该基础架构是从 grsecurity 6和 PaX 7移植而来的。</p>
+<div class="section" id="id11">
+<h3>目的<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<p>GCC 插件旨在提供一个试验潜在编译器功能的地方，这些功能既不在 GCC 也不在 Clang 上游。一旦它们的实用性得到证明，目标就是将该特性上游化到 GCC（和 Clang）中，然后一旦该特性在所有受支持的 GCC 版本中可用，最终将它们从内核中删除。</p>
+<p>具体来说，新插件应该只实现不支持上游编译器的功能（在 GCC 或 Clang 中）。</p>
+<p>当 Clang 中存在某个功能但 GCC 不存在时，应努力将该功能带到上游 GCC（而不仅仅是作为特定于内核的 GCC 插件），以便整个生态系统都可以从中受益。</p>
+<p>同样，即使 GCC 插件提供的功能在 Clang中不存在，但该功能被证明是有用的，也应该努力将功能上游到 GCC（和 Clang）。</p>
+<p>在上游 GCC 中提供某个功能后，该插件将无法用于相应的 GCC 版本（及更高版本）。一旦所有内核支持的 GCC 版本都提供了该功能，该插件将从内核中删除。</p>
+</div>
+<div class="section" id="id12">
+<h3>文件<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>$(src)/scripts/gcc-plugins:这是 GCC 插件的目录。</p></li>
+<li><p>$(src)/scripts/gcc-plugins/gcc-common.h:这是 GCC 插件的兼容性标头。它应该始终包含在其中，而不是单独的 gcc 标头。</p></li>
+<li><p>$(src)/scripts/gcc-plugins/gcc-generate-gimple-pass.h, $(src)/scripts/gcc-plugins/gcc-generate-ipa-pass.h, $(src)/scripts/gcc -plugins/gcc-generate-simple_ipa-pass.h, $(src)/scripts/gcc-plugins/gcc-generate-rtl-pass.h:这些标头自动生成 GIMPLE、SIMPLE_IPA、IPA 和 RTL 通道的注册结构。他们应该更喜欢手工创建结构。</p></li>
+</ul>
+</div>
+<div class="section" id="id13">
+<h3>用法<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<p>您必须为您的 gcc 版本安装 gcc 插件头文件，例如，在 Ubuntu 上安装 gcc-10：</p>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">gcc</span><span class="mi">-10</span><span class="o">-</span><span class="n">plugin</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>或者在 Fedora 上：</p>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">dnf</span> <span class="n">install</span> <span class="n">gcc</span><span class="o">-</span><span class="n">plugin</span><span class="o">-</span><span class="n">devel</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>启用 GCC 插件基础结构和您要在内核配置中使用的一些插件：</p>
+<div class="literal-block-wrapper docutils container" id="id22">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">CONFIG_GCC_PLUGINS</span><span class="o">=</span><span class="n">y</span>
+<span class="n">CONFIG_GCC_PLUGIN_LATENT_ENTROPY</span><span class="o">=</span><span class="n">y</span>
+<span class="p">...</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>要编译包含插件的最小工具集：</p>
+<div class="literal-block-wrapper docutils container" id="id23">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">scripts</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>或者只是运行内核 make 并使用圈复杂度 GCC 插件编译整个内核。</p>
+</div>
+<div class="section" id="id14">
+<h3>如何添加新的GCC插件<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p>GCC 插件位于 scripts/gcc-plugins/ 中。您需要将插件源文件放在 scripts/gcc-plugins/ 下。不支持创建子目录。它必须添加到 scripts/gcc-plugins/Makefile、scripts/Makefile.gcc-plugins 和相关的 Kconfig 文件中。</p>
+</div>
+</div>
+<div class="section" id="clang-llvm">
+<h2>Clang/LLVM构建<a class="headerlink" href="#clang-llvm" title="Permalink to this headline">¶</a></h2>
+<p>本文档介绍如何使用 Clang 和 LLVM 实用程序构建 Linux 内核。</p>
+<div class="section" id="id15">
+<h3>概述<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<p>Linux 内核传统上一直使用 GNU 工具链（例如 GCC 和 binutils）进行编译。正在进行的工作允许将Clang和LLVM实用程序用作可行的替代品。Android、ChromeOS和OpenMandriva等发行版使用 Clang 构建的内核。 LLVM 是根据 C++ 对象实现的工具链组件的集合。Clang 是 LLVM 的前端，支持内核所需的 C 和 GNU C 扩展，发音为“klang”，而不是“see-lang”。</p>
+</div>
+<div class="section" id="clang">
+<h3>Clang<a class="headerlink" href="#clang" title="Permalink to this headline">¶</a></h3>
+<p>使用的编译器可以通过CC=命令行参数换出到make. CC=应在选择配置和构建期间设置。</p>
+<div class="literal-block-wrapper docutils container" id="id24">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">CC</span><span class="o">=</span><span class="n">clang</span> <span class="n">defconfig</span>
+<span class="n">make</span> <span class="n">CC</span><span class="o">=</span><span class="n">clang</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id16">
+<h3>交叉编译<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<p>单个 Clang 编译器二进制文件通常包含所有支持的后端，这有助于简化交叉编译。</p>
+<div class="literal-block-wrapper docutils container" id="id25">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">ARCH</span><span class="o">=</span><span class="n">arm64</span> <span class="n">CC</span><span class="o">=</span><span class="n">clang</span> <span class="n">CROSS_COMPILE</span><span class="o">=</span><span class="n">aarch64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">-</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>CROSS_COMPILE不用于 Clang 编译器二进制文件的前缀，而是 CROSS_COMPILE用于设置命令行标志：–target=&lt;triple&gt;. 例如：</p>
+<div class="literal-block-wrapper docutils container" id="id26">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id26" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">clang</span> <span class="o">--</span><span class="n">target</span><span class="o">=</span><span class="n">aarch64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span> <span class="n">foo</span><span class="p">.</span><span class="n">c</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="llvm">
+<h3>LLVM 实用程序<a class="headerlink" href="#llvm" title="Permalink to this headline">¶</a></h3>
+<p>LLVM 可以替代 GNU binutils 实用程序。Kbuild 支持LLVM=1 启用它们。</p>
+<div class="literal-block-wrapper docutils container" id="id27">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">LLVM</span><span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>它们可以单独启用。完整的参数列表：</p>
+<div class="literal-block-wrapper docutils container" id="id28">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">CC</span><span class="o">=</span><span class="n">clang</span> <span class="n">LD</span><span class="o">=</span><span class="n">ld</span><span class="p">.</span><span class="n">lld</span> <span class="n">AR</span><span class="o">=</span><span class="n">llvm</span><span class="o">-</span><span class="n">ar</span> <span class="n">NM</span><span class="o">=</span><span class="n">llvm</span><span class="o">-</span><span class="n">nm</span> <span class="n">STRIP</span><span class="o">=</span><span class="n">llvm</span><span class="o">-</span><span class="n">strip</span> \
+<span class="n">OBJCOPY</span><span class="o">=</span><span class="n">llvm</span><span class="o">-</span><span class="n">objcopy</span> <span class="n">OBJDUMP</span><span class="o">=</span><span class="n">llvm</span><span class="o">-</span><span class="n">objdump</span> <span class="n">READELF</span><span class="o">=</span><span class="n">llvm</span><span class="o">-</span><span class="n">readelf</span> \
+<span class="n">HOSTCC</span><span class="o">=</span><span class="n">clang</span> <span class="n">HOSTCXX</span><span class="o">=</span><span class="n">clang</span><span class="o">++</span> <span class="n">HOSTAR</span><span class="o">=</span><span class="n">llvm</span><span class="o">-</span><span class="n">ar</span> <span class="n">HOSTLD</span><span class="o">=</span><span class="n">ld</span><span class="p">.</span><span class="n">lld</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>默认情况下启用集成汇编器。你可以通过LLVM_IAS=0禁用它。</p>
+</div>
+<div class="section" id="cross-compile">
+<h3>省略 CROSS_COMPILE<a class="headerlink" href="#cross-compile" title="Permalink to this headline">¶</a></h3>
+<p>如上所述，CROSS_COMPILE用于设置–target=&lt;triple&gt;.</p>
+<p>如果CROSS_COMPILE未指定，–target=&lt;triple&gt;则从 推断ARCH。</p>
+<p>这意味着如果你只使用 LLVM 工具，CROSS_COMPILE就没有必要了。</p>
+<p>例如，交叉编译 arm64 内核：</p>
+<div class="literal-block-wrapper docutils container" id="id29">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">ARCH</span><span class="o">=</span><span class="n">arm64</span> <span class="n">LLVM</span><span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>如果LLVM_IAS=0指定，CROSS_COMPILE也用于派生 –prefix=&lt;path&gt;搜索 GNU 汇编器和链接器。</p>
+<div class="literal-block-wrapper docutils container" id="id30">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">ARCH</span><span class="o">=</span><span class="n">arm64</span> <span class="n">LLVM</span><span class="o">=</span><span class="mi">1</span> <span class="n">LLVM_IAS</span><span class="o">=</span><span class="mi">0</span> <span class="n">CROSS_COMPILE</span><span class="o">=</span><span class="n">aarch64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">-</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id17">
+<h3>支持的架构<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<p>可通过产寻LLVM相关版本文档进行确认。</p>
+</div>
+<div class="section" id="id18">
+<h3>参考<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://www.kernel.org/doc/html/latest/kbuild/llvm.html">https://www.kernel.org/doc/html/latest/kbuild/llvm.html</a></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="m_build.html" class="btn btn-neutral float-left" title="内核模块编译" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="faq.html" class="btn btn-neutral float-right" title="FAQ" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

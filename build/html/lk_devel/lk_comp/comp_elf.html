@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内核与ELF &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="UWIND" href="comp_uwind.html" />
+    <link rel="prev" title="GCC 在linux 内核中的应用" href="comp_gcc.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_build/index.html">linux 内核构建</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核编程</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html">linux 二进制接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id47">程序加载和动态链接</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id53">库</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id64">开发环境</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id65">约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id66">linux 约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_base.html">内核编程概述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_as.html">内核汇编</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html">GCC 在linux 内核中的应用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#id3">重要选项</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#c">C实现定义的行为</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#gcov">gcov</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#linux-gcc">linux 内核编程中GCC的高级应用</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">内核与ELF</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">ELF文件格式理解</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">ELF文件类型</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#elfvmlinux">ELF在vmlinux中的应用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ko">.ko 加载过程分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#et-exec-et-dyn-exec">ET_EXEC/ET_DYN 加载过程分析（exec)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id15">ELF文件加载过程总结：</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id16">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="comp_uwind.html">UWIND</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dev-tool/index.html">内核开发工具</a></li>
+<li class="toctree-l3"><a class="reference internal" href="k_prog/index.html">内核编程示例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="index.html">linux 内核编程</a> &raquo;</li>
+      <li>内核与ELF</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_devel/lk_comp/comp_elf.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="elf">
+<h1>内核与ELF<a class="headerlink" href="#elf" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>ELF文件格式理解<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>不对规范进行说明，
+不详细介绍，只介绍我们能用的，方便我们理解的，目的在于总结，在于一目了然的理解。</p>
+<p>可执行文件格式更多的给程序加载软件一个程序解析指南。并不是运行时的内存拓扑，而是加载软件根据ELF文件来解析并放置二进制程序，生成内存镜像。</p>
+<p>结合对ELF文件的理解，对编译过程理解，对链接过程理解，加上对架构级相关的物理地址、线性地址和虚拟地址的理解，才能更深入透彻地理解linux中的高级编程部分。</p>
+<p>我们看内核头文件定义：readelf -h vmlinux</p>
+<div class="literal-block-wrapper docutils container" id="id17">
+<div class="code-block-caption"><span class="caption-text">make 调用自定义函数</span><a class="headerlink" href="#id17" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td><td class="code"><div class="highlight"><pre><span></span>ELF 头：
+  Magic：  7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+  类别:                              ELF64
+<span class="hll">  数据:                              2 补码，小端序 (little endian)
+</span><span class="hll">  Version:                           1 (current)
+</span>  OS/ABI:                            UNIX - System V
+  ABI 版本:                          0
+  类型:                              EXEC (可执行文件)
+  系统架构:                          Advanced Micro Devices X86-64
+  版本:                              0x1
+  入口点地址：              0x1000000
+  程序头起点：              64 (bytes into file)
+  Start of section headers:          636238104 (bytes into file)
+  标志：             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         5
+  Size of section headers:           64 (bytes)
+  Number of section headers:         80
+  Section header string table index: 79
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>下面总结时会动点对ELF64,EXEC，X86-64进行总结说明。
+我们根据这个信息，看其拓扑。(/usr/include/elf.h)</p>
+<p>ELF头：</p>
+<p>section:Section header.</p>
+<div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-text">Section header.</span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">typedef</span> <span class="k">struct</span>
+<span class="p">{</span>
+ <span class="n">Elf64_Word</span>     <span class="n">sh_name</span><span class="p">;</span>                <span class="cm">/* Section name (string tbl index) */</span>
+<span class="hll"> <span class="n">Elf64_Word</span>     <span class="n">sh_type</span><span class="p">;</span>                <span class="cm">/* Section type */</span>
+</span><span class="hll"> <span class="n">Elf64_Xword</span>    <span class="n">sh_flags</span><span class="p">;</span>               <span class="cm">/* Section flags */</span>
+</span> <span class="n">Elf64_Addr</span>     <span class="n">sh_addr</span><span class="p">;</span>                <span class="cm">/* Section virtual addr at execution：执行时的虚拟地址，程序加载后，在内存中的虚拟地址，可以作为引用进行使用 */</span>
+ <span class="n">Elf64_Off</span>      <span class="n">sh_offset</span><span class="p">;</span>              <span class="cm">/* Section file offset：在文件中的索引，与执行镜像无关 */</span>
+ <span class="n">Elf64_Xword</span>    <span class="n">sh_size</span><span class="p">;</span>                <span class="cm">/* Section size in bytes */</span>
+ <span class="n">Elf64_Word</span>     <span class="n">sh_link</span><span class="p">;</span>                <span class="cm">/* Link to another section */</span>
+ <span class="n">Elf64_Word</span>     <span class="n">sh_info</span><span class="p">;</span>                <span class="cm">/* Additional section information */</span>
+ <span class="n">Elf64_Xword</span>    <span class="n">sh_addralign</span><span class="p">;</span>           <span class="cm">/* Section alignment */</span>
+ <span class="n">Elf64_Xword</span>    <span class="n">sh_entsize</span><span class="p">;</span>             <span class="cm">/* Entry size if section holds table */</span>
+<span class="p">}</span> <span class="n">Elf64_Shdr</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>header:</p>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-text">Program segment header.</span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">typedef</span> <span class="k">struct</span>
+<span class="p">{</span>
+  <span class="n">Elf64_Word</span>    <span class="n">p_type</span><span class="p">;</span>                 <span class="cm">/* Segment type */</span>
+<span class="hll">  <span class="n">Elf64_Word</span>    <span class="n">p_flags</span><span class="p">;</span>                <span class="cm">/* Segment flags */</span>
+</span><span class="hll">  <span class="n">Elf64_Off</span>     <span class="n">p_offset</span><span class="p">;</span>               <span class="cm">/* Segment file offset */</span>
+</span>  <span class="n">Elf64_Addr</span>    <span class="n">p_vaddr</span><span class="p">;</span>                <span class="cm">/* Segment virtual address：执行时的虚拟地址，程序加载后，在内存中的虚拟地址 */</span>
+  <span class="n">Elf64_Addr</span>    <span class="n">p_paddr</span><span class="p">;</span>                <span class="cm">/* Segment physical address：除非特殊情况，平常可不予关注 */</span>
+  <span class="n">Elf64_Xword</span>   <span class="n">p_filesz</span><span class="p">;</span>               <span class="cm">/* Segment size in file */</span>
+  <span class="n">Elf64_Xword</span>   <span class="n">p_memsz</span><span class="p">;</span>                <span class="cm">/* Segment size in memory */</span>
+  <span class="n">Elf64_Xword</span>   <span class="n">p_align</span><span class="p">;</span>                <span class="cm">/* Segment alignment */</span>
+<span class="p">}</span> <span class="n">Elf64_Phdr</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>节是存储，可当结构，细粒度；
+段是属性相同的节的集合；</p>
+</div>
+<div class="section" id="id2">
+<h2>ELF文件类型<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define ET_NONE         0               </span><span class="cm">/* No file type */</span><span class="cp"></span>
+<span class="cp">#define ET_REL          1               </span><span class="cm">/* Relocatable file */</span><span class="cp"></span>
+<span class="cp">#define ET_EXEC         2               </span><span class="cm">/* Executable file */</span><span class="cp"></span>
+<span class="hll"><span class="cp">#define ET_DYN          3               </span><span class="cm">/* Shared object file */</span><span class="cp"></span>
+</span><span class="hll"><span class="cp">#define ET_CORE         4               </span><span class="cm">/* Core file */</span><span class="cp"></span>
+</span><span class="cp">#define ET_NUM          5               </span><span class="cm">/* Number of defined types */</span><span class="cp"></span>
+<span class="cp">#define ET_LOOS         0xfe00          </span><span class="cm">/* OS-specific range start */</span><span class="cp"></span>
+<span class="cp">#define ET_HIOS         0xfeff          </span><span class="cm">/* OS-specific range end */</span><span class="cp"></span>
+<span class="cp">#define ET_LOPROC       0xff00          </span><span class="cm">/* Processor-specific range start */</span><span class="cp"></span>
+<span class="cp">#define ET_HIPROC       0xffff          </span><span class="cm">/* Processor-specific range end */</span><span class="cp"></span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>ET_REL: .ko</p></li>
+<li><p>ET_EXEC: vmlinux</p></li>
+<li><p>ET_DYN: .so文件，demo:test:DYN (Position-Independent Executable file)</p></li>
+<li><p>ET_CORE:</p></li>
+</ul>
+</div>
+<div class="section" id="elfvmlinux">
+<h2>ELF在vmlinux中的应用<a class="headerlink" href="#elfvmlinux" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>编译过程中，对符号的处理<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id4">
+<h3>内核加载过程总结<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="ko">
+<h2>.ko 加载过程分析<a class="headerlink" href="#ko" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="et-exec-et-dyn-exec">
+<h2>ET_EXEC/ET_DYN 加载过程分析（exec)<a class="headerlink" href="#et-exec-et-dyn-exec" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="elf-an-c">
+<h3>elf_an.c<a class="headerlink" href="#elf-an-c" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="kt">void</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="hll">        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s:%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">__func__</span><span class="p">,</span><span class="n">__LINE__</span><span class="p">);</span>
+</span><span class="hll"><span class="p">}</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>编译<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id22">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">gcc</span> <span class="o">-</span><span class="n">o</span> <span class="n">elf_an</span> <span class="n">elf_an</span><span class="p">.</span><span class="n">c</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="elf-an">
+<h3>查看elf_an文件头<a class="headerlink" href="#elf-an" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id23">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></div></td><td class="code"><div class="highlight"><pre><span></span>$ readelf -h elf_an
+ELF 头：
+  Magic：  7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+<span class="hll">  类别:                              ELF64
+</span><span class="hll">  数据:                              2 补码，小端序 (little endian)
+</span>  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI 版本:                          0
+  类型:                              DYN (Position-Independent Executable file)
+  系统架构:                          Advanced Micro Devices X86-64
+  版本:                              0x1
+  入口点地址：              0x1050
+  程序头起点：              64 (bytes into file)
+  Start of section headers:          14176 (bytes into file)
+  标志：             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           56 (bytes)
+  Number of program headers:         13
+  Size of section headers:           64 (bytes)
+  Number of section headers:         31
+  Section header string table index: 30
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>查看其依赖库<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id24">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$ldd</span> <span class="n">elf_an</span>
+
+        <span class="n">linux</span><span class="o">-</span><span class="n">vdso</span><span class="p">.</span><span class="n">so</span><span class="mf">.1</span> <span class="p">(</span><span class="mh">0x00007ffcf3f1c000</span><span class="p">)</span>
+<span class="hll">        <span class="n">libc</span><span class="p">.</span><span class="n">so</span><span class="mf">.6</span> <span class="o">=&gt;</span> <span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">libc</span><span class="p">.</span><span class="n">so</span><span class="mf">.6</span> <span class="p">(</span><span class="mh">0x00007f94bb649000</span><span class="p">)</span>
+</span><span class="hll">        <span class="o">/</span><span class="n">lib64</span><span class="o">/</span><span class="n">ld</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">x86</span><span class="mf">-64.</span><span class="n">so</span><span class="mf">.2</span> <span class="p">(</span><span class="mh">0x00007f94bb84a000</span><span class="p">)</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h3>现在我们跟踪其系统调用<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id25">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></div></td><td class="code"><div class="highlight"><pre><span></span>$ strace ./elf_an
+execve(&quot;./elf_an&quot;, [&quot;./elf_an&quot;], 0x7ffd353803d0 /* 60 vars */) = 0
+brk(NULL)                               = 0x55c52ee9f000
+<span class="hll">access(&quot;/etc/ld.so.preload&quot;, R_OK)      = -1 ENOENT (没有那个文件或目录)
+</span><span class="hll">openat(AT_FDCWD, &quot;/etc/ld.so.cache&quot;, O_RDONLY|O_CLOEXEC) = 3
+</span>newfstatat(3, &quot;&quot;, {st_mode=S_IFREG|0644, st_size=198967, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 198967, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f94c812f000
+close(3)                                = 0
+openat(AT_FDCWD, &quot;/lib/x86_64-linux-gnu/libc.so.6&quot;, O_RDONLY|O_CLOEXEC) = 3
+read(3, &quot;\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0&gt;\0\1\0\0\0000y\2\0\0\0\0\0&quot;..., 832) = 832
+pread64(3, &quot;\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0&quot;..., 784, 64) = 784
+pread64(3, &quot;\4\0\0\0\20\0\0\0\5\0\0\0GNU\0\2\200\0\300\4\0\0\0\1\0\0\0\0\0\0\0&quot;, 32, 848) = 32
+pread64(3, &quot;\4\0\0\0\24\0\0\0\3\0\0\0GNU\0\320\276\243\212\v\307^\t\263h8\371\266h\r\350&quot;..., 68, 880) = 68
+newfstatat(3, &quot;&quot;, {st_mode=S_IFREG|0755, st_size=1835120, ...}, AT_EMPTY_PATH) = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f94c812d000
+pread64(3, &quot;\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0&quot;..., 784, 64) = 784
+mmap(NULL, 1868664, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f94c7f64000
+mprotect(0x7f94c7f8a000, 1654784, PROT_NONE) = 0
+mmap(0x7f94c7f8a000, 1343488, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x26000) = 0x7f94c7f8a000
+mmap(0x7f94c80d2000, 307200, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x16e000) = 0x7f94c80d2000
+mmap(0x7f94c811e000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1b9000) = 0x7f94c811e000
+mmap(0x7f94c8124000, 33656, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f94c8124000
+close(3)                                = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f94c7f62000
+arch_prctl(ARCH_SET_FS, 0x7f94c812e580) = 0
+mprotect(0x7f94c811e000, 12288, PROT_READ) = 0
+mprotect(0x55c52d442000, 4096, PROT_READ) = 0
+mprotect(0x7f94c818f000, 8192, PROT_READ) = 0
+munmap(0x7f94c812f000, 198967)          = 0
+newfstatat(1, &quot;&quot;, {st_mode=S_IFCHR|0600, st_rdev=makedev(0x88, 0x9), ...}, AT_EMPTY_PATH) = 0
+brk(NULL)                               = 0x55c52ee9f000
+brk(0x55c52eec0000)                     = 0x55c52eec0000
+write(1, &quot;main:4\n&quot;, 7main:4
+)                 = 7
+exit_group(7)                           = ?
++++ exited with 7 +++
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>过程如下：
+1. execve(“./elf_an”, [“./elf_an”], 0x7ffd353803d0 /* 60 vars <a href="#id8"><span class="problematic" id="id9">*</span></a>/) = 0：</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>可执行文件： ./elf_an;</p></li>
+<li><p>参数argv： [“./elf_an”],如果运行如下指令”./elf_an test”,则此处的argv参数为：execve(“./elf_an”, [“./elf_an”, “test”], 0x7ffe9ea5acf8 /* 25 vars <a href="#id10"><span class="problematic" id="id11">*</span></a>/) = 0</p></li>
+<li><p>envp: 环境变量指针</p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic" start="2">
+<li><p>brk(NULL)：</p></li>
+<li><p>ld.so.preload:</p>
+<div class="literal-block-wrapper docutils container" id="id26">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id26" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">access</span><span class="p">(</span><span class="s">&quot;/etc/ld.so.preload&quot;</span><span class="p">,</span> <span class="n">R_OK</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</li>
+</ol>
+<ol class="arabic simple" start="3">
+<li><p>ld.so.cache:</p></li>
+</ol>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id27">
+<div class="code-block-caption"><span class="caption-text">全映射：长度：198967,地址指针： 0x7f94c812f000</span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">openat</span><span class="p">(</span><span class="n">AT_FDCWD</span><span class="p">,</span> <span class="s">&quot;/etc/ld.so.cache&quot;</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="o">|</span><span class="n">O_CLOEXEC</span><span class="p">)</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">newfstatat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">st_mode</span><span class="o">=</span><span class="n">S_IFREG</span><span class="o">|</span><span class="mo">0644</span><span class="p">,</span> <span class="n">st_size</span><span class="o">=</span><span class="mi">198967</span><span class="p">,</span> <span class="p">...},</span> <span class="n">AT_EMPTY_PATH</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">198967</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="p">,</span> <span class="n">MAP_PRIVATE</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mh">0x7f94c812f000</span>
+<span class="hll"><span class="n">close</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>                                <span class="o">=</span> <span class="mi">0</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li><p>libc.so.6：</p></li>
+</ol>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id28">
+<div class="code-block-caption"><span class="caption-text">全映射：长度</span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">openat</span><span class="p">(</span><span class="n">AT_FDCWD</span><span class="p">,</span> <span class="s">&quot;/lib/x86_64-linux-gnu/libc.so.6&quot;</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="o">|</span><span class="n">O_CLOEXEC</span><span class="p">)</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">read</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\177</span><span class="s">ELF</span><span class="se">\2\1\1\3\0\0\0\0\0\0\0\0\3\0</span><span class="s">&gt;</span><span class="se">\0\1\0\0\000</span><span class="s">0y</span><span class="se">\2\0\0\0\0\0</span><span class="s">&quot;</span><span class="p">...,</span> <span class="mi">832</span><span class="p">)</span> <span class="o">=</span> <span class="mi">832</span>
+<span class="n">pread64</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\6\0\0\0\4\0\0\0</span><span class="s">@</span><span class="se">\0\0\0\0\0\0\0</span><span class="s">@</span><span class="se">\0\0\0\0\0\0\0</span><span class="s">@</span><span class="se">\0\0\0\0\0\0\0</span><span class="s">&quot;</span><span class="p">...,</span> <span class="mi">784</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span> <span class="o">=</span> <span class="mi">784</span>
+<span class="hll"><span class="n">pread64</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\4\0\0\0\20\0\0\0\5\0\0\0</span><span class="s">GNU</span><span class="se">\0\2\200\0\300\4\0\0\0\1\0\0\0\0\0\0\0</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">848</span><span class="p">)</span> <span class="o">=</span> <span class="mi">32</span>
+</span><span class="hll"><span class="n">pread64</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\4\0\0\0\24\0\0\0\3\0\0\0</span><span class="s">GNU</span><span class="se">\0\320\276\243\212\v\307</span><span class="s">^</span><span class="se">\t\263</span><span class="s">h8</span><span class="se">\371\266</span><span class="s">h</span><span class="se">\r\350</span><span class="s">&quot;</span><span class="p">...,</span> <span class="mi">68</span><span class="p">,</span> <span class="mi">880</span><span class="p">)</span> <span class="o">=</span> <span class="mi">68</span>
+</span><span class="n">newfstatat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">st_mode</span><span class="o">=</span><span class="n">S_IFREG</span><span class="o">|</span><span class="mo">0755</span><span class="p">,</span> <span class="n">st_size</span><span class="o">=</span><span class="mi">1835120</span><span class="p">,</span> <span class="p">...},</span> <span class="n">AT_EMPTY_PATH</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">8192</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="o">|</span><span class="n">PROT_WRITE</span><span class="p">,</span> <span class="n">MAP_PRIVATE</span><span class="o">|</span><span class="n">MAP_ANONYMOUS</span><span class="p">,</span> <span class="mi">-1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mh">0x7f94c812d000</span>
+<span class="n">pread64</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\6\0\0\0\4\0\0\0</span><span class="s">@</span><span class="se">\0\0\0\0\0\0\0</span><span class="s">@</span><span class="se">\0\0\0\0\0\0\0</span><span class="s">@</span><span class="se">\0\0\0\0\0\0\0</span><span class="s">&quot;</span><span class="p">...,</span> <span class="mi">784</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span> <span class="o">=</span> <span class="mi">784</span>
+<span class="n">mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">1868664</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="p">,</span> <span class="n">MAP_PRIVATE</span><span class="o">|</span><span class="n">MAP_DENYWRITE</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mh">0x7f94c7f64000</span>
+<span class="n">mprotect</span><span class="p">(</span><span class="mh">0x7f94c7f8a000</span><span class="p">,</span> <span class="mi">1654784</span><span class="p">,</span> <span class="n">PROT_NONE</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">mmap</span><span class="p">(</span><span class="mh">0x7f94c7f8a000</span><span class="p">,</span> <span class="mi">1343488</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="o">|</span><span class="n">PROT_EXEC</span><span class="p">,</span> <span class="n">MAP_PRIVATE</span><span class="o">|</span><span class="n">MAP_FIXED</span><span class="o">|</span><span class="n">MAP_DENYWRITE</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mh">0x26000</span><span class="p">)</span> <span class="o">=</span> <span class="mh">0x7f94c7f8a000</span>
+<span class="n">mmap</span><span class="p">(</span><span class="mh">0x7f94c80d2000</span><span class="p">,</span> <span class="mi">307200</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="p">,</span> <span class="n">MAP_PRIVATE</span><span class="o">|</span><span class="n">MAP_FIXED</span><span class="o">|</span><span class="n">MAP_DENYWRITE</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mh">0x16e000</span><span class="p">)</span> <span class="o">=</span> <span class="mh">0x7f94c80d2000</span>
+<span class="n">mmap</span><span class="p">(</span><span class="mh">0x7f94c811e000</span><span class="p">,</span> <span class="mi">24576</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="o">|</span><span class="n">PROT_WRITE</span><span class="p">,</span> <span class="n">MAP_PRIVATE</span><span class="o">|</span><span class="n">MAP_FIXED</span><span class="o">|</span><span class="n">MAP_DENYWRITE</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mh">0x1b9000</span><span class="p">)</span> <span class="o">=</span> <span class="mh">0x7f94c811e000</span>
+<span class="n">mmap</span><span class="p">(</span><span class="mh">0x7f94c8124000</span><span class="p">,</span> <span class="mi">33656</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="o">|</span><span class="n">PROT_WRITE</span><span class="p">,</span> <span class="n">MAP_PRIVATE</span><span class="o">|</span><span class="n">MAP_FIXED</span><span class="o">|</span><span class="n">MAP_ANONYMOUS</span><span class="p">,</span> <span class="mi">-1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mh">0x7f94c8124000</span>
+<span class="n">close</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+<ol class="arabic" start="5">
+<li><p>其他：</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id29">
+<div class="code-block-caption"><span class="caption-text">全映射：长度</span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">8192</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="o">|</span><span class="n">PROT_WRITE</span><span class="p">,</span> <span class="n">MAP_PRIVATE</span><span class="o">|</span><span class="n">MAP_ANONYMOUS</span><span class="p">,</span> <span class="mi">-1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mh">0x7f94c7f62000</span>
+<span class="n">arch_prctl</span><span class="p">(</span><span class="n">ARCH_SET_FS</span><span class="p">,</span> <span class="mh">0x7f94c812e580</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">mprotect</span><span class="p">(</span><span class="mh">0x7f94c811e000</span><span class="p">,</span> <span class="mi">12288</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="hll"><span class="n">mprotect</span><span class="p">(</span><span class="mh">0x55c52d442000</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class="hll"><span class="n">mprotect</span><span class="p">(</span><span class="mh">0x7f94c818f000</span><span class="p">,</span> <span class="mi">8192</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class="n">munmap</span><span class="p">(</span><span class="mh">0x7f94c812f000</span><span class="p">,</span> <span class="mi">198967</span><span class="p">)</span>          <span class="o">=</span> <span class="mi">0</span>
+<span class="n">newfstatat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">st_mode</span><span class="o">=</span><span class="n">S_IFCHR</span><span class="o">|</span><span class="mo">0600</span><span class="p">,</span> <span class="n">st_rdev</span><span class="o">=</span><span class="n">makedev</span><span class="p">(</span><span class="mh">0x88</span><span class="p">,</span> <span class="mh">0x9</span><span class="p">),</span> <span class="p">...},</span> <span class="n">AT_EMPTY_PATH</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">brk</span><span class="p">(</span><span class="nb">NULL</span><span class="p">)</span>                               <span class="o">=</span> <span class="mh">0x55c52ee9f000</span>
+<span class="n">brk</span><span class="p">(</span><span class="mh">0x55c52eec0000</span><span class="p">)</span>                     <span class="o">=</span> <span class="mh">0x55c52eec0000</span>
+<span class="n">write</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;main:4</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="nl">main</span><span class="p">:</span><span class="mi">4</span>
+<span class="p">)</span>                 <span class="o">=</span> <span class="mi">7</span>
+<span class="n">exit_group</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>                           <span class="o">=</span> <span class="o">?</span>
+<span class="o">+++</span> <span class="n">exited</span> <span class="n">with</span> <span class="mi">7</span> <span class="o">+++</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+</div>
+<div class="section" id="id12">
+<h3>库函数跟踪：<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id30">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$lstrace</span> <span class="p">.</span><span class="o">/</span><span class="n">elf_an</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s:%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;main&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="nl">main</span><span class="p">:</span><span class="mi">4</span><span class="p">)</span>                                                <span class="o">=</span> <span class="mi">7</span>
+<span class="o">+++</span> <span class="n">exited</span> <span class="p">(</span><span class="n">status</span> <span class="mi">7</span><span class="p">)</span> <span class="o">+++</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="exec">
+<h3>下面我们跟踪exec系统调用内核执行路径<a class="headerlink" href="#exec" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id13">
+<h4>内核路径跟踪<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<p>路径跟踪参考：<a class="reference external" href="https://github.com/rachelsqh/lk_kernel/tree/main/elf_an_1">https://github.com/rachelsqh/lk_kernel/tree/main/elf_an_1</a></p>
+</div>
+<div class="section" id="id14">
+<h4>代码分析<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
+<p>借助上一步的内核路径，仅针对ELF文件加载函数：</p>
+<div class="literal-block-wrapper docutils container" id="id31">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id31" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">load_elf_binary</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">load_elf_phdrs</span><span class="p">()</span> <span class="p">{</span>
+<span class="hll">
+</span><span class="hll">        <span class="mi">914</span> <span class="o">-</span> <span class="mi">4144</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+<p>elf_an elf文件头信息：</p>
+<div class="literal-block-wrapper docutils container" id="id32">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id32" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52</pre></div></td><td class="code"><div class="highlight"><pre><span></span>ELF 头：
+Magic：  7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+类别:                              ELF64
+<span class="hll"> 数据:                              2 补码，小端序 (little endian)
+</span><span class="hll">Version:                           1 (current)
+</span>OS/ABI:                            UNIX - System V
+ABI 版本:                          0
+类型:                              DYN (Position-Independent Executable file)
+系统架构:                          Advanced Micro Devices X86-64
+版本:                              0x1
+入口点地址：              0x1050
+程序头起点：              64 (bytes into file)
+Start of section headers:          14176 (bytes into file)
+标志：             0x0
+Size of this header:               64 (bytes)
+Size of program headers:           56 (bytes)
+Number of program headers:         13
+Size of section headers:           64 (bytes)
+Number of section headers:         31
+Section header string table index: 30
+......
+
+程序头：
+Type           Offset             VirtAddr           PhysAddr
+               FileSiz            MemSiz              Flags  Align
+PHDR           0x0000000000000040 0x0000000000000040 0x0000000000000040
+               0x00000000000002d8 0x00000000000002d8  R      0x8
+INTERP         0x0000000000000318 0x0000000000000318 0x0000000000000318
+               0x000000000000001c 0x000000000000001c  R      0x1
+                [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+LOAD           0x0000000000000000 0x0000000000000000 0x0000000000000000
+                0x0000000000000600 0x0000000000000600  R      0x1000
+LOAD           0x0000000000001000 0x0000000000001000 0x0000000000001000
+                0x00000000000001dd 0x00000000000001dd  R E    0x1000
+LOAD           0x0000000000002000 0x0000000000002000 0x0000000000002000
+                0x0000000000000158 0x0000000000000158  R      0x1000
+LOAD           0x0000000000002de8 0x0000000000003de8 0x0000000000003de8
+                0x0000000000000248 0x0000000000000250  RW     0x1000
+DYNAMIC        0x0000000000002df8 0x0000000000003df8 0x0000000000003df8
+                0x00000000000001e0 0x00000000000001e0  RW     0x8
+NOTE           0x0000000000000338 0x0000000000000338 0x0000000000000338
+                0x0000000000000020 0x0000000000000020  R      0x8
+NOTE           0x0000000000000358 0x0000000000000358 0x0000000000000358
+                0x0000000000000044 0x0000000000000044  R      0x4
+GNU_PROPERTY   0x0000000000000338 0x0000000000000338 0x0000000000000338
+                0x0000000000000020 0x0000000000000020  R      0x8
+GNU_EH_FRAME   0x0000000000002010 0x0000000000002010 0x0000000000002010
+                0x000000000000003c 0x000000000000003c  R      0x4
+GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000
+                0x0000000000000000 0x0000000000000000  RW     0x10
+GNU_RELRO      0x0000000000002de8 0x0000000000003de8 0x0000000000003de8
+                0x0000000000000218 0x0000000000000218  R      0x1
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>加载完后： nmaps:</p>
+<div class="literal-block-wrapper docutils container" id="id33">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id33" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="mi">55</span><span class="n">add343f000</span><span class="mi">-55</span><span class="n">add3440000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mo">00000000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">27404226</span>                  <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">jekyll</span><span class="o">-</span><span class="n">theme</span><span class="o">/</span><span class="n">sphinx</span><span class="o">-</span><span class="n">book</span><span class="o">/</span><span class="n">lk_kernel_demo</span><span class="o">/</span><span class="n">lk_kernel</span><span class="o">/</span><span class="n">elf_an_1</span><span class="o">/</span><span class="n">elf_an</span>
+<span class="mi">55</span><span class="n">add3440000</span><span class="mi">-55</span><span class="n">add3441000</span> <span class="n">r</span><span class="o">-</span><span class="n">xp</span> <span class="mo">00001000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">27404226</span>                  <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">jekyll</span><span class="o">-</span><span class="n">theme</span><span class="o">/</span><span class="n">sphinx</span><span class="o">-</span><span class="n">book</span><span class="o">/</span><span class="n">lk_kernel_demo</span><span class="o">/</span><span class="n">lk_kernel</span><span class="o">/</span><span class="n">elf_an_1</span><span class="o">/</span><span class="n">elf_an</span>
+<span class="mi">55</span><span class="n">add3441000</span><span class="mi">-55</span><span class="n">add3442000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mo">00002000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">27404226</span>                  <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">jekyll</span><span class="o">-</span><span class="n">theme</span><span class="o">/</span><span class="n">sphinx</span><span class="o">-</span><span class="n">book</span><span class="o">/</span><span class="n">lk_kernel_demo</span><span class="o">/</span><span class="n">lk_kernel</span><span class="o">/</span><span class="n">elf_an_1</span><span class="o">/</span><span class="n">elf_an</span>
+<span class="hll"><span class="mi">55</span><span class="n">add3442000</span><span class="mi">-55</span><span class="n">add3443000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mo">00002000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">27404226</span>                  <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">jekyll</span><span class="o">-</span><span class="n">theme</span><span class="o">/</span><span class="n">sphinx</span><span class="o">-</span><span class="n">book</span><span class="o">/</span><span class="n">lk_kernel_demo</span><span class="o">/</span><span class="n">lk_kernel</span><span class="o">/</span><span class="n">elf_an_1</span><span class="o">/</span><span class="n">elf_an</span>
+</span><span class="hll"><span class="mi">55</span><span class="n">add3443000</span><span class="mi">-55</span><span class="n">add3444000</span> <span class="n">rw</span><span class="o">-</span><span class="n">p</span> <span class="mo">00003000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">27404226</span>                  <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">for_work</span><span class="o">/</span><span class="n">jekyll</span><span class="o">-</span><span class="n">theme</span><span class="o">/</span><span class="n">sphinx</span><span class="o">-</span><span class="n">book</span><span class="o">/</span><span class="n">lk_kernel_demo</span><span class="o">/</span><span class="n">lk_kernel</span><span class="o">/</span><span class="n">elf_an_1</span><span class="o">/</span><span class="n">elf_an</span>
+</span><span class="mi">55</span><span class="n">add3558000</span><span class="mi">-55</span><span class="n">add3579000</span> <span class="n">rw</span><span class="o">-</span><span class="n">p</span> <span class="mo">00000000</span> <span class="mo">00</span><span class="o">:</span><span class="mo">00</span> <span class="mi">0</span>                          <span class="p">[</span><span class="n">heap</span><span class="p">]</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7f8b7000</span><span class="mi">-7</span><span class="n">f8d7f8b9000</span> <span class="n">rw</span><span class="o">-</span><span class="n">p</span> <span class="mo">00000000</span> <span class="mo">00</span><span class="o">:</span><span class="mo">00</span> <span class="mi">0</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7f8b9000</span><span class="mi">-7</span><span class="n">f8d7f8df000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mo">00000000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30673355</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">libc</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7f8df000</span><span class="mi">-7</span><span class="n">f8d7fa27000</span> <span class="n">r</span><span class="o">-</span><span class="n">xp</span> <span class="mo">00026000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30673355</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">libc</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fa27000</span><span class="mi">-7</span><span class="n">f8d7fa72000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mf">0016e000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30673355</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">libc</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fa72000</span><span class="mi">-7</span><span class="n">f8d7fa73000</span> <span class="o">---</span><span class="n">p</span> <span class="mo">001</span><span class="n">b9000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30673355</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">libc</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fa73000</span><span class="mi">-7</span><span class="n">f8d7fa76000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mo">001</span><span class="n">b9000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30673355</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">libc</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fa76000</span><span class="mi">-7</span><span class="n">f8d7fa79000</span> <span class="n">rw</span><span class="o">-</span><span class="n">p</span> <span class="mo">001</span><span class="n">bc000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30673355</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">libc</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fa79000</span><span class="mi">-7</span><span class="n">f8d7fa84000</span> <span class="n">rw</span><span class="o">-</span><span class="n">p</span> <span class="mo">00000000</span> <span class="mo">00</span><span class="o">:</span><span class="mo">00</span> <span class="mi">0</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fab5000</span><span class="mi">-7</span><span class="n">f8d7fab6000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mo">00000000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30672509</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">ld</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fab6000</span><span class="mi">-7</span><span class="n">f8d7fada000</span> <span class="n">r</span><span class="o">-</span><span class="n">xp</span> <span class="mo">00001000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30672509</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">ld</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fada000</span><span class="mi">-7</span><span class="n">f8d7fae4000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mo">00025000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30672509</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">ld</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fae4000</span><span class="mi">-7</span><span class="n">f8d7fae6000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mf">0002e000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30672509</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">ld</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="mi">8</span><span class="n">d7fae6000</span><span class="mi">-7</span><span class="n">f8d7fae8000</span> <span class="n">rw</span><span class="o">-</span><span class="n">p</span> <span class="mo">00030000</span> <span class="mi">103</span><span class="o">:</span><span class="mo">05</span> <span class="mi">30672509</span>                  <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">ld</span><span class="mf">-2.33</span><span class="p">.</span><span class="n">so</span>
+<span class="mf">7f</span><span class="n">fce0116000</span><span class="mi">-7</span><span class="n">ffce0137000</span> <span class="n">rw</span><span class="o">-</span><span class="n">p</span> <span class="mo">00000000</span> <span class="mo">00</span><span class="o">:</span><span class="mo">00</span> <span class="mi">0</span>                          <span class="p">[</span><span class="n">stack</span><span class="p">]</span>
+<span class="mf">7f</span><span class="n">fce0144000</span><span class="mi">-7</span><span class="n">ffce0148000</span> <span class="n">r</span><span class="o">--</span><span class="n">p</span> <span class="mo">00000000</span> <span class="mo">00</span><span class="o">:</span><span class="mo">00</span> <span class="mi">0</span>                          <span class="p">[</span><span class="n">vvar</span><span class="p">]</span>
+<span class="mf">7f</span><span class="n">fce0148000</span><span class="mi">-7</span><span class="n">ffce014a000</span> <span class="n">r</span><span class="o">-</span><span class="n">xp</span> <span class="mo">00000000</span> <span class="mo">00</span><span class="o">:</span><span class="mo">00</span> <span class="mi">0</span>                          <span class="p">[</span><span class="n">vdso</span><span class="p">]</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>我们直接啃代码：</p>
+<div class="literal-block-wrapper docutils container" id="id34">
+<div class="code-block-caption"><span class="caption-text">e_type</span><a class="headerlink" href="#id34" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm">  * This structure is used to hold the arguments that are used when loading binaries.</span>
+<span class="cm">*/</span>
+<span class="hll"><span class="k">struct</span> <span class="nc">linux_binprm</span> <span class="p">{</span>
+</span><span class="hll"><span class="cp">#ifdef CONFIG_MMU</span>
+</span>        <span class="k">struct</span> <span class="nc">vm_area_struct</span> <span class="o">*</span><span class="n">vma</span><span class="p">;</span><span class="c1">//这是一个链</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">vma_pages</span><span class="p">;</span>
+<span class="cp">#else</span>
+<span class="cp"># define MAX_ARG_PAGES  32</span>
+        <span class="k">struct</span> <span class="nc">page</span> <span class="o">*</span><span class="n">page</span><span class="p">[</span><span class="n">MAX_ARG_PAGES</span><span class="p">];</span><span class="c1">//arg</span>
+<span class="cp">#endif</span>
+        <span class="k">struct</span> <span class="nc">mm_struct</span> <span class="o">*</span><span class="n">mm</span><span class="p">;</span> <span class="c1">// ==&gt; task-&gt;mm,所以内核线程这个成员是NULL，就是这么联系起来的</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">p</span><span class="p">;</span> <span class="cm">/* current top of mem :栈指针：*/</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">argmin</span><span class="p">;</span> <span class="cm">/* rlimit marker for copy_strings(): */</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span>
+                <span class="cm">/* Should an execfd be passed to userspace? : nmap 吗？这个应用场景*/</span>
+                <span class="nl">have_execfd</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+
+                <span class="cm">/* Use the creds of a script (see binfmt_misc) ：应用场景？*/</span>
+                <span class="nl">execfd_creds</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+                <span class="cm">/*</span>
+<span class="cm">                * Set by bprm_creds_for_exec hook to indicate a</span>
+<span class="cm">                * privilege-gaining exec has happened. Used to set</span>
+<span class="cm">                * AT_SECURE auxv for glibc.</span>
+<span class="cm">                */</span>
+                <span class="nl">secureexec</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="cm">/* 如何理解 */</span>
+                <span class="cm">/*</span>
+<span class="cm">                * Set when errors can no longer be returned to the</span>
+<span class="cm">                * original userspace.</span>
+<span class="cm">                */</span>
+                <span class="nl">point_of_no_return</span><span class="p">:</span><span class="mi">1</span><span class="p">;</span>  <span class="cm">/* 如何理解   */</span>
+<span class="cp">#ifdef __alpha__</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="nl">taso</span><span class="p">:</span><span class="mi">1</span><span class="p">;</span>
+<span class="cp">#endif</span>
+        <span class="k">struct</span> <span class="nc">file</span> <span class="o">*</span><span class="n">executable</span><span class="p">;</span> <span class="cm">/* Executable to pass to the interpreter ：这是个指针吗？*/</span>
+        <span class="k">struct</span> <span class="nc">file</span> <span class="o">*</span><span class="n">interpreter</span><span class="p">;</span> <span class="cm">/* 这是解析吗？ */</span>
+        <span class="k">struct</span> <span class="nc">file</span> <span class="o">*</span><span class="n">file</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">cred</span> <span class="o">*</span><span class="n">cred</span><span class="p">;</span>      <span class="cm">/* new credentials */</span>
+        <span class="kt">int</span> <span class="n">unsafe</span><span class="p">;</span>             <span class="cm">/* how unsafe this exec is (mask of LSM_UNSAFE_*) */</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">per_clear</span><span class="p">;</span> <span class="cm">/* bits to clear in current-&gt;personality */</span>
+        <span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="n">envc</span><span class="p">;</span>   <span class="cm">/* 变量数 */</span>
+        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">filename</span><span class="p">;</span>   <span class="cm">/* Name of binary as seen by procps ：proc路径？*/</span>
+        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">interp</span><span class="p">;</span>     <span class="cm">/* Name of the binary really executed. Most</span>
+<span class="cm">                           of the time same as filename, but could be</span>
+<span class="cm">                           different for binfmt_{misc,script} */</span>
+        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">fdpath</span><span class="p">;</span>     <span class="cm">/* generated filename for execveat： 内容是什么？ */</span>
+        <span class="kt">unsigned</span> <span class="n">interp_flags</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">execfd</span><span class="p">;</span>             <span class="cm">/* File descriptor of the executable */</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">loader</span><span class="p">,</span> <span class="n">exec</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">rlimit</span> <span class="n">rlim_stack</span><span class="p">;</span> <span class="cm">/* Saved RLIMIT_STACK used during exec. ：栈大小限制吗*/</span>
+
+        <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="n">BINPRM_BUF_SIZE</span><span class="p">];</span> <span class="cm">/* 这存储什么？ */</span>
+<span class="p">}</span> <span class="n">__randomize_layout</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id35">
+<div class="code-block-caption"><span class="caption-text">execv代码分析。</span><a class="headerlink" href="#id35" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431</pre></div></td><td class="code"><div class="highlight"><pre><span></span>bprm = alloc_bprm(fd,filename): 分配struct mm_struct
+        bprm = kzalloc();
+        bprm-&gt;interp = bprm-&gt;filename;
+<span class="hll">        bprm_mm_init(); /* 注意栈的设置是临时的，需要在setup_arg_pages中更新 */
+</span><span class="hll">                bprm-&gt;m = mm_alloc();
+</span>                bprm-&gt;rlim_stack = current-&gt;signal-&gt;rlim[RLIMIT_STACK];
+                __bprm_mm_init()
+                        bprm-&gt;vma = vm_area_alloc();
+                        vma_set_anonymous(vma);
+                        vma-&gt;vm_end = STACK_TOP_MAX; // TASK_SIZE_MAX,最大地址空间 - PAGE_SIZE
+                        vma-&gt;vm_start = vma-&gt;end - PAGE_SIZE; //栈占用一个页面。
+                        vma-&gt;vm_page_prot = vm_get_page_prot(vma-&gt;vm_flags);
+                        insert_vm_struct(mm,vma);
+                        mm-&gt;stack_vm = mm-&gt;total_vm = 1;
+                        bprm-&gt;p = vma-&gt;vm_end - sizeof(void *); /* 所以有一个指针的空 */
+
+bprm -&gt; argc = count();
+bprm -&gt; envc = count();
+bprm -&gt; argmin = bprm_stack_limits();
+
+ bprm-&gt;p -= len(bprm-&gt;filename);
+  bprm-&gt;p -= bprm-&gt;envc;
+  bprm-&gt;p -= bprm-&gt;argc;
+
+ bprm_execve();
+        prepare_bprm_creds();
+                bprm-&gt;cred = prepare_exec_creds();
+
+        check_unsafe_exec();
+
+        current-&gt;in_execve = 1;
+
+        file = do_open_execat();
+                file = do_filp_open();
+
+                S_ISREG(file_inode(file)-&gt;i_mode) 或 path_noexec(&amp;file-&gt;f_path);判断，不满足就结束了。
+
+                deny_write_access(file)
+                        atomic_dec_unless_positive(inode-&gt;i_writecount)
+
+                fsnotify_open(file);
+
+        sched_exec();// 此处是调度均衡的很好时机，因为当前进程有最小的有效内存和cache
+
+        bprm-&gt;file;
+
+        security_bprm_creds_for_exec();// call_int_hook();
+
+        exec_binprm(bprm);
+
+                old_pid = current-&gt;pid;
+                old_vpid = task_pid_nr_ns();
+
+                for(depth = 0 ;; depth++) { //可执行文件 + 解释器，循环加载，这是外层逻辑。
+
+                        search_binary_handler(bprm); //这是核心部分
+
+                                need_retry = IS_ENABLED(CONFIG_MODULES);
+
+                                prepare_binprm(bprm); //填充bprm结构，读文件开始的BINPRM_BUF_SIZE个字节。256
+                                        kernel_read(bprm-&gt;file,bprm-&gt;buf,BINPRM_BUF_SIZE,&amp;pos); // pos = 0
+
+                                security_bprm_check(bprm);
+
+                             retry:
+
+                                list_for_each_entry(fmt,&amp;formats,lh) { // struct linux_binfmt *fmt;
+
+                                        try_module_get();
+
+                                        retval = fmt-&gt;load_binary(bprm); // 继续核心，以ELF为例
+                                            load_elf_binary()
+                                                executable_stack = EXSTACK_DEFAULT;
+                                                elf_ex = bprm-&gt;buf;
+                                                arch_state = INIT_ARCH_ELF_STATE;
+
+                                                memcmp(elf_ex-&gt;e_ident,ELFMAG,SELFMAG); //判断魔数
+
+                                                elf_ex-&gt;e_type == ET_EXEC || elf_ex-&gt;e_type == ET_DYN; //只处理这两种类型
+
+                                                elf_check_arch(elf_ex); // 架构匹配性校验
+
+                                                elf_check_fdpic(elf_ex);// 这个怎么理解
+
+                                                bprm-&gt;file-&gt;f_op-&gt;mmap; // 确认是否实现函数
+
+                                                elf_phdata= load_elf_phdrs(elf,ex,bprm-&gt;file);//加载文件头
+
+
+                                                for(i = 0;i &lt; elf_ex-&gt;e_phnum;i++,elf_ppnt++) { // 按程序段进行解析,第一步解析解析程序,即：PT_INTERP
+
+                                                        elf_ppnt-&gt;p_type == PT_GNU_PROPERTY ==&gt; elf_property_phdata = elf_ppnt;
+                                                                continue;
+
+                                                        elf_ppnt-&gt;p_type != PT_INTERP;
+                                                                continue;
+
+                                                        elf_interpreter = kmalloc(elf_ppnt-&gt;p_filesz,GFP_KERNEL);        // 为段分配足够长度的空间
+
+                                                        elf_read(bprm-&gt;file,elf_interpreter,elf_ppnt-&gt;p_filesz,elf_ppnt-&gt;p_offset); //加载段，针对解析器，此处存储解析器路径。
+
+                                                        interpreter = open_exec(elf_interpreter); //解析器文件句柄
+
+                                                        kfree(elf_interpreter); // 文件已经打开，这个存储路径的就没必要了
+
+
+                                                        would_dump(bprm,interpreter); //
+
+                                                        elf_read(interpreter,interp_elf_ex,sizeof(*interp_elf_ex),0); // 读解析器的文件头
+
+                                                        break; //只有一个解析器。
+                                                }
+
+                                                elf_ppnt = elf_phdata;
+
+                                                for(i = 0;i &lt; elf_ex-&gt;e_phnum;i++,elf_ppnt++) //可执行文件段的遍历
+                                                        elf_ppnt-&gt;p_type:
+                                                                PT_GNU_STACK:
+                                                                        p_flags:
+                                                                                if PF_X:
+                                                                                   executable_stack = EXSTACK_ENABLE_X;
+                                                                                 else
+                                                                                   executable_stack = EXSTACK_DISABLE_X;
+                                                                PT_LOPROC ... PT_HIPROC:
+                                                                        arch_elf_pt_proc(elf_ex,elf_ppnt,bprm-&gt;file,false,&amp;arch_state);
+
+
+                                                if(interpreter) {
+
+                                                        memcmp(interp_elf_ex-&gt;e_ident,ELFMAG,SELFMAG); // 解释器函数魔数比较
+
+                                                        elf_check_arch(interp_elf_ex);
+
+                                                        elf_check_fdpic(interp_elf_ex);
+
+                                                        interp_elf_phdata = load_elf_phdrs(interp_elf_ex,interpreter); // 解释器文件的文件头
+
+                                                        elf_property_phdata = NULL;
+
+                                                        for(i = 0;i &lt; interp_elf_ex-&gt;e_phnum;i++,elf_ppnt++) //解释器文件段的遍历
+
+                                                                elf_ppnt-&gt;p_type:
+                                                                        PT_GNU_PROPERTY:
+                                                                                elf_property_phdata = elf_ppnt;
+                                                                                break;
+
+                                                                        PT_LOPPROC ... PT_HIPROC:
+                                                                                arch_elf_pt_proc(interp_elf_ex,elf_ppnt,interpreter,true,&amp;arch_state);
+
+                                                } //end if (interpreter)
+
+                                                parse_elf_properties(interpreter ? : bprm-&gt;file,elf_property_phdata,&amp;arch_state);
+
+
+
+                                                arch_check_elf(elf_ex,!!interpreter,interp_elf_ex,&amp;arch_state);// 此处允许架构级代码hook
+
+
+                                                begin_new_exec(bprm);//
+
+                                                SET_PERSONALITY2(*elf_ex,&amp;arch_state); //
+
+                                                elf_read_implies_exec();
+
+                                                current-&gt;personality;//这个成员功能，如何处理
+
+                                                setup_new_exec(bprm);
+
+                                                setup_arg_pages(bprm,randomize_stack_top(STACK_TOP),executable_stack); //重要函数
+
+
+                                                elf_bss = 0;
+
+                                                elf_brk = 0;
+
+                                                start_code = ~0UL;
+
+                                                end_code = 0;
+                                                start_data = 0;
+                                                end_data = 0;
+
+                                                for(i = 0;elf_ppnt = elf_phdata;i &lt; elf_ex-&gt;e_phnum; i++,elf_ppnt++)// 处理PT_LOAD类型段
+                                                        elf_prot = make_prot(elf_ppnt-&gt;p_flags,&amp;arch_state,!!interpreter,false);
+                                                        elf_flags = MAP_PRIVATE |MAP_DENYWRITE;
+
+                                                        vaddr = elf_ppnt-&gt;p_vaddr;
+
+                                                        ET_EXEC || ET_DYN:
+
+                                                        elf_map(bprm-&gt;file,load_bias + vaddr,elf_ppnt,elf_prot,elf_flags,total_size);
+
+                                                        .......
+
+
+                                                e_entry = elf_ex-&gt;e_entry + load_bias;
+
+                                                set_brk();
+
+                                                if(interpreter) { // 有加载器时,elf_entry = interp_entry;
+
+                                                        elf_entry = load_elf_interp();
+
+                                                        interp_load_addr = elf_entry;
+                                                        elf_entry += interp_elf_ex-&gt;e_entry;
+
+                                                        reloc_func_desc = interp_load_addr;
+                                                        allow_write_access(interpreter);
+                                                        fput(interpreter);
+
+                                                        kfree(interp_elf_ex);
+                                                        kfree(interp_elf_phdata);
+
+
+                                                } else { //没有解释器
+
+                                                        elf_entry = e_entry;//可执行文件入口处作为程序执行的起点
+
+                                                }
+
+                                                kfree(elf_phdata);
+                                                set_binfmt();// mm-&gt;binfmt = new:struct linux_binfmt *new,空间与应用挂接
+
+                                                create_elf_tables(bprm,elf_ex,load_addr,interp_load_addr,e_entry);//如果有加载器，interp_load_addr: 应用程序入口，e_entry,
+
+                                                        k_platform = ELF_PLATFORM; //utsname()-&gt;machine
+                                                        p = bprm-&gt;p;
+                                                        arch_align_stack(p);//
+
+                                                        k_platform/u_platform;//这个如何理解
+
+                                                        k_rand_bytes/u_rand_bytes;//如何理解
+
+                                                        elf_info = mm-&gt;saved_auxv; // 构建ELF加载器信息。saved_auxv,mm:saved_auxv[AT_VECTOR_SIZE];这是数组，静态空间
+                                                                #define NEW_AUX_ENT(id,val) \
+                                                                        do {\
+                                                                                *elf_info++ = id; \
+                                                                                *elf_info++ = val; \
+                                                                        } while (0)
+
+                                                        NEW_AUX_ENT(AT_HWCAP,ELF_HWCAP); // *elf_info++ = AT_HWCAP,*elf_info++ = ELF_HWCAP;
+                                                        NEW_AUX_ENT(AT_PAGESZ,ELF_EXEC_PAGESIZE); // *elf_info++ = AT_PAGESZ,*elf_info++ = ELF_EXEC_PAGESIZE;
+                                                        NEW_AUX_ENT(AT_CLKTCK,CLOCKS_PER_SEC); // *elf_info++ = ,
+                                                        NEW_AUX_ENT(AT_PHDR, load_addr + exec-&gt;e_phoff);
+                                                        NEW_AUX_ENT(AT_PHENT, sizeof(struct elf_phdr));
+                                                        NEW_AUX_ENT(AT_PHNUM, exec-&gt;e_phnum);
+                                                        NEW_AUX_ENT(AT_BASE, interp_load_addr);
+                                                        if (bprm-&gt;interp_flags &amp; BINPRM_FLAGS_PRESERVE_ARGV0)
+                                                                flags |= AT_FLAGS_PRESERVE_ARGV0;
+                                                        NEW_AUX_ENT(AT_FLAGS, flags);
+                                                        NEW_AUX_ENT(AT_ENTRY, e_entry);
+                                                        NEW_AUX_ENT(AT_UID, from_kuid_munged(cred-&gt;user_ns, cred-&gt;uid));
+                                                        NEW_AUX_ENT(AT_EUID, from_kuid_munged(cred-&gt;user_ns, cred-&gt;euid));
+                                                        NEW_AUX_ENT(AT_GID, from_kgid_munged(cred-&gt;user_ns, cred-&gt;gid));
+                                                        NEW_AUX_ENT(AT_EGID, from_kgid_munged(cred-&gt;user_ns, cred-&gt;egid));
+                                                        NEW_AUX_ENT(AT_SECURE, bprm-&gt;secureexec);
+                                                        NEW_AUX_ENT(AT_RANDOM, (elf_addr_t)(unsigned long)u_rand_bytes);
+                                                        #ifdef ELF_HWCAP2
+                                                                NEW_AUX_ENT(AT_HWCAP2, ELF_HWCAP2);
+                                                        #endif
+                                                        NEW_AUX_ENT(AT_EXECFN, bprm-&gt;exec);
+                                                        if (k_platform) {
+                                                                NEW_AUX_ENT(AT_PLATFORM,
+                                                                (elf_addr_t)(unsigned long)u_platform);
+                                                        }
+                                                        if (k_base_platform) {
+                                                                NEW_AUX_ENT(AT_BASE_PLATFORM,
+                                                                (elf_addr_t)(unsigned long)u_base_platform);
+                                                        }
+                                                        if (bprm-&gt;have_execfd) {
+                                                                NEW_AUX_ENT(AT_EXECFD, bprm-&gt;execfd);
+                                                        }
+
+                                                        #undef NEW_AUX_ENT
+                                                        /* AT_NULL is zero; clear the rest too */
+                                                        memset(elf_info, 0, (char *)mm-&gt;saved_auxv + sizeof(mm-&gt;saved_auxv) - (char *)elf_info); //剩下的部分置零
+
+                                                        /* And advance past the AT_NULL entry.  */
+                                                        elf_info += 2;
+
+                                                        ei_index = elf_info - (elf_addr_t *)mm-&gt;saved_auxv;
+                                                        sp = STACK_ADD(p, ei_index);
+
+                                                        items = (argc + 1) + (envc + 1) + 1;
+                                                        bprm-&gt;p = STACK_ROUND(sp, items);
+
+                                                        /* Point sp at the lowest address on the stack */
+                                                        #ifdef CONFIG_STACK_GROWSUP
+                                                                sp = (elf_addr_t __user *)bprm-&gt;p - items - ei_index;
+                                                                bprm-&gt;exec = (unsigned long)sp; /* XXX: PARISC HACK */
+                                                        #else
+                                                                sp = (elf_addr_t __user *)bprm-&gt;p;
+                                                        #endif
+
+
+                                                        /*
+                                                        * Grow the stack manually; some architectures have a limit on how
+                                                        * far ahead a user-space access may be in order to grow the stack.
+                                                        */
+
+                                                        vma = find_extend_vma(mm, bprm-&gt;p);
+
+                                                        /* Now, let&#39;s put argc (and argv, envp if appropriate) on the stack，所以加载的时候没有放到栈上吗？回头再看一下，理解有误？ */
+                                                        if (put_user(argc, sp++))
+                                                                return -EFAULT;
+
+                                                        /* Populate list of argv pointers back to argv strings. */
+                                                        p = mm-&gt;arg_end = mm-&gt;arg_start;
+                                                        while (argc-- &gt; 0) {
+
+                                                                put_user((elf_addr_t)p, sp++)
+
+                                                                len = strnlen_user((void __user *)p, MAX_ARG_STRLEN);
+
+                                                                p += len;
+                                                        }
+
+                                                        put_user(0, sp++)
+                                                        mm-&gt;arg_end = p;
+
+                                                        /* Populate list of envp pointers back to envp strings. */
+                                                        mm-&gt;env_end = mm-&gt;env_start = p;
+                                                        while (envc-- &gt; 0) {
+                                                                put_user((elf_addr_t)p, sp++))
+                                                                strnlen_user((void __user *)p, MAX_ARG_STRLEN);
+                                                                p += len;
+                                                        }
+                                                        put_user(0, sp++)
+
+                                                        mm-&gt;env_end = p;
+
+                                                        /* Put the elf_info on the stack in the right place.  */
+                                                        copy_to_user(sp, mm-&gt;saved_auxv, ei_index * sizeof(elf_addr_t)) //saved_auxv也是压栈的，也就是说所有的信息都是压入应用栈
+
+
+                                                mm = current-&gt;mm;
+                                                mm-&gt;end_code = end_code;
+                                                mm-&gt;start_code = start_code;
+                                                mm-&gt;start_data = start_data;
+                                                mm-&gt;end_data = end_data;
+                                                mm-&gt;start_stack = bprm-&gt;p;
+
+                                                current-&gt;flags &amp; PF_RANDOMIZE:
+
+                                                current-&gt;personality &amp; MMAP_PAGE_ZERO
+
+
+                                                rets = current_pt_regs(); //获取内核栈栈顶的struct pt_regs结构
+                                                        #define current_pt_regs() task_pt_regs(current)
+                                                                #define task_pt_regs(current)   \
+                                                                        ({ \
+                                                                                unsigned long __ptr = (unsigned long)task_stack_page(task);     \ // (void *)(task)-&gt;stack,内核栈
+                                                                                __ptr += THREAD_SIZE - TOP_OF_KERNEL_STACK_PADDING;     \ // 栈顶位置，有一个TOP_OF_KERNEL_STACK_PADDING空
+                                                                                ((struct pt_regs *)__ptr) - 1;  \ // 往下 - sizeof(struct pt_regs *)处存放struct pt_regs.
+                                                                        })
+
+
+                                                ELF_PLAT_INIT(regs,reloc_func_desc);
+                                                        #define ELF_PLAT_INIT(_r,load_addr)     elf_common_init(&amp;current-&gt;thread,_r,0) //初始化pt_regs和thread_struct中的相关变量
+
+                                                finalize_exec(bprm);
+                                                        current-&gt;signal-&gt;rlim[RLIMIT_STACK] = bprm-&gt;rlim_stack;
+
+                                                START_THREAD(elf_ex,regs,elf_entry,bprm-&gt;p); // 初始化应用环境，这些环境信息存储在内核栈的栈顶，在返回系统调用时会进行上下文切换，第一个由内核线程而来的应用程序时则会通过执行特定的函数进入应用程序执行。
+                                                        #define START_THREAD(elf_ex,regs,elf_entry,start_stack) start_thread(regs,elf_entry,start_stack)
+                                                                void start_thread(struct pt_regs *regs,unsigned long new_ip,unsigned long new_sp)
+                                                                {
+                                                                        start_thread_common(regs,new_ip,new_sp,__USER_CS,__USER_DS,0);
+                                                                }
+                                                                static void start_thread_common(struct pt_regs *regs, unsigned long new_ip,unsigned long new_sp,unsigned int _cs,
+                                                                        unsigned int _ss, unsigned int _ds)
+                                                                {
+                                                                        WARN_ON_ONCE(regs != current_pt_regs());
+
+                                                                        if (static_cpu_has(X86_BUG_NULL_SEG)) {
+                                                                                /* Loading zero below won&#39;t clear the base. */
+                                                                                loadsegment(fs, __USER_DS);
+                                                                                load_gs_index(__USER_DS);
+                                                                        }
+
+                                                                        loadsegment(fs, 0);
+                                                                        loadsegment(es, _ds);
+                                                                        loadsegment(ds, _ds);
+                                                                        load_gs_index(0);
+
+                                                                        regs-&gt;ip                = new_ip; //作为连续的地址，入口地址在应用空间，
+                                                                        regs-&gt;sp                = new_sp;
+                                                                        regs-&gt;cs                = _cs; //x86-64下主要控制返回应用时的权限
+                                                                        regs-&gt;ss                = _ss;
+                                                                        regs-&gt;flags             = X86_EFLAGS_IF;
+                                                                }
+
+
+
+                                        //end load_elf_binary()
+
+                                        put_binfmt();
+
+                                if need_retry //这个程序块的逻辑意义？
+                                        printable:0,1,2,3 如何理解？,已经找到了？，所以return retval//可打印字符，#define printable(c) (((c) == &#39;\t&#39;) || ((c) == &#39;\n&#39;) || (0x20 &lt;= (c) &amp;&amp; (c) &lt;= 0x7e))
+                                        request_module();
+                                        need_retry = false;
+                                        goto retry;
+
+
+                        if(!bprm-&gt;interpreter)//如果这个为空，也就结束了,也就是彻底加载完毕
+                                break;
+
+
+                        exec = bprm-&gt;file;
+                        bprm-&gt;file  = bprm-&gt;interpreter; //进一步加载解释器
+
+                        bprm-&gt;interpreter = NULL;
+
+                        allow_write_access(exec);
+                }  //到这儿就加载完了
+
+                audit_bprm(bprm);
+                trace_sched_process_exec();
+                ptrace_event();  // ptrace_notify / send_sig
+                proc_exec_connector();
+
+        current-&gt;fs-&gt;in_exec = 0; //这个指示是否在运行exec系统调用。
+        current-&gt;in_execve = 0; //这两个参数意义在哪里？
+
+        rseq_execve();  //这个注意，有深度
+        acct_update_integrals();
+        task_numa_free();
+
+    free_bprm(bprm);
+
+putname(filename);
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="id15">
+<h2>ELF文件加载过程总结：<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>linux_binprm 结构初始化；</p></li>
+<li><p>打开可执行文件，并读文件头；</p></li>
+<li><p>根据文件头读段表；</p></li>
+<li><p>判断是否存在PT_INTRP段，并从文件中读出段对应的加载器路径名；</p></li>
+<li><p>加载可执行文件的PT_LOAD属性的段；</p></li>
+<li><p>如果存在加载器，加载加载器中的PT_LOAD段；</p></li>
+<li><p>构建mm-&gt;saved_auxv;</p></li>
+<li><p>将传入的参数列表、环境变量列表及构建的mm-&gt;saved_auxv存入应用栈；</p></li>
+<li><p>如果有加载器，则将与加载器入口相关的参数存入内核栈的pt_regs变量中，否则使用应用程序的入口构建；</p></li>
+<li><p>完成加载并返回系统调用，从而进入应用程序执行，如果有加载器，则跳入加载器应用入口根据已有信息对可执行文件进行符号链接等进一步操作，最后加载器跳到应用软件入口进行执行；否则直接执行应用软件；</p></li>
+</ol>
+<p>注意，这仅对可执行程序的加载进行粗略描述，具体实现中还涉及进程、内存、安全校验等放方面面的内容。具体的链接过程我们在GNU LD中进行描述。</p>
+</div>
+<div class="section" id="id16">
+<h2>总结<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+<p>如果要了解ELF细节，可结合ELF规范和系统ELF相关头文件中结构定义进行理解，可借助reaelf,objdump等工具进行分析。此处我们已经理解ELF文件格式，重点在Linux内核中ELF文件的加载上。</p>
+<p>了版本</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="comp_gcc.html" class="btn btn-neutral float-left" title="GCC 在linux 内核中的应用" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="comp_uwind.html" class="btn btn-neutral float-right" title="UWIND" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

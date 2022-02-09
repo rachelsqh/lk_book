@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux 内核通知链: notifier &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="linux 工作队列: workqueue" href="workqueue.html" />
+    <link rel="prev" title="linux 资源管理: resource" href="resource.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核代码分析</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核基础</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="lock.html">linux 锁总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extable.html">linux 异常表:extable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jump_label.html">linux :jump_label 分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kexec_elf.html">linux 加载ELF 内核文件：kexec_file_load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="irq/index.html">linux 中断架构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="resource.html">linux 资源管理: resource</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">linux 内核通知链: notifier</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">应用场景描述</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">通知链分类</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">结构</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">导出符号</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">常用通知链总结</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reboot">reboot通知链接总结</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="workqueue.html">linux 工作队列: workqueue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="signal.html">linux 信号:signal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kallsyms.html">linux 内核符号原理:kallsyms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="module.html">linux 内核模块实现原理分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="seccomp.html">linux 沙箱:seccomp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="trace/index.html">linux 内核跟踪调试代码架构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lk_sec/index.html">linux 内核安全架构分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="func_injection.html">linux fail_function分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sysctl.html">linux 通用linux系统控制接口:sysctl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sys.html">linux 系统级接口：sys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="static_call.html">linux static_call 分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stacktrace.html">linux 栈跟踪管理函数：stacktrace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stackleak.html">linux stackleak</a></li>
+<li class="toctree-l3"><a class="reference internal" href="printk.html">linux printk实现原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rcu.html">linux rcu原理分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kcsan.html">linux KCSAN分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="power.html">linux 电源管理:power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="softirq.html">linux 软中断：softirq</a></li>
+<li class="toctree-l3"><a class="reference internal" href="syscall.html">linux 系统调用原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="alg_base.html">linux 基础算法总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_ps/index.html">linux 进程管理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_mem/index.html">linux 内存管理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_fs/index.html">linux 文件系统分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_cpu/index.html">linux CPU管理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_driver/index.html">linux 驱动架构分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_net/index.html">linux 内核网络代码分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_virt/index.html">linux 内核虚拟化技术</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kobject.html">kobject理解</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">linux 内核代码分析</a> &raquo;</li>
+          <li><a href="index.html">linux 内核基础</a> &raquo;</li>
+      <li>linux 内核通知链: notifier</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_code/kernel_base/notifier.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux-notifier">
+<h1>linux 内核通知链: notifier<a class="headerlink" href="#linux-notifier" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>应用场景描述<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>管理通知链的例程，用于将状态更改传递给任何感兴趣的例程。 对某个状态感兴趣的例程则可以将自己的状态处理hook注册到对应通知链上。</p>
+</div>
+<div class="section" id="id2">
+<h2>通知链分类<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>原子通知链：在中断/原子上下文中运行回调。回调例程中不允许阻塞。</p></li>
+<li><p>可阻塞通知链：运行在进程上下文，回调例程中允许阻塞。</p></li>
+<li><p>原始通知链：对回调例程的调用、注册、注销没有限制，由调用者提供加锁和保护。</p></li>
+<li><p>SRCU通知链：阻塞通知链的一种变体，具有相同的限制。</p></li>
+</ul>
+<p>可以从原子上下文调用atomic_notifier_chain_register()，但只能从进程上下文调用blocking_notifier_chain_register()和srcu_notifier_chain_register()，这个规则同样适用于对应的注销函数。
+不能在通知链中调用atomic_notifier_chain_unregister(), blocking_notifier_chain_unregister()和srcu_notifier_chain_unregister()函数。</p>
+<p>SRCU通知链是阻塞通知链的变体。用SRCU（Sleepable Read-Copy Update）代替rw信号量作为链的保护方式。srcu_notifier_call_chain()有很低的开销：no cache bounces and no memory barriers.当链会被非常频繁地调用但 notifier_blocks 很少被删除时，应该使用 SRCU 通知链。</p>
+</div>
+<div class="section" id="id3">
+<h2>结构<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">notifier相关结构</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">notifier_block</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="nf">int</span> <span class="p">(</span><span class="o">*</span><span class="n">notifier_fn_t</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">notifier_block</span> <span class="o">*</span><span class="n">nb</span><span class="p">,</span>
+<span class="hll">                <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">action</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
+</span><span class="hll">
+</span><span class="k">struct</span> <span class="nc">notifier_block</span> <span class="p">{</span>
+        <span class="n">notifier_fn_t</span> <span class="n">notifier_call</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">notifier_block</span> <span class="n">__rcu</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">priority</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nc">atomic_notifier_head</span> <span class="p">{</span>
+        <span class="n">spinlock_t</span> <span class="n">lock</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">notifier_block</span> <span class="n">__rcu</span> <span class="o">*</span><span class="n">head</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nc">blocking_notifier_head</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">rw_semaphore</span> <span class="n">rwsem</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">notifier_block</span> <span class="n">__rcu</span> <span class="o">*</span><span class="n">head</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nc">raw_notifier_head</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">notifier_block</span> <span class="n">__rcu</span> <span class="o">*</span><span class="n">head</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nc">srcu_notifier_head</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">mutex</span> <span class="n">mutex</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">srcu_struct</span> <span class="n">srcu</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">notifier_block</span> <span class="n">__rcu</span> <span class="o">*</span><span class="n">head</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>通知链声明：</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">通知链初始化</span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define ATOMIC_NOTIFIER_HEAD(name)      。。。。。。</span>
+<span class="cp">#define BLOCKING_NOTIFIER_HEAD(name)    。。。。。。</span>
+<span class="cp">#define RAW_NOTIFIER_HEAD(name)         。。。。。。</span>
+<span class="hll"><span class="cp">#define SRCU_NOTIFIER_HEAD(name)        。。。。。。</span>
+</span><span class="hll"><span class="cp">#define SRCU_NOTIFIER_HEAD_STATIC(name)         。。。。。。</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>导出符号<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">导出函数</span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">atomic_notifier_chain_register</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">atomic_notifier_chain_unregister</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">atomic_notifier_call_chain_robust</span><span class="p">);</span>
+<span class="hll"><span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">atomic_notifier_call_chain</span><span class="p">);</span>
+</span><span class="hll"><span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">blocking_notifier_chain_register</span><span class="p">);</span>
+</span><span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">blocking_notifier_chain_unregister</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">blocking_notifier_call_chain_robust</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">blocking_notifier_call_chain</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">raw_notifier_chain_register</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">raw_notifier_chain_unregister</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">raw_notifier_call_chain_robust</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">raw_notifier_call_chain</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">srcu_notifier_chain_register</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">srcu_notifier_chain_unregister</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">srcu_notifier_call_chain</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">srcu_init_notifier_head</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">register_die_notifier</span><span class="p">);</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">unregister_die_notifier</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>常用通知链总结<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p>到目前为止已声明的通知程序。 可以想象随着时间的推移会有更多的链（例如笔记本电脑电源重置链、重启链（清理设备单元）、设备 [un]mount 链、模块加载/卸载链、内存不足链、screenblank 链（用于插入 模块化screenblankers）VC开关链（用于可加载内核svgalib VC开关助手）等……</p>
+<ul class="simple">
+<li><p>CPU 通知器在 include/linux/cpu.h 中定义。</p></li>
+<li><p>netdevice 通知器在 include/linux/netdevice.h 中定义</p></li>
+<li><p>重启通知在 include/linux/reboot.h 中定义。</p></li>
+<li><p>休眠和挂起事件在 include/linux/suspend.h 中定义。</p></li>
+<li><p>虚拟终端事件在 include/linux/vt.h 中定义。</p></li>
+<li><p>arch/x86/kernel/cpu/mce/core.c:BLOCKING_NOTIFIER_HEAD(x86_mce_decoder_chain);</p></li>
+<li><p>arch/x86/kernel/cpu/mce/dev-mcelog.c:BLOCKING_NOTIFIER_HEAD(mce_injector_chain);</p></li>
+<li><p>arch/x86/platform/intel/iosf_mbi.c:BLOCKING_NOTIFIER_HEAD(iosf_mbi_pmic_bus_access_notifier);</p></li>
+<li><p>kernel/notifier.c:15:BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);</p></li>
+<li><p>kernel/notifier.c:533:static ATOMIC_NOTIFIER_HEAD(die_chain);</p></li>
+<li><p>kernel/panic.c:70:ATOMIC_NOTIFIER_HEAD(panic_notifier_list);</p></li>
+<li><p>kernel/power/main.c:69:static BLOCKING_NOTIFIER_HEAD(pm_chain_head);</p></li>
+<li><p>kernel/power/qos.c:444:        BLOCKING_INIT_NOTIFIER_HEAD(c-&gt;notifiers);</p></li>
+<li><p>kernel/power/qos.c:453:        BLOCKING_INIT_NOTIFIER_HEAD(c-&gt;notifiers);</p></li>
+<li><p>kernel/profile.c:138:static BLOCKING_NOTIFIER_HEAD(task_exit_notifier);</p></li>
+<li><p>kernel/profile.c:139:static ATOMIC_NOTIFIER_HEAD(task_free_notifier);</p></li>
+<li><p>kernel/profile.c:140:static BLOCKING_NOTIFIER_HEAD(munmap_notifier);</p></li>
+<li><p>kernel/reboot.c:142:static ATOMIC_NOTIFIER_HEAD(restart_handler_list);</p></li>
+<li><p>kernel/time/timekeeping.c:649:static RAW_NOTIFIER_HEAD(pvclock_gtod_chain);</p></li>
+<li><p>kernel/tracepoint.c:577:static BLOCKING_NOTIFIER_HEAD(tracepoint_notify_list);</p></li>
+<li><p>mm/oom_kill.c:1025:static BLOCKING_NOTIFIER_HEAD(oom_notify_list);</p></li>
+<li><p>mm/vmalloc.c:780:static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);</p></li>
+<li><p>crypto/api.c:30:BLOCKING_NOTIFIER_HEAD(crypto_chain);</p></li>
+<li><p>crypto/fips.c:19:ATOMIC_NOTIFIER_HEAD(fips_fail_notif_chain);</p></li>
+<li><p>security/security.c:74:static BLOCKING_NOTIFIER_HEAD(blocking_lsm_notifier_chain);</p></li>
+</ul>
+</div>
+<div class="section" id="reboot">
+<h2>reboot通知链接总结<a class="headerlink" href="#reboot" title="Permalink to this headline">¶</a></h2>
+<img alt="../../_images/notifier_reboot.svg" class="align-center" src="../../_images/notifier_reboot.svg" /></div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="resource.html" class="btn btn-neutral float-left" title="linux 资源管理: resource" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="workqueue.html" class="btn btn-neutral float-right" title="linux 工作队列: workqueue" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内核make目标分析 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="linux内核构建系统" href="build_base.html" />
+    <link rel="prev" title="linux 内核构建" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核构建</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">内核make目标分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build_base.html">linux内核构建系统</a></li>
+<li class="toctree-l3"><a class="reference internal" href="k_build.html">Kconfig配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="m_build.html">内核模块编译</a></li>
+<li class="toctree-l3"><a class="reference internal" href="k_misc.html">其他</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_comp/index.html">linux 内核编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="index.html">linux 内核构建</a> &raquo;</li>
+      <li>内核make目标分析</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_devel/lk_build/k_make.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="make">
+<h1>内核make目标分析<a class="headerlink" href="#make" title="Permalink to this headline">¶</a></h1>
+<p>除了我们常用的几个目标，还有很多深入内核开发需要掌握的目标。</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">make 参数</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-sh notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     Cleaning targets:
+<span class="hll">       clean           - Remove most generated files but keep the config and
+</span>                         enough build support to build external modules
+       mrproper        - Remove all generated files + config + various backup files
+       distclean       - mrproper + remove editor backup and patch files
+
+     Configuration targets:
+       config          - Update current config utilising a line-oriented program
+       nconfig         - Update current config utilising a ncurses menu based program
+       menuconfig      - Update current config utilising a menu based program
+       xconfig         - Update current config utilising a Qt based front-end
+       gconfig         - Update current config utilising a GTK+ based front-end
+       oldconfig       - Update current config utilising a provided .config as base
+       localmodconfig  - Update current config disabling modules not loaded
+                         except those preserved by LMC_KEEP environment variable
+       localyesconfig  - Update current config converting <span class="nb">local</span> mods to core
+                         except those preserved by LMC_KEEP environment variable
+       defconfig       - New config with default from ARCH supplied defconfig
+       savedefconfig   - Save current config as ./defconfig <span class="o">(</span>minimal config<span class="o">)</span>
+       allnoconfig     - New config where all options are answered with no
+       allyesconfig    - New config where all options are accepted with yes
+       allmodconfig    - New config selecting modules when possible
+       alldefconfig    - New config with all symbols <span class="nb">set</span> to default
+       randconfig      - New config with random answer to all options
+       yes2modconfig   - Change answers from yes to mod <span class="k">if</span> possible
+       mod2yesconfig   - Change answers from mod to yes <span class="k">if</span> possible
+       listnewconfig   - List new options
+       helpnewconfig   - List new options and <span class="nb">help</span> text
+       olddefconfig    - Same as oldconfig but sets new symbols to their
+                         default value without prompting
+       tinyconfig      - Configure the tiniest possible kernel
+       testconfig      - Run Kconfig unit tests <span class="o">(</span>requires python3 and pytest<span class="o">)</span>
+
+     Other generic targets:
+       all             - Build all targets marked with <span class="o">[</span>*<span class="o">]</span>
+     * vmlinux         - Build the bare kernel
+     * modules         - Build all modules
+       modules_install - Install all modules to INSTALL_MOD_PATH <span class="o">(</span>default: /<span class="o">)</span>
+       dir/            - Build all files in dir and below
+       dir/file.<span class="o">[</span>ois<span class="o">]</span>  - Build specified target only
+       dir/file.ll     - Build the LLVM assembly file
+                         <span class="o">(</span>requires compiler support <span class="k">for</span> LLVM assembly generation<span class="o">)</span>
+       dir/file.lst    - Build specified mixed source/assembly target only
+                         <span class="o">(</span>requires a recent binutils and recent build <span class="o">(</span>System.map<span class="o">))</span>
+       dir/file.ko     - Build module including final link
+       modules_prepare - Set up <span class="k">for</span> building external modules
+       tags/TAGS       - Generate tags file <span class="k">for</span> editors
+       cscope          - Generate cscope index
+       gtags           - Generate GNU GLOBAL index
+       kernelrelease   - Output the release version string <span class="o">(</span>use with make -s<span class="o">)</span>
+       kernelversion   - Output the version stored in Makefile <span class="o">(</span>use with make -s<span class="o">)</span>
+       image_name      - Output the image name <span class="o">(</span>use with make -s<span class="o">)</span>
+       headers_install - Install sanitised kernel headers to INSTALL_HDR_PATH
+                         <span class="o">(</span>default: ./usr<span class="o">)</span>
+
+     Static analysers:
+       checkstack      - Generate a list of stack hogs
+       versioncheck    - Sanity check on version.h usage
+       includecheck    - Check <span class="k">for</span> duplicate included header files
+       export_report   - List the usages of all exported symbols
+       headerdep       - Detect inclusion cycles in headers
+       coccicheck      - Check with Coccinelle
+       clang-analyzer  - Check with clang static analyzer
+       clang-tidy      - Check with clang-tidy
+
+     Tools:
+       nsdeps          - Generate missing symbol namespace dependencies
+
+     Kernel selftest:
+       kselftest         - Build and run kernel selftest
+                           Build, install, and boot kernel before
+                           running kselftest on it
+                           Run as root <span class="k">for</span> full coverage
+       kselftest-all     - Build kernel selftest
+       kselftest-install - Build and install kernel selftest
+       kselftest-clean   - Remove all generated kselftest files
+       kselftest-merge   - Merge all the config dependencies of
+                           kselftest to existing .config.
+
+     Userspace tools targets:
+       use <span class="s2">&quot;make tools/help&quot;</span>
+       or  <span class="s2">&quot;cd tools; make help&quot;</span>
+
+     Kernel packaging:
+       rpm-pkg             - Build both <span class="nb">source</span> and binary RPM kernel packages
+       binrpm-pkg          - Build only the binary kernel RPM package
+       deb-pkg             - Build both <span class="nb">source</span> and binary deb kernel packages
+       bindeb-pkg          - Build only the binary kernel deb package
+       snap-pkg            - Build only the binary kernel snap package
+                             <span class="o">(</span>will connect to external hosts<span class="o">)</span>
+       dir-pkg             - Build the kernel as a plain directory structure
+       tar-pkg             - Build the kernel as an uncompressed tarball
+       targz-pkg           - Build the kernel as a gzip compressed tarball
+       tarbz2-pkg          - Build the kernel as a bzip2 compressed tarball
+       tarxz-pkg           - Build the kernel as a xz compressed tarball
+       perf-tar-src-pkg    - Build perf-5.14.16.tar <span class="nb">source</span> tarball
+       perf-targz-src-pkg  - Build perf-5.14.16.tar.gz <span class="nb">source</span> tarball
+       perf-tarbz2-src-pkg - Build perf-5.14.16.tar.bz2 <span class="nb">source</span> tarball
+       perf-tarxz-src-pkg  - Build perf-5.14.16.tar.xz <span class="nb">source</span> tarball
+
+     Documentation targets:
+      Linux kernel internal documentation in different formats from ReST:
+       htmldocs        - HTML
+       latexdocs       - LaTeX
+       pdfdocs         - PDF
+       epubdocs        - EPUB
+       xmldocs         - XML
+       linkcheckdocs   - check <span class="k">for</span> broken external links
+                         <span class="o">(</span>will connect to external hosts<span class="o">)</span>
+       refcheckdocs    - check <span class="k">for</span> references to non-existing files under
+                         Documentation
+       cleandocs       - clean all generated files
+
+       make <span class="nv">SPHINXDIRS</span><span class="o">=</span><span class="s2">&quot;s1 s2&quot;</span> <span class="o">[</span>target<span class="o">]</span> Generate only docs of folder s1, s2
+       valid values <span class="k">for</span> SPHINXDIRS are: PCI RCU accounting admin-guide arm arm64 block bpf cdrom core-api cpu-freq crypto dev-tools devicetree doc-guide driver-api fault-injection fb filesystems firmware-guide fpga gpu hid hwmon i2c ia64 ide iio infiniband input isdn kbuild kernel-hacking leds livepatch locking m68k maintainer mhi mips misc-devices netlabel networking nios2 openrisc parisc pcmcia power powerpc process riscv s390 scheduler scsi security sh sound sparc spi staging target timers trace translations usb userspace-api virt vm w1 watchdog x86 xtensa
+
+       make <span class="nv">SPHINX_CONF</span><span class="o">={</span>conf-file<span class="o">}</span> <span class="o">[</span>target<span class="o">]</span> use *additional* sphinx-build
+       configuration. This is e.g. useful to build with nit-picking config.
+
+       Default location <span class="k">for</span> the generated documents is Documentation/output
+
+     Architecture specific targets <span class="o">(</span>x86<span class="o">)</span>:
+     * bzImage               - Compressed kernel image <span class="o">(</span>arch/x86/boot/bzImage<span class="o">)</span>
+       install               - Install kernel using <span class="o">(</span>your<span class="o">)</span> ~/bin/installkernel or
+                               <span class="o">(</span>distribution<span class="o">)</span> /sbin/installkernel or install to
+                               <span class="k">$(</span>INSTALL_PATH<span class="k">)</span> and run lilo
+
+       fdimage               - Create <span class="m">1</span>.4MB boot floppy image <span class="o">(</span>arch/x86/boot/fdimage<span class="o">)</span>
+       fdimage144            - Create <span class="m">1</span>.4MB boot floppy image <span class="o">(</span>arch/x86/boot/fdimage<span class="o">)</span>
+       fdimage288            - Create <span class="m">2</span>.8MB boot floppy image <span class="o">(</span>arch/x86/boot/fdimage<span class="o">)</span>
+       hdimage               - Create a BIOS/EFI hard disk image <span class="o">(</span>arch/x86/boot/hdimage<span class="o">)</span>
+       isoimage              - Create a boot CD-ROM image <span class="o">(</span>arch/x86/boot/image.iso<span class="o">)</span>
+                               bzdisk/fdimage*/hdimage/isoimage also accept:
+                               <span class="nv">FDARGS</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>  arguments <span class="k">for</span> the booted kernel
+                               <span class="nv">FDINITRD</span><span class="o">=</span>file initrd <span class="k">for</span> the booted kernel
+
+       kvm_guest.config      - Enable Kconfig items <span class="k">for</span> running this kernel as a KVM guest
+       xen.config            - Enable Kconfig items <span class="k">for</span> running this kernel as a Xen guest
+
+       i386_defconfig              - Build <span class="k">for</span> i386
+       x86_64_defconfig            - Build <span class="k">for</span> x86_64
+
+       make <span class="nv">V</span><span class="o">=</span><span class="m">0</span><span class="p">|</span><span class="m">1</span> <span class="o">[</span>targets<span class="o">]</span> <span class="nv">0</span> <span class="o">=</span>&gt; quiet build <span class="o">(</span>default<span class="o">)</span>, <span class="nv">1</span> <span class="o">=</span>&gt; verbose build
+       make <span class="nv">V</span><span class="o">=</span><span class="m">2</span>   <span class="o">[</span>targets<span class="o">]</span> <span class="nv">2</span> <span class="o">=</span>&gt; give reason <span class="k">for</span> rebuild of target
+       make <span class="nv">O</span><span class="o">=</span>dir <span class="o">[</span>targets<span class="o">]</span> Locate all output files in <span class="s2">&quot;dir&quot;</span>, including .config
+       make <span class="nv">C</span><span class="o">=</span><span class="m">1</span>   <span class="o">[</span>targets<span class="o">]</span> Check re-compiled c <span class="nb">source</span> with <span class="nv">$CHECK</span>
+                            <span class="o">(</span>sparse by default<span class="o">)</span>
+       make <span class="nv">C</span><span class="o">=</span><span class="m">2</span>   <span class="o">[</span>targets<span class="o">]</span> Force check of all c <span class="nb">source</span> with <span class="nv">$CHECK</span>
+       make <span class="nv">RECORDMCOUNT_WARN</span><span class="o">=</span><span class="m">1</span> <span class="o">[</span>targets<span class="o">]</span> Warn about ignored mcount sections
+       make <span class="nv">W</span><span class="o">=</span>n   <span class="o">[</span>targets<span class="o">]</span> Enable extra build checks, <span class="nv">n</span><span class="o">=</span><span class="m">1</span>,2,3 where
+                     <span class="m">1</span>: warnings which may be relevant and <span class="k">do</span> not occur too often
+                     <span class="m">2</span>: warnings which occur quite often but may still be relevant
+                     <span class="m">3</span>: more obscure warnings, can most likely be ignored
+                     Multiple levels can be combined with <span class="nv">W</span><span class="o">=</span><span class="m">12</span> or <span class="nv">W</span><span class="o">=</span><span class="m">123</span>
+
+     Execute <span class="s2">&quot;make&quot;</span> or <span class="s2">&quot;make all&quot;</span> to build all targets marked with <span class="o">[</span>*<span class="o">]</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>更深入描述：</p>
+<blockquote>
+<div><p>make driver/tty/sysrq.i  //预编译
+make driver/tty/sysrq.s  //产生汇编代码
+make driver/tty/sysrq.o // 产生对象文件</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>清除目标：</dt><dd><ol class="loweralpha simple">
+<li><p>clean        -删除大多数产生的文件，保持config和构建外部模块需要的支持文件不变。</p></li>
+<li><p>mrproper     -删除所有产生的文件、config文件和各种备份文件。</p></li>
+<li><p>distclean    - 其除实现mrproper功能外删除编辑器备份和补丁文件。</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>目标配置：</p></li>
+<li><dl>
+<dt>其他通用目标：</dt><dd><ol class="loweralpha simple">
+<li><p>all            - 构建b和c中构建的目标</p></li>
+<li><ul class="simple">
+<li><p>vmlinux      - 构建裸内核</p></li>
+</ul>
+</li>
+</ol>
+<p>c. * modules      - 构建所有模块
+e. modules_install - 安装所有内核模块到路径 INSTALL_MOD_PATH (default: /)
+f. dir/            - 构建目录dir下的所有文件
+g. dir/file.[ois]  - 构建指定的目标</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>make driver/tty/sysrq.i  //预编译</p></li>
+<li><p>make driver/tty/sysrq.s  //产生汇编代码</p></li>
+<li><p>make driver/tty/sysrq.o // 产生对象文件</p></li>
+</ol>
+</div></blockquote>
+<ol class="loweralpha simple" start="8">
+<li><p>dir/file.ll     - 构建LLVM汇编文件（需要编译器支持LLVM汇编功能）</p></li>
+<li><p>dir/file.lst    - 构建指定的源码/汇编代码混合目标(需要最近的 binutils 和最近的构建 (System.map))</p></li>
+<li><p>dir/file.ko     - 构建模块，包括最终链接</p></li>
+<li><p>modules_prepare - 设置用于构建外部模块环境</p></li>
+<li><p>tags/TAGS      - 为编辑器生成标签文件 （如何理解？）</p></li>
+<li><p>cscope         - 产生 cscope 索引</p></li>
+<li><p>gtags           - 产生 GNU 全局索引</p></li>
+<li><p>kernelrelease          - 输出发布版本字符串 ( use with make -s)</p></li>
+<li><p>kernelversion          - 输出Makefile保存的 version  (use with make -s)</p></li>
+<li><p>image_name     - 输出镜像名称 (use with make -s)</p></li>
+<li><p>headers_install - 安装经过清理的内核头文件到路径INSTALL_HDR_PATH(default: ./usr)</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>静态分析器：</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>checkstack      - 生成堆栈占用列表</p></li>
+<li><p>versioncheck    - version.h 使用情况的健全性检查</p></li>
+<li><p>includecheck    - 检查重复的包含头文件</p></li>
+<li><p>export_report   - 列出所有导出符号的用法</p></li>
+<li><p>headerdep       - 检测标头中的包含周期</p></li>
+<li><p>coccicheck      - Coccinelle 检查</p></li>
+<li><p>clang-analyzer  - 用 clang 静态分析器检查</p></li>
+<li><p>clang-tidy      - 用 clang-tidy 检查</p></li>
+</ol>
+</div></blockquote>
+</li>
+<li><dl class="simple">
+<dt>工具：</dt><dd><ol class="loweralpha simple">
+<li><p>nsdeps          - 生成缺少的符号命名空间依赖项</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>内核自测：</dt><dd><ol class="loweralpha simple">
+<li><p>kselftest         - 构建和运行内核 selftest 在运行 kselftest 之前构建、安装和引导内核 以 root 身份运行以获得全面覆盖</p></li>
+<li><p>kselftest-all     - 构建内核自检</p></li>
+<li><p>kselftest-install - 构建和安装内核自检</p></li>
+<li><p>kselftest-clean   - 删除所有生成的 kselftest 文件</p></li>
+<li><p>kselftest-merge   - 将 kselftest 的所有配置依赖项合并到现有的 .config 中。</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>用户空间工具目标：</dt><dd><ol class="loweralpha simple">
+<li><p>use “make tools/help”</p></li>
+<li><p>“cd tools; make help”</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>内核打包：</dt><dd><ol class="loweralpha simple">
+<li><p>rpm-pkg             - 构建源代码和二进制 RPM 内核包</p></li>
+<li><p>binrpm-pkg          - 仅构建二进制内核 RPM 包</p></li>
+<li><p>deb-pkg             - 构建源代码和二进制 deb 内核包</p></li>
+<li><p>bindeb-pkg          - 仅构建二进制内核 deb 包</p></li>
+<li><p>snap-pkg            - 仅构建二进制内核快照包（将连接到外部主机）</p></li>
+<li><p>dir-pkg             - 将内核构建为普通目录结构</p></li>
+<li><p>tar-pkg             - 将内核构建为未压缩的 tarball</p></li>
+<li><p>targz-pkg           - 将内核构建为 gzip 压缩 tarball</p></li>
+<li><p>tarbz2-pkg          - 将内核构建为 bgzip2 压缩 tarball</p></li>
+<li><p>tarxz-pkg           - 将内核构建为 xz 压缩 tarball</p></li>
+<li><p>perf-tar-src-pkg    - 构建 perf-5.14.16.tar 源 tarball</p></li>
+<li><p>perf-targz-src-pkg  - 构建 perf-5.14.16.tar.gz 源 tarball</p></li>
+<li><p>perf-tarbz2-src-pkg - 构建 perf-5.14.16.tar.bz2 源 tarball</p></li>
+<li><p>perf-tarxz-src-pkg  - 构建 perf-5.14.16.tar.xz 源 tarball</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>文档目标</p>
+<blockquote>
+<div><p>从ReST构建内核文档:
+a. htmldocs        - HTML
+b. latexdocs       - LaTeX
+c. pdfdocs         - PDF
+d. epubdocs        - EPUB
+e. xmldocs         - XML
+f. linkcheckdocs   - check for broken external links</p>
+<blockquote>
+<div><p>(will connect to external hosts)</p>
+</div></blockquote>
+<ol class="loweralpha simple" start="7">
+<li><dl class="simple">
+<dt>refcheckdocs    - check for references to non-existing files under</dt><dd><p>Documentation</p>
+</dd>
+</dl>
+</li>
+<li><p>cleandocs       - clean all generated files</p></li>
+</ol>
+</div></blockquote>
+</li>
+<li><p>架构相关目标 (x86):</p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><ul class="simple">
+<li><p>bzImage            - 压缩后的内核镜像 (arch/x86/boot/bzImage)</p></li>
+</ul>
+</li>
+<li><dl class="simple">
+<dt>install              - Install kernel using (your) ~/bin/installkernel or</dt><dd><p>(distribution) /sbin/installkernel or install to
+$(INSTALL_PATH) and run lilo</p>
+</dd>
+</dl>
+</li>
+<li><p>fdimage              - Create 1.4MB boot floppy image (arch/x86/boot/fdimage)</p></li>
+<li><p>fdimage144           - Create 1.4MB boot floppy image (arch/x86/boot/fdimage)</p></li>
+<li><p>fdimage288           - Create 2.8MB boot floppy image (arch/x86/boot/fdimage)</p></li>
+<li><p>hdimage              - Create a BIOS/EFI hard disk image (arch/x86/boot/hdimage)</p></li>
+<li><dl class="simple">
+<dt>isoimage             - Create a boot CD-ROM image (arch/x86/boot/image.iso)</dt><dd><p>bzdisk/fdimage*/hdimage/isoimage also accept:
+FDARGS=”…”  arguments for the booted kernel
+FDINITRD=file initrd for the booted kernel</p>
+</dd>
+</dl>
+</li>
+<li><p>kvm_guest.config     - 启用 Kconfig 项以将此内核作为 KVM 客体运行</p></li>
+<li><p>xen.config           - 启用 Kconfig 项以将此内核作为 Xen 客体运行</p></li>
+<li><p>i386_defconfig              - Build for i386</p></li>
+<li><p>x86_64_defconfig            - Build for x86_64</p></li>
+<li><p>make V=0|1 [targets] 0 =&gt; quiet build (default), 1 =&gt; verbose build</p></li>
+<li><p>make V=2   [targets] 2 =&gt; 给出重建目标的理由</p></li>
+<li><p>make O=dir [targets] Locate all output files in “dir”, including .config</p></li>
+<li><p>make C=1   [targets] 使用 $CHECK 检查重新编译的 c 源代码 (sparse by default)</p></li>
+<li><p>make C=2   [targets] 使用 $CHECK 强制检查所有 c 源代码</p></li>
+<li><p>make RECORDMCOUNT_WARN=1 [targets] 警告忽略的 mcount 部分</p></li>
+<li><dl>
+<dt>make W=n   [targets] 启用额外的构建检查, n=1,2,3 where</dt><dd><ol class="arabic simple">
+<li><p>可能相关且不经常出现的警告</p></li>
+<li><p>经常出现但可能仍然相关的警告</p></li>
+</ol>
+<p>3. 更模糊的警告，很可能会被忽略
+多个级别可以结合 W=12 or W=123</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p>执行”make”或”make all”来构建所有加[*]的目标。</p>
+</div></blockquote>
+</li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="linux 内核构建" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="build_base.html" class="btn btn-neutral float-right" title="linux内核构建系统" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

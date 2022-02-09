@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内核级异常处理 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../lk_devel/index.html">linux 内核开发</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>内核级异常处理</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/lk_code/arch_x86/k_doc/exception-tables.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>内核级异常处理<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>这部分的理解是非常清晰的。</p>
+<p>进程运行在内核模式时，通常需要访问由不被信任的程序传递过来的处于用户模式的内存地址。为了自我保护，内核需要对这个地址进行校验。</p>
+<p>历史：</p>
+<p>旧版本linux通过verify_area(int type,const void <a href="#id2"><span class="problematic" id="id3">*</span></a>addr,unsigned longsize)函数来实现（后来被access_ok()函数代替）。这个函数判断这个地址范围是否能进行特定类型（读/写）的访问。verify_read需要查询包含地址的vma。正常情况下（正确运行的程序），这个测试是成功的。只在少数有bug的程序中会出现错误的情况。在一些内核分析测试中，这种验证会占用大量时间。</p>
+<p>为了解决这个问题，Linux决定由虚拟内存硬件来处理这个测试。</p>
+<p>实现原理为：</p>
+<p>当内存试图访问一个当前不能访问的地址时，CPU产生一个页错误一场，并调用页错误处理程序：</p>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">缺页异常处理程序</span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-sh notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>void do_page_fault<span class="o">(</span>struct pt_regs *regs, unsigned long error_code<span class="o">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>在arch/x86/mm/fault.c。堆栈上的参数由 arch/x86/entry/entry_32.S 中汇编程序设置。参数 regs 是指向堆栈上保存的寄存器的指针，error_code 包含异常的原因代码。</p>
+<p>do_page_fault 首先从控制寄存器CR2读取不可访问地址。如果地址在进程的虚拟地址空间中，可能会以为页面没有换进来，写保护或类似的问题产生错误。我们更关心另外一种情况：地址无效，没有包含地址的vma。这种情况下，内核跳转到bad_area 标签。</p>
+<p>此时通过产生一场的指令的地址（如regs-&gt;eip)来查询一个继续运行的地址（fixup)。如果查询成功，错误处理程序修改返回地址，并返回。一场处理在这个地址上继续运行。</p>
+<p>fixup指向的位置
+由于我们跳转到 fixup 的内容，fixup指向的是可执行代码。此代码隐藏在用户访问宏中。以 arch/x86/include/asm/uaccess.h 中定义的 get_user 宏作为示例。这个定义有点难以理解，所以让我们看看预处理器和编译器生成的代码。选择在 drivers/tty/sysrq.c 中 get_user 调用进行详细检查。</p>
+<p>sysrq.c,1155行：</p>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text">get_user</span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-sh notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>get_user<span class="o">(</span>c, buf<span class="o">)</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>预处理输出：</p>
+<p>插入一下：如何与编译某些内核文件。</p>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text">与编译sysrq.c</span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="highlight-sh notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>make driver/tty/sysrq.i  //预编译
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>相关代码为：</p>
+<p>结构定义：</p>
+<p>汇编代码：</p>
+<p>section __ex_table
+.pushsection __ex_table</p>
+<p>所有__ex_table成员放入__ex_table节中</p>
+<p>arch/x86/kernel/vmlinux.lds</p>
+<p>. = ALIGN(16); __ex_table : AT(ADDR(__ex_table) - 0xffffffff80000000) { __start___ex_table = .; KEEP(<a href="#id4"><span class="problematic" id="id5">*</span></a>(__ex_table)) __stop___ex_table = .; }</p>
+<p>我们再来看定义：</p>
+<p>extern struct exception_table_entry __start___ex_table[];
+extern struct exception_table_entry __stop___ex_table[];</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>The exception table consists of triples of addresses relative to the</p></li>
+<li><p>exception table entry itself. The first address is of an instruction</p></li>
+<li><p>that is allowed to fault, the second is the target at which the program</p></li>
+<li><p>should continue. The third is a handler function to deal with the fault</p></li>
+<li><p>caused by the instruction in the first field.</p></li>
+<li></li>
+<li><p>All the routines below use bits of fixup code that are out of line</p></li>
+<li><p>with the main instruction path.  This means when everything is well,</p></li>
+<li><p>we don’t even have to jump over them.  Further, they do not intrude</p></li>
+<li><p>on our cache or tlb entries.</p></li>
+</ul>
+<p><a href="#id6"><span class="problematic" id="id7">*</span></a>/</p>
+</dd>
+<dt>struct exception_table_entry {</dt><dd><p>int insn, fixup, handler;</p>
+</dd>
+</dl>
+<p>};</p>
+<p>也就是说 __ex_table节是struct exception_table_entry结构的列表。</p>
+<p>流程为：</p>
+<p>那么，如果内核模式的故障没有合适的 vma 发生，实际会发生什么呢？</p>
+<ol class="arabic simple">
+<li><p>访问无效地址：</p></li>
+</ol>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text">访问无效地址</span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="highlight-sh notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>&gt; c017e7a5 &lt;do_con_write+e1&gt; movb   <span class="o">(</span>%ebx<span class="o">)</span>,%dl
+</pre></div>
+</td></tr></table></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>MMU 产生异常</p></li>
+<li><p>CPU 调用 do_page_fault</p></li>
+<li><p>执行页面错误调用 search_exception_table (regs-&gt;eip == c017e7a5);</p></li>
+<li><p>search_exception_table 在异常表中查找地址c017e7a5（即ELF 部分__ex_table 的内容）并返回相关故障句柄代码c0199ff5 的地址。</p></li>
+<li><p>do_page_fault 修改自己的返回地址指向故障句柄代码并返回。</p></li>
+<li><p>在故障处理代码中继续执行。</p></li>
+<li><p>如下注意：
+a. EAX 变为 -EFAULT (== -14)
+b. DL 变为零（我们从用户空间“读取”的值）
+c. 在本地标签 2 处继续执行（错误用户访问后立即执行的指令地址）。</p></li>
+</ol>
+<p>步骤8a到8c以某种方式模拟了故障指令。</p>
+<p>就是这样，主要是。如果您查看我们的示例，您可能会问为什么我们在异常处理程序代码中将 EAX 设置为 -EFAULT。嗯，get_user 宏实际上返回一个值：0，如果用户访问成功，-EFAULT 表示失败。我们的原始代码没有测试这个返回值，但是 get_user 中的内联汇编代码尝试返回 -EFAULT。GCC 选择 EAX 来返回这个值。</p>
+<p>注意：由于异常表的构建方式需要排序，因此仅对 .text 部分中的代码使用异常。任何其他部分都将导致异常表无法正确排序，并且异常将失败。</p>
+<p>当 64 位支持添加到 x86 Linux 时，情况发生了变化。不是通过将两个条目从 32 位扩展到 64 位来将异常表的大小加倍，而是使用了一个聪明的技巧来将地址存储为与表本身的相对偏移量。汇编代码从：</p>
+<p>在 v4.6 中，异常表条目扩展了一个新字段“处理程序”。这也是 32 位宽并包含第三个相对函数指针，它指向以下之一：</p>
+<p>1. int ex_handler_default(const struct exception_table_entry <a href="#id8"><span class="problematic" id="id9">*</span></a>fixup)
+这是仅跳转到修复代码的遗留案例</p>
+<p>2. int ex_handler_fault(const struct exception_table_entry <a href="#id10"><span class="problematic" id="id11">*</span></a>fixup)
+本案例提供在 entry-&gt;insn 发生的陷阱的故障编号。它用于区分页面错误和机器检查。</p>
+<p>可以轻松添加更多功能。</p>
+<p>CONFIG_BUILDTIME_TABLE_SORT 允许通过主机实用程序脚本/排序表对内核映像的链接后的 __ex_table 部分进行排序。它将符号 main_extable_sort_needed 设置为 0，避免在引导时对 __ex_table 部分进行排序。通过对异常表进行排序，在运行时发生异常时，我们可以通过二进制搜索快速查找 __ex_table 条目。</p>
+<p>这不仅仅是启动时间优化，一些体系结构要求对这个表进行排序，以便在启动过程中相对较早地处理异常。例如，i386 在启用分页支持之前就使用了这种形式的异常处理！</p>
+<p>具体代码分析：</p>
+<p>do_page_fault:</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
