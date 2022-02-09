@@ -14,9 +14,7 @@
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="linux 内核基础" href="kernel_base/index.html" />
-    <link rel="prev" title="perf" href="../lk_devel/lk_debug/perf.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -34,23 +32,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统架构分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">linux 内核代码分析</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="kernel_base/index.html">linux 内核基础</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_ps/index.html">linux 进程管理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_mem/index.html">linux 内存管理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_fs/index.html">linux 文件系统分析</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_cpu/index.html">linux CPU管理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_driver/index.html">linux 驱动架构分析</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lk_net/index.html">linux 内核网络代码分析</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_virt/index.html">linux 内核虚拟化技术</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kobject.html">kobject理解</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../os_sec/index.html">linux 操作系统安全</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="../csxj/index.html">处世悬镜</a></li>
 </ul>
 
@@ -86,7 +68,10 @@
 <li class="toctree-l2"><a class="reference internal" href="kernel_base/lock.html">linux 锁总结</a></li>
 <li class="toctree-l2"><a class="reference internal" href="kernel_base/extable.html">linux 异常表:extable</a></li>
 <li class="toctree-l2"><a class="reference internal" href="kernel_base/jump_label.html">linux :jump_label 分析</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_base/kexec_elf.html">linux 加载ELF 内核文件：kexec_file_load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/kexec_elf.html">linux 加载ELF 内核文件：kexec</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kexec_elf.html#id1">系统调用</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="kernel_base/irq/index.html">linux 中断架构</a><ul class="simple">
 </ul>
 </li>
@@ -325,10 +310,7 @@
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../lk_devel/lk_debug/perf.html" class="btn btn-neutral float-left" title="perf" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="kernel_base/index.html" class="btn btn-neutral float-right" title="linux 内核基础" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

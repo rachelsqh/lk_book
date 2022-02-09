@@ -9,11 +9,6 @@ Rachel's E-book's
 .. toctree::
    :maxdepth: 5
    
-   os_base/index
-   lk_devel/index
-   lk_code/index
-   os_sec/index
-   my_os/index
    csxj/index
 
 

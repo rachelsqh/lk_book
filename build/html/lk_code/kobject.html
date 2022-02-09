@@ -14,9 +14,7 @@
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="linux 操作系统安全" href="../os_sec/index.html" />
-    <link rel="prev" title="linux 内核虚拟化技术" href="kernel_virt/kernel_vir/index.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -34,36 +32,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统架构分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">linux 内核代码分析</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="kernel_base/index.html">linux 内核基础</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_ps/index.html">linux 进程管理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_mem/index.html">linux 内存管理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_fs/index.html">linux 文件系统分析</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_cpu/index.html">linux CPU管理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_driver/index.html">linux 驱动架构分析</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lk_net/index.html">linux 内核网络代码分析</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kernel_virt/index.html">linux 内核虚拟化技术</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">kobject理解</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ksetkobject">对kset、kobject的理解</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id1">kobject 结构关系图</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#uevent">uevent总结</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#kobject-api">kobject API总结</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#kobjectkset">kobject加入kset</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id12">kobject 操作</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#id13">内嵌kobject的内核结构</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id14">内核示例程序</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id15">引用参考</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../os_sec/index.html">linux 操作系统安全</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="../csxj/index.html">处世悬镜</a></li>
 </ul>
 
@@ -81,7 +50,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="index.html">linux 内核代码分析</a> &raquo;</li>
       <li>kobject理解</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/lk_code/kobject.rst.txt" rel="nofollow"> View page source</a>
@@ -215,10 +183,7 @@ struct kobject <a href="#id8"><span class="problematic" id="id9">*</span></a>par
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="kernel_virt/kernel_vir/index.html" class="btn btn-neutral float-left" title="linux 内核虚拟化技术" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../os_sec/index.html" class="btn btn-neutral float-right" title="linux 操作系统安全" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
