@@ -1,0 +1,28 @@
+digraph G {
+  	concentrate=True;
+  	rankdir="TB";
+  	node [shape=record];
+
+	node [
+	fontsize = "16"
+	shape = "ellipse"
+	];
+	label = "lsm处理流程"
+	
+	subgraph cluster_0 {
+		rankdir="LR"
+		label = "应用空间";
+		color = black;
+		
+		A[shape = rect,label = "初始化hook结构"];
+		B[label = "模块调用DEFINE_LSM"];
+		C[label = "内核初始化时初始化hook"]; 
+		D[label = "静态桩点执行hook函数如: security_perf_event_read : call_int_hook"];
+		
+		A -> B -> C -> D;
+
+		
+	}
+	
+	
+}

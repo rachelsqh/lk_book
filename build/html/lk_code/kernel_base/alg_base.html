@@ -15,7 +15,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="linux 进程管理" href="../kernel_ps/index.html" />
+    <link rel="next" title="bug/panic分析与总结" href="bug_panic.html" />
     <link rel="prev" title="linux 系统调用原理" href="syscall.html" /> 
 </head>
 
@@ -39,7 +39,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核代码分析</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核基础</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="lock.html">linux 锁总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lock.html">linux 竞争与一致性问题处理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="extable.html">linux 异常表:extable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jump_label.html">linux :jump_label 分析</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kexec_elf.html">linux 加载ELF 内核文件：kexec</a></li>
@@ -53,11 +53,11 @@
 <li class="toctree-l3"><a class="reference internal" href="seccomp.html">linux 沙箱:seccomp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="trace/index.html">linux 内核跟踪调试代码架构</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lk_sec/index.html">linux 内核安全架构分析</a></li>
-<li class="toctree-l3"><a class="reference internal" href="func_injection.html">linux fail_function分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="func_injection.html">linux fail_function分析:基于函数的错误注入</a></li>
 <li class="toctree-l3"><a class="reference internal" href="sysctl.html">linux 通用linux系统控制接口:sysctl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="sys.html">linux 系统级接口：sys</a></li>
 <li class="toctree-l3"><a class="reference internal" href="static_call.html">linux static_call 分析</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stacktrace.html">linux 栈跟踪管理函数：stacktrace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stacktrace.html">linux 栈跟踪管理：unwind_{frame,guess,orc},stacktrace</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stackleak.html">linux stackleak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="printk.html">linux printk实现原理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="rcu.html">linux rcu原理分析</a></li>
@@ -65,7 +65,19 @@
 <li class="toctree-l3"><a class="reference internal" href="power.html">linux 电源管理:power</a></li>
 <li class="toctree-l3"><a class="reference internal" href="softirq.html">linux 软中断：softirq</a></li>
 <li class="toctree-l3"><a class="reference internal" href="syscall.html">linux 系统调用原理</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">linux 基础算法总结</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">linux 基础算法总结</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">链表</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">哈希表</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">位图</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#map">map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">红黑树</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kfifo">kfifo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">数据结构定义限定符总结</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#container-of">container_of()</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bug_panic.html">bug/panic分析与总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack-validation.html">Compile-time stack metadata validation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_ps/index.html">linux 进程管理</a></li>
@@ -111,11 +123,41 @@
              
   <div class="section" id="linux">
 <h1>linux 基础算法总结<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
 </pre></div>
 </td></tr></table></div>
+</div>
+<div class="section" id="id1">
+<h2>链表<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h3>单向链表<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id3">
+<h3>双向链表<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>哈希表<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id5">
+<h2>位图<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="map">
+<h2>map<a class="headerlink" href="#map" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id6">
+<h2>红黑树<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="kfifo">
+<h2>kfifo<a class="headerlink" href="#kfifo" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id7">
+<h2>数据结构定义限定符总结<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="container-of">
+<h2>container_of()<a class="headerlink" href="#container-of" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -124,7 +166,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="syscall.html" class="btn btn-neutral float-left" title="linux 系统调用原理" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../kernel_ps/index.html" class="btn btn-neutral float-right" title="linux 进程管理" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="bug_panic.html" class="btn btn-neutral float-right" title="bug/panic分析与总结" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -8,6 +8,8 @@ linux 中断架构
 .. toctree::
    :maxdepth: 2
  
-
+   x86_int
+   common_int_arch
+   int_notice
 
 

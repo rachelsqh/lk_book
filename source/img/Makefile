@@ -7,6 +7,8 @@ all:
 	dot -Tsvg module_make.dot -o module_make.svg
 	dot -Tsvg modpost.dot -o modpost.svg
 	dot -Tsvg softirq.dot -o softirq.svg
+	dot -Tsvg linux-kernel-defence-map.dot -o linux-kernel-defence-map.svg
+	dot -Tsvg lsm.dot -o lsm.svg
 clean:
 	rm -rf *.svg
 	

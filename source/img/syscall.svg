@@ -9,7 +9,7 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 650.16)">
 <title>G</title>
 <polygon fill="white" stroke="transparent" points="-4,4 -4,-650.16 547.96,-650.16 547.96,4 -4,4"/>
-<text text-anchor="middle" x="271.98" y="-7.8" font-family="Times,serif" font-size="14.00">系统调用流程图：OS负责处理栈切换</text>
+<text text-anchor="middle" x="271.98" y="-7.8" font-family="Times,serif" font-size="14.00">softirq执行时机</text>
 <g id="clust1" class="cluster">
 <title>cluster_0</title>
 <polygon fill="none" stroke="black" points="13.96,-31 13.96,-179.54 467.96,-179.54 467.96,-31 13.96,-31"/>

@@ -16,7 +16,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="linux :jump_label 分析" href="jump_label.html" />
-    <link rel="prev" title="linux 锁总结" href="lock.html" /> 
+    <link rel="prev" title="linux 竞争与一致性问题处理" href="lock.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,7 +39,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核代码分析</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核基础</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="lock.html">linux 锁总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lock.html">linux 竞争与一致性问题处理</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">linux 异常表:extable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jump_label.html">linux :jump_label 分析</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kexec_elf.html">linux 加载ELF 内核文件：kexec</a></li>
@@ -53,11 +53,11 @@
 <li class="toctree-l3"><a class="reference internal" href="seccomp.html">linux 沙箱:seccomp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="trace/index.html">linux 内核跟踪调试代码架构</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lk_sec/index.html">linux 内核安全架构分析</a></li>
-<li class="toctree-l3"><a class="reference internal" href="func_injection.html">linux fail_function分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="func_injection.html">linux fail_function分析:基于函数的错误注入</a></li>
 <li class="toctree-l3"><a class="reference internal" href="sysctl.html">linux 通用linux系统控制接口:sysctl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="sys.html">linux 系统级接口：sys</a></li>
 <li class="toctree-l3"><a class="reference internal" href="static_call.html">linux static_call 分析</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stacktrace.html">linux 栈跟踪管理函数：stacktrace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stacktrace.html">linux 栈跟踪管理：unwind_{frame,guess,orc},stacktrace</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stackleak.html">linux stackleak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="printk.html">linux printk实现原理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="rcu.html">linux rcu原理分析</a></li>
@@ -66,6 +66,8 @@
 <li class="toctree-l3"><a class="reference internal" href="softirq.html">linux 软中断：softirq</a></li>
 <li class="toctree-l3"><a class="reference internal" href="syscall.html">linux 系统调用原理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alg_base.html">linux 基础算法总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bug_panic.html">bug/panic分析与总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack-validation.html">Compile-time stack metadata validation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_ps/index.html">linux 进程管理</a></li>
@@ -241,7 +243,7 @@ if (!e)</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="lock.html" class="btn btn-neutral float-left" title="linux 锁总结" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lock.html" class="btn btn-neutral float-left" title="linux 竞争与一致性问题处理" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="jump_label.html" class="btn btn-neutral float-right" title="linux :jump_label 分析" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -35,3 +35,5 @@ linux 内核基础
    softirq
    syscall
    alg_base
+   bug_panic
+   stack-validation
