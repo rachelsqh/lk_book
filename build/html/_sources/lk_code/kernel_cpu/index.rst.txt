@@ -8,5 +8,7 @@ linux CPU管理
 .. toctree::
    :maxdepth: 3
    
+   cpu_init
    cpu_state_machine
    cpu_sched
+   cpu_reboot

@@ -15,15 +15,15 @@ linux 内核安全架构分析
    :maxdepth: 2
    
    cred
+   digsig 
+   dsv 
    ima
-   key
-   lsm
-   ask
-   sctp
+   key 
    ksp
+   lsm
+   sak
+   sctp
    tpm
-   dsv
-   
 
 
 
@@ -33,3 +33,4 @@ linux 内核安全架构分析
 .. image:: ../../../img/linux-kernel-defence-map.svg
    :align: center
 
+capability

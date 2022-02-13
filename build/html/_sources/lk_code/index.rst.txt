@@ -16,6 +16,5 @@ linux 内核代码分析
    kernel_driver/index
    lk_net/index
    kernel_virt/index
-   kobject
 
 

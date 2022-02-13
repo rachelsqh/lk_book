@@ -8,16 +8,7 @@ linux 内存管理
 .. toctree::
    :maxdepth: 2
    
-   new_task
-   mm_struct
-   vma
-   mmap
-   pf
-   page_mmap
+   mem_kernel_arch
+   mm_man
    x86_mm
-   mm_sec
-   mm_acct
-   swap
-   mm_perf
-   mm_misc
-
+   mm_pro

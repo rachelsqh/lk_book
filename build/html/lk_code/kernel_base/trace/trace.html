@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>linux 内核跟踪调试代码架构 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <title>linux 内核跟踪调试:trace &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
@@ -15,8 +15,8 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="linux 内核跟踪调试代码架构" href="bpf.html" />
-    <link rel="prev" title="linux 内核跟踪调试代码架构" href="alt_int_x86.html" /> 
+    <link rel="next" title="bpf总结" href="bpf.html" />
+    <link rel="prev" title="linux 实时补丁-livepatch" href="livepatch.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,6 +39,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../lk_devel/index.html">linux 内核开发</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">linux 内核代码分析</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html">linux 内核基础</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../acct.html">统计信息及方法总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../lock.html">linux 竞争与一致性问题处理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../extable.html">linux 异常表:extable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../jump_label.html">linux :jump_label 分析</a></li>
@@ -52,18 +53,21 @@
 <li class="toctree-l3"><a class="reference internal" href="../module.html">linux 内核模块实现原理分析</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../seccomp.html">linux 沙箱:seccomp</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">linux 内核跟踪调试代码架构</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="alt_int_x86.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="bpf.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="livepatch.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="kprobe.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="uprobe.html">linux 内核跟踪调试代码架构</a></li>
+<li class="toctree-l4"><a class="reference internal" href="alt_int_x86.html">linux 底层指令替换原理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kprobe.html">linux kprobe/kretprobe 分析总结</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uprobe.html">用户空间探针（uprobes)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="livepatch.html">linux 实时补丁-livepatch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="livepatch.html#id42">用例</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">linux 内核跟踪调试:trace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bpf.html">bpf总结</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bpf_zh.html">BPF-HELPERS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="perf.html">linux perf(events)分析总结</a></li>
 <li class="toctree-l4"><a class="reference internal" href="kgdb.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="kheaders.html">linux 沙箱:seccomp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kheaders.html">kheaders</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../lk_sec/index.html">linux 内核安全架构分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../audit.html">linux 审计（audit)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../func_injection.html">linux fail_function分析:基于函数的错误注入</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sysctl.html">linux 通用linux系统控制接口:sysctl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sys.html">linux 系统级接口：sys</a></li>
@@ -78,7 +82,30 @@
 <li class="toctree-l3"><a class="reference internal" href="../syscall.html">linux 系统调用原理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../alg_base.html">linux 基础算法总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../bug_panic.html">bug/panic分析与总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cfi.html">Clang Contol Flow Integrity(CFI) error and slowpath handling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../configfs.html">导出当前内核配置</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../stack-validation.html">Compile-time stack metadata validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../context_tracking.html">上下文跟踪（context tracking）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kcmp.html">kcmp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kheaders.html">kernel headers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ksysfs.html">sys/kernel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../latencytop.html">延迟显示基础设施</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespace.html">命名空间</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cgroup.html">资源隔离</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../params.html">内核参数处理机制总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../padata.html">并行数据处理接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../relay.html">relay描述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scftorture.html">scftorture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scs.html">Shadow Call Stack support</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../umd.html">用户模式驱动</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../umh.html">内核usermode helper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../up.html">uniprocessor-only support functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user.html">user</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../watchdog.html">看门狗</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../watch_queue.html">watch queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../urn.html">user return-notifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../p_event.html">event事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../time.html">定时器子系统</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../kernel_ps/index.html">linux 进程管理</a></li>
@@ -113,7 +140,7 @@
           <li><a href="../../index.html">linux 内核代码分析</a> &raquo;</li>
           <li><a href="../index.html">linux 内核基础</a> &raquo;</li>
           <li><a href="index.html">linux 内核跟踪调试代码架构</a> &raquo;</li>
-      <li>linux 内核跟踪调试代码架构</li>
+      <li>linux 内核跟踪调试:trace</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../_sources/lk_code/kernel_base/trace/trace.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -123,9 +150,48 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="linux">
-<h1>linux 内核跟踪调试代码架构<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
+  <div class="section" id="linux-trace">
+<h1>linux 内核跟踪调试:trace<a class="headerlink" href="#linux-trace" title="Permalink to this headline">¶</a></h1>
+<p>我们对架构的理解是弱点。trace如何组织？以什么为纲领？
+trace就是以debugfs为依托利用kprobe,uprobe,ftrace,bpf,perf event等提供的功能为用户提供一个统一的调试界面，方便对内核和应用程序的跟踪、调试和性能测试（这个待定）。</p>
+<div class="section" id="kernel-trace-trace-c">
+<h2>kernel/trace/trace.c<a class="headerlink" href="#kernel-trace-trace-c" title="Permalink to this headline">¶</a></h2>
+<p>基于环形缓冲区的函数跟踪器</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>On boot up, the ring buffer is set to the minimum size, so that</p></li>
+<li><p>we do not waste memory on systems that are not using tracing.</p></li>
+</ul>
+<p><a href="#id1"><span class="problematic" id="id2">*</span></a>/</p>
+</dd>
+</dl>
+<p>bool ring_buffer_expanded;</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>We need to change this state when a selftest is running.</p></li>
+<li><p>A selftest will lurk into the ring-buffer to count the</p></li>
+<li><p>entries inserted during the selftest although some concurrent</p></li>
+<li><p>insertions into the ring-buffer such as trace_printk could occurred</p></li>
+<li><p>at the same time, giving false positive or negative results.</p></li>
+</ul>
+<p><a href="#id3"><span class="problematic" id="id4">*</span></a>/</p>
+</dd>
+</dl>
+<p>static bool __read_mostly tracing_selftest_running;</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>If boot-time tracing including tracers/events via kernel cmdline</p></li>
+<li><p>is running, we do not want to run SELFTEST.</p></li>
+</ul>
+<p><a href="#id5"><span class="problematic" id="id6">*</span></a>/</p>
+</dd>
+</dl>
+<p>bool __read_mostly tracing_selftest_disabled;</p>
+<p>结构
+/* Pipe tracepoints to printk <a href="#id7"><span class="problematic" id="id8">*</span></a>/
+struct trace_iterator <a href="#id9"><span class="problematic" id="id10">*</span></a>tracepoint_print_iter;</p>
+<p>int register_ftrace_export(struct trace_export <a href="#id11"><span class="problematic" id="id12">*</span></a>export)
+int unregister_ftrace_export(struct trace_export <a href="#id13"><span class="problematic" id="id14">*</span></a>export)</p>
 </div>
 </div>
 
@@ -133,8 +199,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="alt_int_x86.html" class="btn btn-neutral float-left" title="linux 内核跟踪调试代码架构" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="bpf.html" class="btn btn-neutral float-right" title="linux 内核跟踪调试代码架构" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="livepatch.html" class="btn btn-neutral float-left" title="linux 实时补丁-livepatch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bpf.html" class="btn btn-neutral float-right" title="bpf总结" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -15,8 +15,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="文件系统管理框架" href="fs_arch.html" />
-    <link rel="prev" title="其他内存相关：" href="../kernel_mem/mm_misc.html" /> 
+    <link rel="next" title="文件系统总结" href="vfs.html" />
+    <link rel="prev" title="iomem相关总结" href="../kernel_mem/iomem.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,15 +42,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../kernel_ps/index.html">linux 进程管理</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_mem/index.html">linux 内存管理</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">linux 文件系统分析</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="fs_arch.html">文件系统管理框架</a></li>
-<li class="toctree-l3"><a class="reference internal" href="fs_mount_sample.html">文件系统注册/安装：以sockfs为例</a></li>
-<li class="toctree-l3"><a class="reference internal" href="file_com.html">文件在在内核中的应用场景描述</a></li>
-<li class="toctree-l3"><a class="reference internal" href="fuse.html">FUSE应用描述</a></li>
-<li class="toctree-l3"><a class="reference internal" href="file_sam1.html">文件在在内核中的应用:示例一：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="file_sam2.html">文件在在内核中的应用:示例二：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="file_sam3.html">文件在在内核中的应用:示例三：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="file_sam4.html">文件在在内核中的应用:示例四：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="file_sam5.html">文件在在内核中的应用:示例五：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vfs.html">文件系统总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="f_prog.html">编程应用总结</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_cpu/index.html">linux CPU管理</a></li>
@@ -94,15 +87,8 @@
 <h1>linux 文件系统分析<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="fs_arch.html">文件系统管理框架</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fs_mount_sample.html">文件系统注册/安装：以sockfs为例</a></li>
-<li class="toctree-l1"><a class="reference internal" href="file_com.html">文件在在内核中的应用场景描述</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fuse.html">FUSE应用描述</a></li>
-<li class="toctree-l1"><a class="reference internal" href="file_sam1.html">文件在在内核中的应用:示例一：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="file_sam2.html">文件在在内核中的应用:示例二：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="file_sam3.html">文件在在内核中的应用:示例三：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="file_sam4.html">文件在在内核中的应用:示例四：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="file_sam5.html">文件在在内核中的应用:示例五：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">文件系统总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="f_prog.html">编程应用总结</a></li>
 </ul>
 </div>
 </div>
@@ -111,8 +97,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../kernel_mem/mm_misc.html" class="btn btn-neutral float-left" title="其他内存相关：" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="fs_arch.html" class="btn btn-neutral float-right" title="文件系统管理框架" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../kernel_mem/iomem.html" class="btn btn-neutral float-left" title="iomem相关总结" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vfs.html" class="btn btn-neutral float-right" title="文件系统总结" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

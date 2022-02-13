@@ -4,8 +4,8 @@ linux security子系统
 
 静态hook,跟trace静态插桩部分是一样一样的.LSM不是一种策略,只是一种实现机制,一种框架,在其基础上可以实现策略.
 
----------
-
+LSM模块：linux 通用安全hooks
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 其他安全策略都基于LSM进行实现.
 
 DEFINE_LSM():将加载hook放入特定的节.系统启动时会执行hook加载动作.运行过程中在桩点调用触发函数,运行特定位置的hook函数.  
@@ -110,3 +110,23 @@ call_int_hook定义如下:
  
  start_kernel --> security_init() --> ordered_lsm_parse --> __start_lsm_info ... __end_lsm_info
   完成初始化.
+  
+  
+  
+  
+LSM模块开发
+^^^^^^^^^^  
+  
+  
+  
+  
+  
+Landlock LSM 
+^^^^^^^^^^^^^^
+  
+  
+  
+  
+  
+  
+  

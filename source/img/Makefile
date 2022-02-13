@@ -9,6 +9,7 @@ all:
 	dot -Tsvg softirq.dot -o softirq.svg
 	dot -Tsvg linux-kernel-defence-map.dot -o linux-kernel-defence-map.svg
 	dot -Tsvg lsm.dot -o lsm.svg
+	dot -Tsvg kprobe_register.dot -o kprobe_register.svg
 clean:
 	rm -rf *.svg
 	

@@ -1,11 +1,24 @@
-.. Rachel's E-book documentation master file, created by
-   sphinx-quickstart on Sun Jan  9 16:38:00 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+bpf总结
+--------
+应用场景
+^^^^^^^
+加载原理
+^^^^^^^^
+从kernel.o 到 bpf()加载到内核 ->校验 ->虚拟机执行
 
-linux 内核跟踪调试代码架构
---------------------------
-.. toctree::
-   :maxdepth: 2
-   
 
+虚拟机原理
+^^^^^^^^^
+
+bpf汇编
+^^^^^^^^^
+
+kernel.o编程规范
+^^^^^^^^^^^^^^^^
+
+bpf空间到内核空间映射
+^^^^^^^^^^^^^^^^^^^^
+
+
+具体应用
+^^^^^^^^^^^

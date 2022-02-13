@@ -15,8 +15,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="网络数据流向：" href="data_flow.html" />
-    <link rel="prev" title="linux i2c/smbus/spi总线驱动：" href="../kernel_driver/driver_bus_i2c_smbus_spi.html" /> 
+    <link rel="next" title="linux 内核网络架构原理总结" href="net_arch.html" />
+    <link rel="prev" title="linux ACPI架构驱动：" href="../kernel_driver/device_driver_arch.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,17 +45,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../kernel_cpu/index.html">linux CPU管理</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_driver/index.html">linux 驱动架构分析</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">linux 内核网络代码分析</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="data_flow.html">网络数据流向：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="sysctl.html">内核接口：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="netfilter.html">netfilter分离及应用场景总结</a></li>
-<li class="toctree-l3"><a class="reference internal" href="netlink.html">netlink分析</a></li>
-<li class="toctree-l3"><a class="reference internal" href="netlabel.html">netlabel</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ethtool.html">ethtool分析</a></li>
-<li class="toctree-l3"><a class="reference internal" href="net_bpf.html">net bpf分析</a></li>
-<li class="toctree-l3"><a class="reference internal" href="net_proto.html">网络协议实现架构</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tc.html">网络流量控制</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ethernet.html">工业以太网</a></li>
-<li class="toctree-l3"><a class="reference internal" href="net_proto_an/index.html">linux 网络知识点及应用场景总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="net_arch.html">linux 内核网络架构原理总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="net_prog.html">内核编程相关</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_virt/index.html">linux 内核虚拟化技术</a></li>
@@ -94,23 +85,11 @@
              
   <div class="section" id="linux">
 <h1>linux 内核网络代码分析<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
+<p>从设备驱动接收到数据到提交给应用程序整个过程描述</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="data_flow.html">网络数据流向：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sysctl.html">内核接口：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="netfilter.html">netfilter分离及应用场景总结</a></li>
-<li class="toctree-l1"><a class="reference internal" href="netlink.html">netlink分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="netlabel.html">netlabel</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ethtool.html">ethtool分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="net_bpf.html">net bpf分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="net_proto.html">网络协议实现架构</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tc.html">网络流量控制</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ethernet.html">工业以太网</a></li>
-<li class="toctree-l1"><a class="reference internal" href="net_proto_an/index.html">linux 网络知识点及应用场景总结</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="net_proto_an/route.html">网络路由原理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="net_proto_an/switch.html">网络交换原理</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="net_arch.html">linux 内核网络架构原理总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="net_prog.html">内核编程相关</a></li>
 </ul>
 </div>
 </div>
@@ -119,8 +98,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../kernel_driver/driver_bus_i2c_smbus_spi.html" class="btn btn-neutral float-left" title="linux i2c/smbus/spi总线驱动：" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="data_flow.html" class="btn btn-neutral float-right" title="网络数据流向：" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../kernel_driver/device_driver_arch.html" class="btn btn-neutral float-left" title="linux ACPI架构驱动：" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="net_arch.html" class="btn btn-neutral float-right" title="linux 内核网络架构原理总结" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

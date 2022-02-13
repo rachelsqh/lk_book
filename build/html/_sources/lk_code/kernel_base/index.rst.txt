@@ -8,6 +8,7 @@ linux 内核基础
 .. toctree::
    :maxdepth: 2
  
+   acct
    lock
    extable
    jump_label
@@ -22,6 +23,7 @@ linux 内核基础
    seccomp
    trace/index
    lk_sec/index
+   audit
    func_injection
    sysctl
    sys
@@ -36,4 +38,29 @@ linux 内核基础
    syscall
    alg_base
    bug_panic
+   cfi
+   configfs
    stack-validation
+   context_tracking
+   kcmp
+   kheaders
+   ksysfs
+   latencytop
+   namespace
+   cgroup
+   params
+   padata
+   relay
+   rseq
+   scftorture
+   scs
+   umd
+   umh
+   up
+   user
+   watchdog
+   watch_queue
+   urn
+   p_event
+   time
+   kobject

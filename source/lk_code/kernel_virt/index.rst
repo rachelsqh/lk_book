@@ -8,6 +8,5 @@ linux 内核虚拟化技术
 .. toctree::
    :maxdepth: 2
 
-   hw_arch/index
-   kernel_vir/index
-
+   x86_virt.rst
+   virt_io.rst 

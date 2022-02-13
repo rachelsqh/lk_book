@@ -15,8 +15,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="linux 进程状态机描述" href="ps_state_machine.html" />
-    <link rel="prev" title="Compile-time stack metadata validation" href="../kernel_base/stack-validation.html" /> 
+    <link rel="next" title="x86进程管理" href="x86_ps.html" />
+    <link rel="prev" title="定时器子系统" href="../kernel_base/time.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,10 +40,17 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核代码分析</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../kernel_base/index.html">linux 内核基础</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">linux 进程管理</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ps_state_machine.html">linux 进程状态机描述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="x86_ps.html">x86进程管理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ps_base.html">pid组织总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ps_base.html#id1">内核线程部分总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ps_base.html#linux">linux 进程统计信息总结/导出信息</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ps_base.html#id2">linux 进程性能调试</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ps_state_machine.html">linux fork过程描述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ps_state_machine.html#linux-exec">linux exec描述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ps_state_machine.html#detect-hung-task-d-state">Detect Hung Task (D state)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ps_state_machine.html#linux-exit">linux exit过程描述</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ps_sched.html">linux 进程调度管理</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ps_acct.html">linux 进程统计信息总结/导出信息</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ps_perf.html">linux 进程性能调试</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ps_sched.html#id1">linux 进程性能调试</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ps_connector.html">Connector</a></li>
 </ul>
 </li>
@@ -90,10 +97,17 @@
 <h1>linux 进程管理<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="ps_state_machine.html">linux 进程状态机描述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="x86_ps.html">x86进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps_base.html">pid组织总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps_base.html#id1">内核线程部分总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps_base.html#linux">linux 进程统计信息总结/导出信息</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps_base.html#id2">linux 进程性能调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps_state_machine.html">linux fork过程描述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps_state_machine.html#linux-exec">linux exec描述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps_state_machine.html#detect-hung-task-d-state">Detect Hung Task (D state)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps_state_machine.html#linux-exit">linux exit过程描述</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ps_sched.html">linux 进程调度管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ps_acct.html">linux 进程统计信息总结/导出信息</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ps_perf.html">linux 进程性能调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps_sched.html#id1">linux 进程性能调试</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ps_connector.html">Connector</a></li>
 </ul>
 </div>
@@ -103,8 +117,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../kernel_base/stack-validation.html" class="btn btn-neutral float-left" title="Compile-time stack metadata validation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ps_state_machine.html" class="btn btn-neutral float-right" title="linux 进程状态机描述" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../kernel_base/time.html" class="btn btn-neutral float-left" title="定时器子系统" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="x86_ps.html" class="btn btn-neutral float-right" title="x86进程管理" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

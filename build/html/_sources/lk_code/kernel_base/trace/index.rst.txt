@@ -9,11 +9,12 @@ linux 内核跟踪调试代码架构
    :maxdepth: 2
    
    alt_int_x86
-   trace
-   bpf
-   livepatch
    kprobe
    uprobe
+   livepatch
+   trace
+   bpf
+   bpf_zh
    perf
    kgdb
    kheaders

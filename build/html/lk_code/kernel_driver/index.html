@@ -15,8 +15,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="linux 驱动架构描述：" href="driver_arch.html" />
-    <link rel="prev" title="cpu与进程调度" href="../kernel_cpu/cpu_sched.html" /> 
+    <link rel="next" title="linux 驱动基础总结" href="driver_base.html" />
+    <link rel="prev" title="reboot过程分析" href="../kernel_cpu/cpu_reboot.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,15 +44,17 @@
 <li class="toctree-l2"><a class="reference internal" href="../kernel_fs/index.html">linux 文件系统分析</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_cpu/index.html">linux CPU管理</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">linux 驱动架构分析</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="driver_arch.html">linux 驱动架构描述：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver_pci.html">linux PCI架构驱动：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver_acpi.html">linux ACPI架构驱动：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver_res_tree.html">linux 设备树：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver_char.html">linux 字符驱动</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver_block.html">linux 块设备驱动</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver_net.html">linux 网络驱动</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver_bus_usb.html">linux USB总线驱动：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver_bus_i2c_smbus_spi.html">linux i2c/smbus/spi总线驱动：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver_base.html">linux 驱动基础总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver_base.html#dma">DMA总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device_driver_arch.html">linux ACPI架构驱动：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device_driver_arch.html#linux">linux 驱动架构描述：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device_driver_arch.html#id1">linux 块设备驱动</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device_driver_arch.html#linux-i2c-smbus-spi">linux i2c/smbus/spi总线驱动：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device_driver_arch.html#linux-usb">linux USB总线驱动：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device_driver_arch.html#id2">linux 字符驱动</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device_driver_arch.html#id3">linux 网络驱动</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device_driver_arch.html#linux-pci">linux PCI架构驱动：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device_driver_arch.html#id4">linux 设备树：</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../lk_net/index.html">linux 内核网络代码分析</a></li>
@@ -94,15 +96,17 @@
 <h1>linux 驱动架构分析<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="driver_arch.html">linux 驱动架构描述：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver_pci.html">linux PCI架构驱动：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver_acpi.html">linux ACPI架构驱动：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver_res_tree.html">linux 设备树：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver_char.html">linux 字符驱动</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver_block.html">linux 块设备驱动</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver_net.html">linux 网络驱动</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver_bus_usb.html">linux USB总线驱动：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver_bus_i2c_smbus_spi.html">linux i2c/smbus/spi总线驱动：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver_base.html">linux 驱动基础总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver_base.html#dma">DMA总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_driver_arch.html">linux ACPI架构驱动：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_driver_arch.html#linux">linux 驱动架构描述：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_driver_arch.html#id1">linux 块设备驱动</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_driver_arch.html#linux-i2c-smbus-spi">linux i2c/smbus/spi总线驱动：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_driver_arch.html#linux-usb">linux USB总线驱动：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_driver_arch.html#id2">linux 字符驱动</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_driver_arch.html#id3">linux 网络驱动</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_driver_arch.html#linux-pci">linux PCI架构驱动：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_driver_arch.html#id4">linux 设备树：</a></li>
 </ul>
 </div>
 </div>
@@ -111,8 +115,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../kernel_cpu/cpu_sched.html" class="btn btn-neutral float-left" title="cpu与进程调度" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="driver_arch.html" class="btn btn-neutral float-right" title="linux 驱动架构描述：" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../kernel_cpu/cpu_reboot.html" class="btn btn-neutral float-left" title="reboot过程分析" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="driver_base.html" class="btn btn-neutral float-right" title="linux 驱动基础总结" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

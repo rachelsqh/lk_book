@@ -1,0 +1,71 @@
+digraph G {
+
+	label = "kprobe:register"
+
+	a0[shape=rect,label = "p->addr = kprobe_addr(p)"];
+	a1[shape=rect,label = "__get_valid_kprobe"];
+	a2[shape=rect,label = "check_kprobe_address_safe" ];
+	a3[shape=rect,label = "old_p = get_kprobe" ];
+	a4[shape=rect,label = "prepare_kprobe"];
+	a5[shape=rect,label = "kprobe_table(p->addr,..):add list" ];
+	a6[shape=rect,label = "arm_kprobe：处理函数主题" ];
+	a7[shape=rect,label = "try_to_optimize_kprobe" ];
+	
+	a0 -> a1 -> a2 -> a3 -> a4 -> a5 -> a6 -> a7;
+	a0 -> b0[dir=none];
+	a4 -> f0[dir=none];
+	a6 -> g0[dir=none];
+
+	subgraph cluster_0 {
+		label = "kprobe_addr-> _kprobe_addr -> kprobe_lookup_name:从符号表中获取地址";
+		b0[shape=rect,label="addr/offset = kprobe_lookup_name -> kallsyms_lookup_name" ];
+		b1[shape=rect,label= "addr = addr + offset" ];
+		b0 -> b1
+	}
+
+	subgraph cluster_1 {
+		label = "__get_valid_kprobe";
+	}
+	
+	subgraph cluster_2 {
+		label = "check_kprobe_address_safe";
+	}
+
+
+	subgraph cluster_3 {
+		label = "get_kprobe";
+	}
+
+	subgraph cluster_4 {
+		label = "prepare_kprobe -> arch_prepare_kprobe";
+		f0[shape=rect,label = "alternatives_text_reserved" ];
+		f1[shape=rect,label = "can_probe"]
+		f2[shape=rect,label = "insn = get_insn_slot" ];
+		f3[shape=rect,label = "arch_copy_kprobe" ];
+		f4[shape=rect,label = "arch_copy_kprobe" ];
+
+
+		f0 -> f1 -> f2 -> f3 -> f4;
+		
+	}
+
+	subgraph cluster_5 {
+		label = "arm_kprobe -> __arm_kprobe";
+		g0[shape=rect,label = "get_optimized_kprobe" ];
+		g1[shape=rect,label = "arch_arm_kprobe" ];
+		g2[shape=rect,label = "optimize_kprobe" ];
+		g1 -> g10[dir=none];
+		subgraph arch_arm_kprobe {
+			label = "arch_arm_kprobe";
+			color = black;
+			g10[ label = "int3 = INT3_INSN_OPCODE" ];
+			g11[ label = "text_poke(p->addr,&init3,1)"];
+			g12[ label = "text_poke_sync()"];
+			g13[ label = "perf_event_text_poke" ];
+			g10 -> g11 -> g12 ->g13;
+
+		}
+		g0 -> g1 -> g2;
+	}
+
+}

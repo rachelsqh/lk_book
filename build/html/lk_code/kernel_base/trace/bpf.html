@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>linux 内核跟踪调试代码架构 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <title>bpf总结 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
@@ -15,8 +15,8 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="linux 内核跟踪调试代码架构" href="livepatch.html" />
-    <link rel="prev" title="linux 内核跟踪调试代码架构" href="trace.html" /> 
+    <link rel="next" title="BPF-HELPERS" href="bpf_zh.html" />
+    <link rel="prev" title="linux 内核跟踪调试:trace" href="trace.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,6 +39,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../lk_devel/index.html">linux 内核开发</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">linux 内核代码分析</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html">linux 内核基础</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../acct.html">统计信息及方法总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../lock.html">linux 竞争与一致性问题处理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../extable.html">linux 异常表:extable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../jump_label.html">linux :jump_label 分析</a></li>
@@ -52,18 +53,21 @@
 <li class="toctree-l3"><a class="reference internal" href="../module.html">linux 内核模块实现原理分析</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../seccomp.html">linux 沙箱:seccomp</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">linux 内核跟踪调试代码架构</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="alt_int_x86.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="trace.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="livepatch.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="kprobe.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="uprobe.html">linux 内核跟踪调试代码架构</a></li>
+<li class="toctree-l4"><a class="reference internal" href="alt_int_x86.html">linux 底层指令替换原理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kprobe.html">linux kprobe/kretprobe 分析总结</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uprobe.html">用户空间探针（uprobes)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="livepatch.html">linux 实时补丁-livepatch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="livepatch.html#id42">用例</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trace.html">linux 内核跟踪调试:trace</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">bpf总结</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bpf_zh.html">BPF-HELPERS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="perf.html">linux perf(events)分析总结</a></li>
 <li class="toctree-l4"><a class="reference internal" href="kgdb.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="kheaders.html">linux 沙箱:seccomp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kheaders.html">kheaders</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../lk_sec/index.html">linux 内核安全架构分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../audit.html">linux 审计（audit)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../func_injection.html">linux fail_function分析:基于函数的错误注入</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sysctl.html">linux 通用linux系统控制接口:sysctl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sys.html">linux 系统级接口：sys</a></li>
@@ -78,7 +82,30 @@
 <li class="toctree-l3"><a class="reference internal" href="../syscall.html">linux 系统调用原理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../alg_base.html">linux 基础算法总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../bug_panic.html">bug/panic分析与总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cfi.html">Clang Contol Flow Integrity(CFI) error and slowpath handling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../configfs.html">导出当前内核配置</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../stack-validation.html">Compile-time stack metadata validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../context_tracking.html">上下文跟踪（context tracking）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kcmp.html">kcmp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kheaders.html">kernel headers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ksysfs.html">sys/kernel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../latencytop.html">延迟显示基础设施</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespace.html">命名空间</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cgroup.html">资源隔离</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../params.html">内核参数处理机制总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../padata.html">并行数据处理接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../relay.html">relay描述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scftorture.html">scftorture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scs.html">Shadow Call Stack support</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../umd.html">用户模式驱动</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../umh.html">内核usermode helper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../up.html">uniprocessor-only support functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user.html">user</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../watchdog.html">看门狗</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../watch_queue.html">watch queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../urn.html">user return-notifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../p_event.html">event事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../time.html">定时器子系统</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../kernel_ps/index.html">linux 进程管理</a></li>
@@ -113,7 +140,7 @@
           <li><a href="../../index.html">linux 内核代码分析</a> &raquo;</li>
           <li><a href="../index.html">linux 内核基础</a> &raquo;</li>
           <li><a href="index.html">linux 内核跟踪调试代码架构</a> &raquo;</li>
-      <li>linux 内核跟踪调试代码架构</li>
+      <li>bpf总结</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../_sources/lk_code/kernel_base/trace/bpf.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -123,9 +150,29 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="linux">
-<h1>linux 内核跟踪调试代码架构<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
+  <div class="section" id="bpf">
+<h1>bpf总结<a class="headerlink" href="#bpf" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>应用场景<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id2">
+<h2>加载原理<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>从kernel.o 到 bpf()加载到内核 -&gt;校验 -&gt;虚拟机执行</p>
+</div>
+<div class="section" id="id3">
+<h2>虚拟机原理<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id4">
+<h2>bpf汇编<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="kernel-o">
+<h2>kernel.o编程规范<a class="headerlink" href="#kernel-o" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id5">
+<h2>bpf空间到内核空间映射<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id6">
+<h2>具体应用<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -133,8 +180,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="trace.html" class="btn btn-neutral float-left" title="linux 内核跟踪调试代码架构" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="livepatch.html" class="btn btn-neutral float-right" title="linux 内核跟踪调试代码架构" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="trace.html" class="btn btn-neutral float-left" title="linux 内核跟踪调试:trace" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bpf_zh.html" class="btn btn-neutral float-right" title="BPF-HELPERS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

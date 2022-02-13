@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>linux 内核跟踪调试代码架构 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <title>用户空间探针（uprobes) &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
@@ -15,8 +15,8 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="linux perf(events)分析总结" href="perf.html" />
-    <link rel="prev" title="linux 内核跟踪调试代码架构" href="kprobe.html" /> 
+    <link rel="next" title="linux 内核跟踪调试代码架构" href="trace.html" />
+    <link rel="prev" title="linux kprobe/kretprobe 分析总结" href="kprobe.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,6 +39,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../lk_devel/index.html">linux 内核开发</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">linux 内核代码分析</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html">linux 内核基础</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../acct.html">统计信息及方法总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../lock.html">linux 竞争与一致性问题处理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../extable.html">linux 异常表:extable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../jump_label.html">linux :jump_label 分析</a></li>
@@ -52,18 +53,19 @@
 <li class="toctree-l3"><a class="reference internal" href="../module.html">linux 内核模块实现原理分析</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../seccomp.html">linux 沙箱:seccomp</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">linux 内核跟踪调试代码架构</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="alt_int_x86.html">linux 内核跟踪调试代码架构</a></li>
+<li class="toctree-l4"><a class="reference internal" href="alt_int_x86.html">linux 底层指令替换原理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kprobe.html">linux kprobe/kretprobe 分析总结</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">用户空间探针（uprobes)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="trace.html">linux 内核跟踪调试代码架构</a></li>
 <li class="toctree-l4"><a class="reference internal" href="bpf.html">linux 内核跟踪调试代码架构</a></li>
 <li class="toctree-l4"><a class="reference internal" href="livepatch.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="kprobe.html">linux 内核跟踪调试代码架构</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">linux 内核跟踪调试代码架构</a></li>
 <li class="toctree-l4"><a class="reference internal" href="perf.html">linux perf(events)分析总结</a></li>
 <li class="toctree-l4"><a class="reference internal" href="kgdb.html">linux 内核跟踪调试代码架构</a></li>
 <li class="toctree-l4"><a class="reference internal" href="kheaders.html">linux 沙箱:seccomp</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../lk_sec/index.html">linux 内核安全架构分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../audit.html">linux 审计（audit)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../func_injection.html">linux fail_function分析:基于函数的错误注入</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sysctl.html">linux 通用linux系统控制接口:sysctl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sys.html">linux 系统级接口：sys</a></li>
@@ -78,7 +80,30 @@
 <li class="toctree-l3"><a class="reference internal" href="../syscall.html">linux 系统调用原理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../alg_base.html">linux 基础算法总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../bug_panic.html">bug/panic分析与总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cfi.html">Clang Contol Flow Integrity(CFI) error and slowpath handling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../configfs.html">导出当前内核配置</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../stack-validation.html">Compile-time stack metadata validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../context_tracking.html">上下文跟踪（context tracking）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kcmp.html">kcmp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kheaders.html">kernel headers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ksysfs.html">sys/kernel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../latencytop.html">延迟显示基础设施</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespace.html">命名空间</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cgroup.html">资源隔离</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../params.html">内核参数处理机制总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../padata.html">并行数据处理接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../relay.html">relay描述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scftorture.html">scftorture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scs.html">Shadow Call Stack support</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../umd.html">用户模式驱动</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../umh.html">内核usermode helper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../up.html">uniprocessor-only support functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user.html">user</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../watchdog.html">看门狗</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../watch_queue.html">watch queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../urn.html">user return-notifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../p_event.html">event事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../time.html">定时器子系统</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../kernel_ps/index.html">linux 进程管理</a></li>
@@ -113,7 +138,7 @@
           <li><a href="../../index.html">linux 内核代码分析</a> &raquo;</li>
           <li><a href="../index.html">linux 内核基础</a> &raquo;</li>
           <li><a href="index.html">linux 内核跟踪调试代码架构</a> &raquo;</li>
-      <li>linux 内核跟踪调试代码架构</li>
+      <li>用户空间探针（uprobes)</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../_sources/lk_code/kernel_base/trace/uprobe.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -123,9 +148,264 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="linux">
-<h1>linux 内核跟踪调试代码架构<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
+  <div class="section" id="uprobes">
+<h1>用户空间探针（uprobes)<a class="headerlink" href="#uprobes" title="Permalink to this headline">¶</a></h1>
+<p>更多的是在应用部分（程序部分）</p>
+<p>必然针对一个应用进程。</p>
+<p>uprobe_register() –&gt; __uprobe_register –&gt;</p>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>__uprobe_register - register a probe</p></li>
+<li><p>&#64;inode: the file in which the probe has to be placed.</p></li>
+<li><p>&#64;offset: offset from the start of the file.</p></li>
+<li><p>&#64;uc: information on howto handle the probe..</p></li>
+<li></li>
+<li><p>Apart from the access refcount, __uprobe_register() takes a creation</p></li>
+<li><p>refcount (thro alloc_uprobe) if and only if this &#64;uprobe is getting</p></li>
+<li><p>inserted into the rbtree (i.e first consumer for a &#64;inode:&#64;offset</p></li>
+<li><p>tuple).  Creation refcount stops uprobe_unregister from freeing the</p></li>
+<li><p>&#64;uprobe even before the register operation is complete. Creation</p></li>
+<li><p>refcount is released when the last &#64;uc for the &#64;uprobe</p></li>
+<li><p>unregisters. Caller of __uprobe_register() is required to keep &#64;inode</p></li>
+<li><p>(and the containing mount) referenced.</p></li>
+<li></li>
+<li><p>Return errno if it cannot successully install probes</p></li>
+<li><p>else return 0 (success)</p></li>
+</ul>
+<p><a href="#id1"><span class="problematic" id="id2">*</span></a>/</p>
+</dd>
+<dt>static int __uprobe_register(struct inode <a href="#id3"><span class="problematic" id="id4">*</span></a>inode, loff_t offset,</dt><dd><p>loff_t ref_ctr_offset, struct uprobe_consumer <a href="#id5"><span class="problematic" id="id6">*</span></a>uc)</p>
+</dd>
+</dl>
+<dl>
+<dt>{</dt><dd><blockquote>
+<div><p>struct uprobe <a href="#id7"><span class="problematic" id="id8">*</span></a>uprobe;
+int ret;</p>
+<p>/* Uprobe must have at least one set consumer <a href="#id9"><span class="problematic" id="id10">*</span></a>/
+if (!uc-&gt;handler &amp;&amp; !uc-&gt;ret_handler)</p>
+<blockquote>
+<div><p>return -EINVAL;</p>
+</div></blockquote>
+<p>/* copy_insn() uses read_mapping_page() or shmem_read_mapping_page() <a href="#id11"><span class="problematic" id="id12">*</span></a>/
+if (!inode-&gt;i_mapping-&gt;a_ops-&gt;readpage &amp;&amp; !shmem_mapping(inode-&gt;i_mapping))</p>
+<blockquote>
+<div><p>return -EIO;</p>
+</div></blockquote>
+<p>/* Racy, just to catch the obvious mistakes <a href="#id13"><span class="problematic" id="id14">*</span></a>/
+if (offset &gt; i_size_read(inode))</p>
+<blockquote>
+<div><p>return -EINVAL;</p>
+</div></blockquote>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>This ensures that copy_from_page(), copy_to_page() and</p></li>
+<li><p>__update_ref_ctr() can’t cross page boundary.</p></li>
+</ul>
+<p><a href="#id15"><span class="problematic" id="id16">*</span></a>/</p>
+</dd>
+<dt>if (!IS_ALIGNED(offset, UPROBE_SWBP_INSN_SIZE))</dt><dd><p>return -EINVAL;</p>
+</dd>
+<dt>if (!IS_ALIGNED(ref_ctr_offset, sizeof(short)))</dt><dd><p>return -EINVAL;</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl>
+<dt>retry:</dt><dd><p>uprobe = alloc_uprobe(inode, offset, ref_ctr_offset);
+if (!uprobe)</p>
+<blockquote>
+<div><p>return -ENOMEM;</p>
+</div></blockquote>
+<dl>
+<dt>if (IS_ERR(uprobe))</dt><dd><p>return PTR_ERR(uprobe);</p>
+</dd>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>We can race with uprobe_unregister()-&gt;delete_uprobe().</p></li>
+<li><p>Check uprobe_is_active() and retry if it is false.</p></li>
+</ul>
+<p><a href="#id17"><span class="problematic" id="id18">*</span></a>/</p>
+</dd>
+</dl>
+<p>down_write(&amp;uprobe-&gt;register_rwsem);
+ret = -EAGAIN;
+if (likely(uprobe_is_active(uprobe))) {</p>
+<blockquote>
+<div><p>consumer_add(uprobe, uc);
+ret = register_for_each_vma(uprobe, uc);
+if (ret)</p>
+<blockquote>
+<div><p>__uprobe_unregister(uprobe, uc);</p>
+</div></blockquote>
+</div></blockquote>
+<p>}
+up_write(&amp;uprobe-&gt;register_rwsem);
+put_uprobe(uprobe);</p>
+<dl class="simple">
+<dt>if (unlikely(ret == -EAGAIN))</dt><dd><p>goto retry;</p>
+</dd>
+</dl>
+<p>return ret;</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>}</p>
+<div class="section" id="trace-uprobe">
+<h2>trace uprobe使用场景<a class="headerlink" href="#trace-uprobe" title="Permalink to this headline">¶</a></h2>
+<p>kernel/trace/trace_uprobe.c</p>
+<p>debugfs:</p>
+<ul class="simple">
+<li><p>/sys/kernel/debug/tracing/uprobe_events</p></li>
+<li><p>/sys/kernel/debug/tracing/uprobe_profile：配置文件：</p></li>
+</ul>
+<p>要启用此功能，请使用 CONFIG_UPROBE_EVENTS=y 构建内核。通过 /sys/kernel/debug/tracing/uprobe_events 添加探测点，uprobe 事件接口希望用户计算对象中探测点的偏移量。可以使用 /sys/kernel/debug/tracing/dynamic_events 代替 uprobe_events。该接口也将提供对其他动态事件的统一访问。</p>
+<div class="section" id="uprobe-tracer">
+<h3>uprobe_tracer<a class="headerlink" href="#uprobe-tracer" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://www.kernel.org/doc/html/latest/trace/uprobetracer.html">https://www.kernel.org/doc/html/latest/trace/uprobetracer.html</a></p>
+<div class="literal-block-wrapper docutils container" id="id22">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>p[:[GRP/]EVENT] PATH:OFFSET [FETCHARGS] : Set a uprobe
+r[:[GRP/]EVENT] PATH:OFFSET [FETCHARGS] : Set a return uprobe (uretprobe)
+p[:[GRP/]EVENT] PATH:OFFSET%return [FETCHARGS] : Set a return uprobe (uretprobe)
+-:[GRP/]EVENT                           : Clear uprobe or uretprobe event</p>
+<p>GRP           : Group name. If omitted, “uprobes” is the default value.
+EVENT         : Event name. If omitted, the event name is generated based</p>
+<blockquote>
+<div><p>on PATH+OFFSET.</p>
+</div></blockquote>
+<p>PATH          : Path to an executable or a library.
+OFFSET        : Offset where the probe is inserted.
+OFFSET%return : Offset where the return probe is inserted.</p>
+<dl>
+<dt>FETCHARGS<span class="classifier">Arguments. Each probe can have up to 128 args.</span></dt><dd><p>%REG         : Fetch register REG
+&#64;ADDR        : Fetch memory at ADDR (ADDR should be in userspace)
+&#64;+OFFSET     : Fetch memory at OFFSET (OFFSET from same file as PATH)
+$stackN      : Fetch Nth entry of stack (N &gt;= 0)
+$stack       : Fetch stack address.
+$retval      : Fetch return value.(*1)
+$comm        : Fetch current task comm.
++|-[u]OFFS(FETCHARG) : Fetch memory at FETCHARG +|- OFFS address.(*2)(*3)
+IMM         : Store an immediate value to the argument.
+NAME=FETCHARG     : Set NAME as the argument name of FETCHARG.
+FETCHARG:TYPE     : Set TYPE as the type of FETCHARG. Currently, basic types</p>
+<blockquote>
+<div><p>(u8/u16/u32/u64/s8/s16/s32/s64), hexadecimal types
+(x8/x16/x32/x64), “string” and bitfield are supported.</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>(*1) only for return probe.
+(*2) this is useful for fetching a field of data structures.
+(*3) Unlike kprobe event, “u” prefix will just be ignored, becuse uprobe</p>
+<blockquote>
+<div><p>events can access only user-space memory.</p>
+</div></blockquote>
+</div>
+<div class="section" id="id19">
+<h3>事件分析<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<p>您可以通过 /sys/kernel/debug/tracing/uprobe_profile 检查每个事件的探测命中总数。第一列是文件名，第二列是事件名称，第三列是探测命中数。</p>
+</div>
+<div class="section" id="id20">
+<h3>使用示例<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>添加一个探针作为新的 uprobe 事件，将新定义写入 uprobe_events，如下所示（在可执行文件 /bin/bash 中的偏移量 0x4245c0 处设置一个 uprobe）：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id23">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>echo &#39;p /bin/bash:0x4245c0&#39; &gt; /sys/kernel/debug/tracing/uprobe_events
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>添加一个探针作为新的 uretprobe 事件：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id24">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>echo &#39;r /bin/bash:0x4245c0&#39; &gt; /sys/kernel/debug/tracing/uprobe_events
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>取消注册事件：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id25">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>echo &#39;-:p_bash_0x4245c0&#39; &gt;&gt; /sys/kernel/debug/tracing/uprobe_events
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>打印出注册的事件：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id26">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id26" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">kernel</span><span class="o">/</span><span class="n">debug</span><span class="o">/</span><span class="n">tracing</span><span class="o">/</span><span class="n">uprobe_events</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>清除所有事件：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id27">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">kernel</span><span class="o">/</span><span class="n">debug</span><span class="o">/</span><span class="n">tracing</span><span class="o">/</span><span class="n">uprobe_events</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>以下示例显示了如何将指令指针和 %ax 寄存器转储到探测的文本地址。探测 /bin/zsh 中的 zfree 函数：</p>
+<div class="literal-block-wrapper docutils container" id="id28">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># cd /sys/kernel/debug/tracing/</span>
+<span class="cp"># cat /proc/`pgrep zsh`/maps | grep /bin/zsh | grep r-xp</span>
+<span class="mo">00400000-004</span><span class="mi">8</span><span class="n">a000</span> <span class="n">r</span><span class="o">-</span><span class="n">xp</span> <span class="mo">00000000</span> <span class="mi">08</span><span class="o">:</span><span class="mo">03</span> <span class="mi">130904</span> <span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">zsh</span>
+<span class="hll"><span class="cp"># objdump -T /bin/zsh | grep -w zfree</span>
+</span><span class="hll"><span class="mo">0000000000446420</span> <span class="n">g</span>    <span class="n">DF</span> <span class="p">.</span><span class="n">text</span>  <span class="mo">0000000000000012</span>  <span class="n">Base</span>        <span class="n">zfree</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+<p>0x46420 是在 0x00400000 加载的对象 /bin/zsh 中 zfree 的偏移量。因此，uprobe 的命令是：</p>
+<div class="literal-block-wrapper docutils container" id="id29">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># echo &#39;p:zfree_entry /bin/zsh:0x46420 %ip %ax&#39; &gt; uprobe_events</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>与 uretprobe 相同的是：</p>
+<div class="literal-block-wrapper docutils container" id="id30">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># echo &#39;r:zfree_exit /bin/zsh:0x46420 %ip %ax&#39; &gt;&gt; uprobe_events</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>用户必须明确计算对象中探测点的偏移量。</p>
+<p>我们可以通过查看 uprobe_events 文件来查看注册的事件。</p>
+<div class="literal-block-wrapper docutils container" id="id31">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id31" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># cat uprobe_events</span>
+<span class="nl">p</span><span class="p">:</span><span class="n">uprobes</span><span class="o">/</span><span class="n">zfree_entry</span> <span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="nl">zsh</span><span class="p">:</span><span class="mh">0x00046420</span> <span class="n">arg1</span><span class="o">=%</span><span class="n">ip</span> <span class="n">arg2</span><span class="o">=%</span><span class="n">ax</span>
+<span class="nl">r</span><span class="p">:</span><span class="n">uprobes</span><span class="o">/</span><span class="n">zfree_exit</span> <span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="nl">zsh</span><span class="p">:</span><span class="mh">0x00046420</span> <span class="n">arg1</span><span class="o">=%</span><span class="n">ip</span> <span class="n">arg2</span><span class="o">=%</span><span class="n">ax</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>通过查看文件 events/uprobes/zfree_entry/format 可以看到事件的格式。</p>
+<hr class="docutils" />
+<p>初步总结，这些总归还是在于在某个对应的进程应用地址空间加入跳转指令，hook代码则在内核代码中实现：应该是int3处理程序中完成。（待确定）。</p>
+</div>
 </div>
 </div>
 
@@ -133,8 +413,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="kprobe.html" class="btn btn-neutral float-left" title="linux 内核跟踪调试代码架构" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="perf.html" class="btn btn-neutral float-right" title="linux perf(events)分析总结" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="kprobe.html" class="btn btn-neutral float-left" title="linux kprobe/kretprobe 分析总结" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="trace.html" class="btn btn-neutral float-right" title="linux 内核跟踪调试代码架构" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -8,10 +8,8 @@ linux 进程管理
 .. toctree::
    :maxdepth: 2
 
-  ps_state_machine
-  ps_sched
-  ps_acct
-  ps_perf
-  ps_connector
-
-
+   x86_ps.rst
+   ps_base.rst 
+   ps_state_machine.rst
+   ps_sched.rst 
+   ps_connector.rst 

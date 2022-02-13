@@ -15,8 +15,8 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="ask.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="key.html" /> 
+    <link rel="next" title="SAK" href="sak.html" />
+    <link rel="prev" title="内核自我保护(KSP)" href="ksp.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,6 +39,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../lk_devel/index.html">linux 内核开发</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">linux 内核代码分析</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html">linux 内核基础</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../acct.html">统计信息及方法总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../lock.html">linux 竞争与一致性问题处理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../extable.html">linux 异常表:extable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../jump_label.html">linux :jump_label 分析</a></li>
@@ -53,9 +54,18 @@
 <li class="toctree-l3"><a class="reference internal" href="../seccomp.html">linux 沙箱:seccomp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../trace/index.html">linux 内核跟踪调试代码架构</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">linux 内核安全架构分析</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="cred.html">凭证（cred)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="digsig.html">数字签名验证</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ima.html">IMA</a></li>
+<li class="toctree-l4"><a class="reference internal" href="key.html">kernel key</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ksp.html">内核自我保护(KSP)</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">linux security子系统</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sak.html">SAK</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sctp.html">SCTP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tpm.html">可信平台模块</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../audit.html">linux 审计（audit)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../func_injection.html">linux fail_function分析:基于函数的错误注入</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sysctl.html">linux 通用linux系统控制接口:sysctl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sys.html">linux 系统级接口：sys</a></li>
@@ -70,7 +80,30 @@
 <li class="toctree-l3"><a class="reference internal" href="../syscall.html">linux 系统调用原理</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../alg_base.html">linux 基础算法总结</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../bug_panic.html">bug/panic分析与总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cfi.html">Clang Contol Flow Integrity(CFI) error and slowpath handling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../configfs.html">导出当前内核配置</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../stack-validation.html">Compile-time stack metadata validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../context_tracking.html">上下文跟踪（context tracking）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kcmp.html">kcmp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../kheaders.html">kernel headers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ksysfs.html">sys/kernel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../latencytop.html">延迟显示基础设施</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespace.html">命名空间</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cgroup.html">资源隔离</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../params.html">内核参数处理机制总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../padata.html">并行数据处理接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../relay.html">relay描述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scftorture.html">scftorture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scs.html">Shadow Call Stack support</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../umd.html">用户模式驱动</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../umh.html">内核usermode helper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../up.html">uniprocessor-only support functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user.html">user</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../watchdog.html">看门狗</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../watch_queue.html">watch queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../urn.html">user return-notifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../p_event.html">event事件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../time.html">定时器子系统</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../kernel_ps/index.html">linux 进程管理</a></li>
@@ -119,7 +152,8 @@
 <h1>linux security子系统<a class="headerlink" href="#linux-security" title="Permalink to this headline">¶</a></h1>
 <p>不能以模块形式出现,全部集成在内核中.</p>
 <p>静态hook,跟trace静态插桩部分是一样一样的.LSM不是一种策略,只是一种实现机制,一种框架,在其基础上可以实现策略.</p>
-<hr class="docutils" />
+<div class="section" id="lsm-linux-hooks">
+<h2>LSM模块：linux 通用安全hooks<a class="headerlink" href="#lsm-linux-hooks" title="Permalink to this headline">¶</a></h2>
 <p>其他安全策略都基于LSM进行实现.</p>
 <p>DEFINE_LSM():将加载hook放入特定的节.系统启动时会执行hook加载动作.运行过程中在桩点调用触发函数,运行特定位置的hook函数.</p>
 <img alt="../../../_images/lsm.svg" class="align-center" src="../../../_images/lsm.svg" /><p>selinux,smack tomoyo yama等均通过lsm(DEFINE_LSM)实现,没有例外.其中也夹杂了协议过滤部分.</p>
@@ -161,13 +195,20 @@
 </div>
 <p>要想在这个位置执行我们的安全策略,可以做如下操作(借用selinux代码:</p>
 </div>
+<div class="section" id="lsm">
+<h2>LSM模块开发<a class="headerlink" href="#lsm" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="landlock-lsm">
+<h2>Landlock LSM<a class="headerlink" href="#landlock-lsm" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="key.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ask.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ksp.html" class="btn btn-neutral float-left" title="内核自我保护(KSP)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sak.html" class="btn btn-neutral float-right" title="SAK" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -15,7 +15,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="内存在进程中的表示" href="new_task.html" />
+    <link rel="next" title="内存在进程中的表示" href="mem_kernel_arch.html" />
     <link rel="prev" title="Connector" href="../kernel_ps/ps_connector.html" /> 
 </head>
 
@@ -41,18 +41,18 @@
 <li class="toctree-l2"><a class="reference internal" href="../kernel_base/index.html">linux 内核基础</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_ps/index.html">linux 进程管理</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">linux 内存管理</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="new_task.html">内存在进程中的表示</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mm_struct.html">mm_struct 结构分析：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="vma.html">vm_area_struct 结构分析：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mmap.html">mmap来理解vma及硬件页关联：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pf.html">缺页中断：看硬件映射</a></li>
-<li class="toctree-l3"><a class="reference internal" href="page_mmap.html">物理页面管理机制：slab/slub/…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mem_kernel_arch.html">内存在进程中的表示</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mm_man.html">iomem相关总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mm_man.html#id1">内存统计信息</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mm_man.html#mmapvma">mmap来理解vma及硬件页关联：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mm_man.html#id2">内存性能测试方法</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mm_man.html#slab-slub">物理页面管理机制：slab/slub/…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mm_man.html#id3">内存安全机制：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mm_man.html#swap">swap:交换内存：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mm_man.html#id4">其他内存相关：</a></li>
 <li class="toctree-l3"><a class="reference internal" href="x86_mm.html">x86架构级内存管理总结</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mm_sec.html">内存安全机制：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mm_acct.html">内存统计信息</a></li>
-<li class="toctree-l3"><a class="reference internal" href="swap.html">swap:交换内存：</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mm_perf.html">内存性能测试方法</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mm_misc.html">其他内存相关：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="x86_mm.html#id1">缺页中断：看硬件映射</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mm_pro.html">内存编程总结（内核）</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_fs/index.html">linux 文件系统分析</a></li>
@@ -97,29 +97,33 @@
 <h1>linux 内存管理<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="new_task.html">内存在进程中的表示</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mm_struct.html">mm_struct 结构分析：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vma.html">vm_area_struct 结构分析：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mmap.html">mmap来理解vma及硬件页关联：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pf.html">缺页中断：看硬件映射</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pf.html#id84">}</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pf.html#id95">}</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pf.html#id186">}</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pf.html#id217">}</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pf.html#id244">}</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pf.html#id253">}</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pf.html#id276">}</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pf.html#id285">}</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pf.html#id300">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mem_kernel_arch.html">内存在进程中的表示</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mem_kernel_arch.html#id2">概述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mem_kernel_arch.html#id3">结构描述</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="page_mmap.html">物理页面管理机制：slab/slub/…</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mm_man.html">iomem相关总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mm_man.html#id1">内存统计信息</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mm_man.html#mmapvma">mmap来理解vma及硬件页关联：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mm_man.html#id2">内存性能测试方法</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mm_man.html#slab-slub">物理页面管理机制：slab/slub/…</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mm_man.html#id3">内存安全机制：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mm_man.html#swap">swap:交换内存：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mm_man.html#id4">其他内存相关：</a></li>
 <li class="toctree-l1"><a class="reference internal" href="x86_mm.html">x86架构级内存管理总结</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mm_sec.html">内存安全机制：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mm_acct.html">内存统计信息</a></li>
-<li class="toctree-l1"><a class="reference internal" href="swap.html">swap:交换内存：</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mm_perf.html">内存性能测试方法</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mm_misc.html">其他内存相关：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="x86_mm.html#id1">缺页中断：看硬件映射</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="x86_mm.html#id84">}</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86_mm.html#id95">}</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86_mm.html#id186">}</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86_mm.html#id217">}</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86_mm.html#id244">}</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86_mm.html#id253">}</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86_mm.html#id276">}</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86_mm.html#id285">}</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86_mm.html#id300">}</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mm_pro.html">内存编程总结（内核）</a></li>
 </ul>
 </div>
 </div>
@@ -129,7 +133,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../kernel_ps/ps_connector.html" class="btn btn-neutral float-left" title="Connector" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="new_task.html" class="btn btn-neutral float-right" title="内存在进程中的表示" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="mem_kernel_arch.html" class="btn btn-neutral float-right" title="内存在进程中的表示" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
