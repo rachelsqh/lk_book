@@ -1,0 +1,136 @@
+digraph G {
+  	concentrate=True;
+  	graph [
+  	compound=True;
+	rankdir = LR;
+	];
+  	node [shape=record];
+	node [
+	fontsize = "16"
+	shape = "ellipse"
+	];
+	label = "linux vfs";
+	
+	subgraph init_task {
+		rankdir="LR"
+		label = "init_task";
+		color = black;
+		"init_task" [
+		label = "<f0> struct task_struct init_task = \{ |
+			 <f1> ... |
+			 <f2> .fs = &init_fs, |
+			 <f3> .files = &init_files,|
+			 <f4> ... |
+			 <f5> \}",
+		shape = "record"
+		];
+	
+	}
+	
+	subgraph init_fs {
+		rankdir="LR"
+		label = "init_fs";
+		color = black;
+		"init_fs" [
+		label = "<f0> struct fs_struct init_fs = \{ |
+			 <f1> ... |
+			 <f2> .pwd = NULL |
+			 <f3> .root = NULL |
+			 <f4> \}",
+		shape = "record"
+		];
+	
+	}
+	
+	
+	"init_fs":f0 -> "fs_struct"[dir="none"];
+	
+	"init_task":f2 -> "init_fs":f0;
+	
+	subgraph fs_struct {
+		rankdir="LR"
+		label = "struct fs_struct";
+		color = black;
+		"fs_struct" [
+		label = "<f0> struct fs_struct \{ |
+		         <f1> ... |
+		         <f2> struct path root; |
+		         <f3> struct path pwd; |
+		         <f4> \}",
+		 shape = "record"
+		 ];
+	}
+	
+	subgraph path {
+		rankdir="LR";
+		label = "struct path";
+		color = black;		
+		"path" [
+		label = "<f0>  struct path \{ |
+			 <f1>  struct vfsmount *mnt;|
+			 <f2>  struct dentry *dentry;|
+			 <f3>  \}",
+	 	shape = "record" ]
+	 }
+
+	 "path":f0 -> "fs_struct":f2 [dir="none"];
+	 "path":f0 -> "fs_struct":f3 [dir="none"];
+	 subgraph a_fun {
+	 	label = "init_chdir"
+	 	a1 [ label = "set_fs_pwd",shape = "rect"];
+	 }
+	 	
+	 "init_fs":f2 -> a1;
+
+
+	 subgraph b_fun {
+	 	label = "init_chroot"
+	 	b1 [ label = "set_fs_root",shape = "rect"];
+	 }
+	 	
+	 "init_fs":f3 -> b1;
+	 
+	 "new_task" [shape = "record",label= "<f0> struct task_struct new_task \{ |
+	 				      <f1> ...|
+	 				      <f2> struct fs_struct *fs;|
+	 				      <f3> struct files_struct *file|
+	 				      <f4> ...|
+	 				      <f5> \}"];
+	 				      
+	 "new_task":f2 -> "init_task":f2[label = "fork\(\) : new_task\-\>fs = copy_fs_struct\(init_task\-\>fs\)",dir = back];
+	 "new_fs" [shape = "record",label = " <f0> new_task:fs \{ | <f1> ... | <f2> .pwd  | <f3> .root | <f4> \}"];
+	 "new_fs":f0 -> "new_task":f2[dir=none];
+	 "chroot"[label = "chroot系统调用",shape=rect];
+	 "chroot" -> b1;
+	 "chdir"[label = "chdir系统调用",shape=rect];
+	 "chdir" -> a1;
+	 "fchdir"[label = "fchdir系统调用",shape=rect];
+	 "fchdir" -> a1;
+	 "new_fs":f3 -> "chroot" [label="修改方式"];
+	 "new_fs":f2 -> "chdir" [label="根据提供的路径名进行修改"];
+	 "new_fs":f2 -> "fchdir" [label="根据打开文件的fd进行修改"];
+	 
+	 
+	 
+	 "files_struct" [label = "<f0> struct files_struct \{ |
+				<f1> atomic_t count;|
+				<f2> bool resize_in_progress;|
+				<f3> wait_queue_head_t resize_wait;|
+				<f4> struct fdtable __rcu *fdt;|
+				<f5> struct fdtable fdtab;|
+				<f6> spinlock_t file_lock ____cacheline_aligned_in_smp;|
+				<f7> unsigned int next_fd;|
+				<f8> unsigned long close_on_exec_init\[1\];|
+				<f9> unsigned long open_fds_init\[1\];|
+				<10> unsigned long full_fds_bits_init\[1\];\n\/\/fd占用位图，占用了则设置为1,未占用则为0|
+				<f11> struct file __rcu * fd_array\[NR_OPEN_DEFAULT\];\n\/\/指向打开文件的struct file结构，每个进程最多打开：BITS_PER_LONG个文件，其下标对应文件fd |
+				<f12> \}",
+			shape = "record"
+			];			
+	new_task:f3->"files_struct"[dir=none];
+	
+
+
+	 
+
+}

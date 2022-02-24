@@ -1,0 +1,453 @@
+内核内存布局
+-----------
+systemap:这个里面是符号与地址对应关系。
+
+vmlinux内核内存布局
+------------------
+img
+
+其中的赋值并不占用空间，这些参数在其他地方存储，此处只是对其中的值进行赋值。
+我们再重新看链接脚本的作用：
+
+
+内核的加载
+----------
+内核加载完成后参考如上，也就是说跳转到startup64时就已经完成内核的整个定位了。我们看说明：
+startup_64:
+	/*
+	 * At this point the CPU runs in 64bit mode CS.L = 1 CS.D = 0,
+	 * and someone has loaded an identity mapped page table
+	 * for us.  These identity mapped page tables map all of the
+	 * kernel pages and possibly all of memory.
+	 *
+	 * %rsi holds a physical pointer to real_mode_data.
+	 *
+	 * We come here either directly from a 64bit bootloader, or from
+	 * arch/x86/boot/compressed/head_64.S.
+	 *
+	 * We only come here initially at boot nothing else comes here.
+	 *
+	 * Since we may be loaded at an address different from what we were
+	 * compiled to run at we first fixup the physical addresses in our page
+	 * tables and then reload them.
+	 */
+
+	/* Set up the stack for verify_cpu(), similar to initial_stack below */
+
+此时 CPU 运行在 64 位模式 CS.L = 1 CS.D = 0，并且有人为我们加载了身份映射页表。 这些身份映射页表映射所有内核页面，可能还映射所有内存。 %rsi 拥有一个指向 real_mode_data 的物理指针。我们可以直接从 64 位引导加载程序或从 arch/x86/boot/compressed/head_64.S 来。 我们最初只是在启动时来到这里，没有其他东西来到这里。 由于我们可能被加载到与我们编译运行的地址不同的地址，我们首先修复页表中的物理地址，然后重新加载它们。
+
+从这个位置往下看的时候记得所有的映射已经做好了
+
+leaq	(__end_init_task - FRAME_SIZE)(%rip), %rsp //栈：用的init_task的__end_init_task,空出了FRAME_SIZE的空间，这一块是在数据段中已经存在
+
+	leaq	_text(%rip), %rdi   //相对寻址，rdi 指向_text地址
+	pushq	%rsi
+	call	startup_64_setup_env //加载GDT和IDT
+
+//startup_64_setup_env	begian	
+在内核切换到虚拟地址之前需要设置引导 CPU 状态。
+
+
+/* 8 byte segment descriptor */
+struct desc_struct {
+	u16	limit0;
+	u16	base0;
+	u16	base1: 8, type: 4, s: 1, dpl: 2, p: 1;
+	u16	limit1: 4, avl: 1, l: 1, d: 1, g: 1, base2: 8;
+} __attribute__((packed));
+
+#define GDT_ENTRY_INIT(flags, base, limit)			\
+	{							\
+		.limit0		= (u16) (limit),		\
+		.limit1		= ((limit) >> 16) & 0x0F,	\
+		.base0		= (u16) (base),			\
+		.base1		= ((base) >> 16) & 0xFF,	\
+		.base2		= ((base) >> 24) & 0xFF,	\
+		.type		= (flags & 0x0f),		\
+		.s		= (flags >> 4) & 0x01,		\
+		.dpl		= (flags >> 5) & 0x03,		\
+		.p		= (flags >> 7) & 0x01,		\
+		.avl		= (flags >> 12) & 0x01,		\
+		.l		= (flags >> 13) & 0x01,		\
+		.d		= (flags >> 14) & 0x01,		\
+		.g		= (flags >> 15) & 0x01,		\
+	}
+
+
+struct desc_ptr {
+	unsigned short size;
+	unsigned long address;
+} __attribute__((packed)) ;
+
+
+/*
+ * GDT used on the boot CPU before switching to virtual addresses.
+ */
+static struct desc_struct startup_gdt[GDT_ENTRIES] = {
+	[GDT_ENTRY_KERNEL32_CS]         = GDT_ENTRY_INIT(0xc09b, 0, 0xfffff),
+	[GDT_ENTRY_KERNEL_CS]           = GDT_ENTRY_INIT(0xa09b, 0, 0xfffff),
+	[GDT_ENTRY_KERNEL_DS]           = GDT_ENTRY_INIT(0xc093, 0, 0xfffff),
+};
+
+/*
+ * Address needs to be set at runtime because it references the startup_gdt
+ * while the kernel still uses a direct mapping.
+ */
+static struct desc_ptr startup_gdt_descr = {
+	.size = sizeof(startup_gdt),
+	.address = 0,
+};
+
+
+void __head startup_64_setup_env(unsigned long physbase) //参数rdi:_text地址：_text = 0xffffffff81000000，相对寻址，加载GDT但没有初始化CS
+{
+	/* Load GDT */
+	startup_gdt_descr.address = (unsigned long)fixup_pointer(startup_gdt, physbase); //return ptr - (void *)_text + (void *)physaddr;离_text的距离
+	native_load_gdt(&startup_gdt_descr);//	asm volatile("lgdt %0"::"m" (*dtr));
+
+	/* New GDT is live - reload data segment registers ：重新加载GDT */
+	asm volatile("movl %%eax, %%ds\n"
+		     "movl %%eax, %%ss\n"
+		     "movl %%eax, %%es\n" : : "a"(__KERNEL_DS) : "memory"); //ds = ss = es = __KERNEL_DS
+
+	startup_64_load_idt(physbase);//加载IDT 这仍然在直接映射中运行
+#if 0	
+	/* This runs while still in the direct mapping:这仍然在直接映射中运行 */
+	
+/*
+ * Data structures and code used for IDT setup in head_64.S. The bringup-IDT is
+ * used until the idt_table takes over. On the boot CPU this happens in
+ * x86_64_start_kernel(), on secondary CPUs in start_secondary(). In both cases
+ * this happens in the functions called from head_64.S.
+ *
+ * The idt_table can't be used that early because all the code modifying it is
+ * in idt.c and can be instrumented by tracing or KASAN, which both don't work
+ * during early CPU bringup. Also the idt_table has the runtime vectors
+ * configured which require certain CPU state to be setup already (like TSS),
+ * which also hasn't happened yet in early CPU bringup.
+ */
+static gate_desc bringup_idt_table[NUM_EXCEPTION_VECTORS] __page_aligned_data;
+
+static struct desc_ptr bringup_idt_descr = {
+	.size		= (NUM_EXCEPTION_VECTORS * sizeof(gate_desc)) - 1,
+	.address	= 0, /* Set at runtime */
+};
+static void set_bringup_idt_handler(gate_desc *idt, int n, void *handler)
+{
+#ifdef CONFIG_AMD_MEM_ENCRYPT
+	struct idt_data data;
+	gate_desc desc;
+
+	init_idt_data(&data, n, handler);
+	idt_init_desc(&desc, &data);
+	native_write_idt_entry(idt, n, &desc);
+#endif
+}	
+	
+static void startup_64_load_idt(unsigned long physbase)
+{
+	struct desc_ptr *desc = fixup_pointer(&bringup_idt_descr, physbase);
+	gate_desc *idt = fixup_pointer(bringup_idt_table, physbase);
+
+
+	if (IS_ENABLED(CONFIG_AMD_MEM_ENCRYPT)) {
+		void *handler;
+
+		/* VMM Communication Exception */
+		handler = fixup_pointer(vc_no_ghcb, physbase);//未解析
+		set_bringup_idt_handler(idt, X86_TRAP_VC, handler);//未解析：注意X86_TRAP_VC:29 异常 
+	}
+
+	desc->address = (unsigned long)idt;//到这儿只初始化了X86_TRAP_VC
+	native_load_idt(desc);//asm volatile("lidt %0"::"m" (*dtr));
+}
+
+		
+#endif
+	
+}	
+	
+//startup_64_setup_env	end
+		
+	popq	%rsi
+
+	/* Now switch to __KERNEL_CS so IRET works reliably */
+	pushq	$__KERNEL_CS
+	leaq	.Lon_kernel_cs(%rip), %rax
+	pushq	%rax
+	lretq	// 跳转：rsp - sizeof(rax) : rsp,即__KERNEL_CS --> CS,rax --> IP
+//从此以后寻址就进入偏移了。
+
+.Lon_kernel_cs:
+	UNWIND_HINT_EMPTY //调试用，编译内核时由objtool使用
+#if 0
+/*
+ * In asm, there are two kinds of code: normal C-type callable functions and
+ * the rest.  The normal callable functions can be called by other code, and
+ * don't do anything unusual with the stack.  Such normal callable functions
+ * are annotated with the ENTRY/ENDPROC macros.  Most asm code falls in this
+ * category.  In this case, no special debugging annotations are needed because
+ * objtool can automatically generate the ORC data for the ORC unwinder to read
+ * at runtime.
+ *
+ * Anything which doesn't fall into the above category, such as syscall and
+ * interrupt handlers, tends to not be called directly by other functions, and
+ * often does unusual non-C-function-type things with the stack pointer.  Such
+ * code needs to be annotated such that objtool can understand it.  The
+ * following CFI hint macros are for this type of code.
+ *
+ * These macros provide hints to objtool about the state of the stack at each
+ * instruction.  Objtool starts from the hints and follows the code flow,
+ * making automatic CFI adjustments when it sees pushes and pops, filling out
+ * the debuginfo as necessary.  It will also warn if it sees any
+ * inconsistencies.
+ */
+.macro UNWIND_HINT sp_reg:req sp_offset=0 type:req end=0
+.Lunwind_hint_ip_\@:
+	.pushsection .discard.unwind_hints  //就是在这个节中加入这么一段信息
+		/* struct unwind_hint */
+		.long .Lunwind_hint_ip_\@ - .
+		.short \sp_offset
+		.byte \sp_reg
+		.byte \type
+		.byte \end
+		.balign 4
+	.popsection
+.endm
+
+.macro UNWIND_HINT_EMPTY
+	UNWIND_HINT sp_reg=ORC_REG_UNDEFINED type=UNWIND_HINT_TYPE_CALL end=1  //针对ORC专门来一段
+.endm
+
+
+#endif//end 
+
+	/* Sanitize CPU configuration
+	 *	This is a common code for verification whether CPU supports
+ * 	long mode and SSE or not. It is not called directly instead this
+ *	file is included at various places and compiled in that context.
+ *	This file is expected to run in 32bit code.  Currently:
+ *
+ *	arch/x86/boot/compressed/head_64.S: Boot cpu verification
+ *	arch/x86/kernel/trampoline_64.S: secondary processor verification
+ *	arch/x86/kernel/head_32.S: processor startup
+ *
+ *	verify_cpu, returns the status of longmode and SSE in register %eax.
+ *		0: Success    1: Failure
+ *
+ *	On Intel, the XD_DISABLE flag will be cleared as a side-effect.
+ *
+ * 	The caller needs to check for the error code and take the action
+ * 	appropriately. Either display a message or halt.
+ */
+	*/
+	call verify_cpu
+
+	/*
+	 * Perform pagetable fixups. Additionally, if SME is active, encrypt
+	 * the kernel and retrieve the modifier (SME encryption mask if SME
+	 * is active) to be added to the initial pgdir entry that will be
+	 * programmed into CR3.
+	 */
+	 
+	leaq	_text(%rip), %rdi
+	pushq	%rsi
+	call	__startup_64
+#if 0 //__startup_64 start	
+/* Code in __startup_64() can be relocated during execution, but the compiler
+ * doesn't have to generate PC-relative relocations when accessing globals from
+ * that function. Clang actually does not generate them, which leads to
+ * boot-time crashes. To work around this problem, every global pointer must
+ * be adjusted using fixup_pointer().
+ */
+ 
+ unsigned long __head __startup_64(unsigned long physaddr,struct boot_params *bp) //参数：rdi:_text,rsi:boot_params
+ 	{
+	unsigned long vaddr, vaddr_end;
+	unsigned long load_delta, *p;
+	unsigned long pgtable_flags;
+	pgdval_t *pgd;
+	p4dval_t *p4d;
+	pudval_t *pud;
+	pmdval_t *pmd, pmd_entry;
+	pteval_t *mask_ptr;
+	bool la57;
+	int i;
+	unsigned int *next_pgt_ptr;
+
+	la57 = check_la57_support(physaddr);//if l5支持
+
+	/* Is the address too large? */
+	if (physaddr >> MAX_PHYSMEM_BITS) //MAX_PHYSMEM_BITS:(pgtable_l5_enabled() ? 52 :46),超过就卡死了
+		for (;;);
+
+	/*
+	 * Compute the delta between the address I am compiled to run at
+	 * and the address I am actually running at.
+	 */
+	load_delta = physaddr - (unsigned long)(_text - __START_KERNEL_map); //引导加载与内核镜像中定义的差异？
+
+	/* Is the address not 2M aligned? */
+	if (load_delta & ~PMD_PAGE_MASK) /* 2M对齐，否则死寻话 */
+		for (;;);
+
+	/* Activate Secure Memory Encryption (SME) if supported and enabled */
+	sme_enable(bp);//sme/sev判断;
+
+	/* Include the SME encryption mask in the fixup value */
+	load_delta += sme_get_me_mask();//所以？这个是什么个意思？
+
+	/* Fixup the physical addresses in the page table */
+
+	pgd = fixup_pointer(&early_top_pgt, physaddr);
+#if 0 early_top_pgt start
+
+SYM_DATA_START_PTI_ALIGNED(early_top_pgt)
+	.fill	512,8,0  // 512 * 8 = 4KB
+	.fill	PTI_USER_PGD_FILL,8,0 // CONFIG_PAGE_TABLE_ISOLATION?
+SYM_DATA_END(early_top_pgt)	
+	
+	
+#endif early_top_pgt end
+
+	
+	p = pgd + pgd_index(__START_KERNEL_map); //#define pgd_index(a)  (((a) >> PGDIR_SHIFT) & (PTRS_PER_PGD - 1))  //pgd + 页号 ==>地址单元
+	if (la57)
+		*p = (unsigned long)level4_kernel_pgt;//存放level4_kernel_pgt地址
+	else
+		*p = (unsigned long)level3_kernel_pgt;//存放level3_kernel_pgt地址
+	*p += _PAGE_TABLE_NOENC - __START_KERNEL_map + load_delta;
+
+	if (la57) {
+		p4d = fixup_pointer(&level4_kernel_pgt, physaddr);
+		p4d[511] += load_delta;
+	}
+
+	pud = fixup_pointer(&level3_kernel_pgt, physaddr);
+	pud[510] += load_delta;
+	pud[511] += load_delta;
+
+	pmd = fixup_pointer(level2_fixmap_pgt, physaddr);
+	for (i = FIXMAP_PMD_TOP; i > FIXMAP_PMD_TOP - FIXMAP_PMD_NUM; i--)
+		pmd[i] += load_delta;
+
+	/*
+	 * Set up the identity mapping for the switchover.  These
+	 * entries should *NOT* have the global bit set!  This also
+	 * creates a bunch of nonsense entries but that is fine --
+	 * it avoids problems around wraparound.
+	 */
+
+	next_pgt_ptr = fixup_pointer(&next_early_pgt, physaddr);
+	pud = fixup_pointer(early_dynamic_pgts[(*next_pgt_ptr)++], physaddr);
+	pmd = fixup_pointer(early_dynamic_pgts[(*next_pgt_ptr)++], physaddr);
+
+	pgtable_flags = _KERNPG_TABLE_NOENC + sme_get_me_mask();
+
+	if (la57) {
+		p4d = fixup_pointer(early_dynamic_pgts[(*next_pgt_ptr)++],
+				    physaddr);
+
+		i = (physaddr >> PGDIR_SHIFT) % PTRS_PER_PGD;
+		pgd[i + 0] = (pgdval_t)p4d + pgtable_flags;
+		pgd[i + 1] = (pgdval_t)p4d + pgtable_flags;
+
+		i = physaddr >> P4D_SHIFT;
+		p4d[(i + 0) % PTRS_PER_P4D] = (pgdval_t)pud + pgtable_flags;
+		p4d[(i + 1) % PTRS_PER_P4D] = (pgdval_t)pud + pgtable_flags;
+	} else {
+		i = (physaddr >> PGDIR_SHIFT) % PTRS_PER_PGD;
+		pgd[i + 0] = (pgdval_t)pud + pgtable_flags;
+		pgd[i + 1] = (pgdval_t)pud + pgtable_flags;
+	}
+
+	i = physaddr >> PUD_SHIFT;
+	pud[(i + 0) % PTRS_PER_PUD] = (pudval_t)pmd + pgtable_flags;
+	pud[(i + 1) % PTRS_PER_PUD] = (pudval_t)pmd + pgtable_flags;
+
+	pmd_entry = __PAGE_KERNEL_LARGE_EXEC & ~_PAGE_GLOBAL;
+	/* Filter out unsupported __PAGE_KERNEL_* bits: */
+	mask_ptr = fixup_pointer(&__supported_pte_mask, physaddr);
+	pmd_entry &= *mask_ptr;
+	pmd_entry += sme_get_me_mask();
+	pmd_entry +=  physaddr;
+
+	for (i = 0; i < DIV_ROUND_UP(_end - _text, PMD_SIZE); i++) {
+		int idx = i + (physaddr >> PMD_SHIFT);
+
+		pmd[idx % PTRS_PER_PMD] = pmd_entry + i * PMD_SIZE;
+	}
+
+	/*
+	 * Fixup the kernel text+data virtual addresses. Note that
+	 * we might write invalid pmds, when the kernel is relocated
+	 * cleanup_highmap() fixes this up along with the mappings
+	 * beyond _end.
+	 *
+	 * Only the region occupied by the kernel image has so far
+	 * been checked against the table of usable memory regions
+	 * provided by the firmware, so invalidate pages outside that
+	 * region. A page table entry that maps to a reserved area of
+	 * memory would allow processor speculation into that area,
+	 * and on some hardware (particularly the UV platform) even
+	 * speculative access to some reserved areas is caught as an
+	 * error, causing the BIOS to halt the system.
+	 */
+
+	pmd = fixup_pointer(level2_kernel_pgt, physaddr);
+
+	/* invalidate pages before the kernel image */
+	for (i = 0; i < pmd_index((unsigned long)_text); i++)
+		pmd[i] &= ~_PAGE_PRESENT;
+
+	/* fixup pages that are part of the kernel image */
+	for (; i <= pmd_index((unsigned long)_end); i++)
+		if (pmd[i] & _PAGE_PRESENT)
+			pmd[i] += load_delta;
+
+	/* invalidate pages after the kernel image */
+	for (; i < PTRS_PER_PMD; i++)
+		pmd[i] &= ~_PAGE_PRESENT;
+
+	/*
+	 * Fixup phys_base - remove the memory encryption mask to obtain
+	 * the true physical address.
+	 */
+	*fixup_long(&phys_base, physaddr) += load_delta - sme_get_me_mask();
+
+	/* Encrypt the kernel and related (if SME is active) */
+	sme_encrypt_kernel(bp);
+
+	/*
+	 * Clear the memory encryption mask from the .bss..decrypted section.
+	 * The bss section will be memset to zero later in the initialization so
+	 * there is no need to zero it after changing the memory encryption
+	 * attribute.
+	 */
+	if (mem_encrypt_active()) {
+		vaddr = (unsigned long)__start_bss_decrypted;
+		vaddr_end = (unsigned long)__end_bss_decrypted;
+		for (; vaddr < vaddr_end; vaddr += PMD_SIZE) {
+			i = pmd_index(vaddr);
+			pmd[i] -= sme_get_me_mask();
+		}
+	}
+
+	/*
+	 * Return the SME encryption mask (if SME is active) to be used as a
+	 * modifier for the initial pgdir entry programmed into CR3.
+	 */
+	return sme_get_me_mask();
+}
+	
+	
+	
+#endif // __startup_64 end	
+	
+	popq	%rsi
+
+	/* Form the CR3 value being sure to include the CR3 modifier */
+	addq	$(early_top_pgt - __START_KERNEL_map), %rax
+	jmp 1f
+SYM_CODE_END(startup_64)	
+

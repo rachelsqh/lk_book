@@ -14,4 +14,5 @@ linux 内核开发
    lk_build/index
    lk_comp/index
    lk_debug/index
-
+   dot
+   kernel_debug_ig

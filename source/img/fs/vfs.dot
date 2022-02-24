@@ -1,0 +1,207 @@
+digraph G {
+  	concentrate=True;
+  	graph [
+	rankdir = LR
+	];
+  	node [shape=record];
+
+	label = "linux vfs";
+	
+	
+	
+		subgraph cluster_0 {
+	label = "struct fs_context";
+
+	fsc[label = "<f0> struct fs_context \{|
+		<f1>const struct fs_context_operations *ops;|
+		<f2>struct file_system_type	*fs_type;|
+		<f3>struct dentry		*root;		\/\* The root and superblock \*\/|
+		<f4>struct user_namespace	*user_ns;	\/\* The user namespace for this mount \*\/|
+		<f5>struct net		*net_ns;	\/\* The network namespace for this mount \*\/|
+		<f6>const struct cred	*cred;		\/\* The mounter's credentials \*\/|
+		<f7>struct p_log		log;		\/\* Logging buffer \*\/|
+		<f8>const char		*source;	\/\* The source name (eg. dev path) \*\/|
+		<f9> ...|
+		<f10> \}",shape="record"];
+	}
+		
+	
+	
+	
+	
+	
+	
+
+	subgraph cluster_1  {
+		rankdir="LR"
+		label = "VFS";
+		color = black;
+		
+		"file_system_type" [ label ="<f0> struct file_system_type\{ |
+					     <f1> const char *name;|
+					     <f2> int fs_flags;|
+					     <f3> int \(*init_fs_context\)\(struct fs_context *\);|
+					     <f4> const struct fs_parameter_spec *parameters;|
+					     <f5> struct dentry *\(*mount\) \(struct file_system_type *, int,\nconst char *, void *\);|
+					     <f6> void \(*kill_sb\) \(struct super_block *\);|
+					     <f7> struct module *owner;|
+					     <f8> struct file_system_type * next;|
+					     <f9> struct hlist_head fs_supers;|
+					     <f10> ...|
+					     <f11> \}",shape="record"];
+					     		
+		
+		
+		"super_block" [ label = "<f0> struct super_block \{\/\/以链表形式组织一个文件系统的所有资源|
+					 <f1> ...|
+					 <f2> \};",shape="record"];
+					 
+		
+		"dentry" [label = "<f0> struct dentry \{|
+			  <f1> \/\* RCU lookup touched fields \*\/|
+			  <f3> unsigned int d_flags;		\/\* protected by d_lock \*\/|
+			  <f4> seqcount_spinlock_t d_seq;	\/\* per dentry seqlock \*\/|
+			  <f5> struct hlist_bl_node d_hash;	\/\* lookup hash list \*\/|
+			  <f6> struct dentry *d_parent;	\n\/\* parent directory:这个就是获取绝对地址的依据，可参考getcwd系统调用 \*\/|
+			  <f7> struct qstr d_name;|
+			  <f8> struct inode *d_inode;		\/\* Where the name belongs to - NULL is negative \*\/|
+			  <f9> unsigned char d_iname[DNAME_INLINE_LEN];	\/\* small names \*\/|
+			  <f10>\/\* Ref lookup also touches following \*\/|
+			  <f11>struct lockref d_lockref;	\/\* per-dentry lock and refcount \*\/|
+			  <f12>const struct dentry_operations *d_op;|
+			  struct super_block *d_sb;	\/\* The root of the dentry tree \*\/|
+			  unsigned long d_time;		\/\* used by d_revalidate \*\/|
+			  void *d_fsdata;			\/\* fs-specific data \*\/|
+			  union \{\nstruct list_head d_lru;		\n\/\* LRU list \*\/\nwait_queue_head_t *d_wait;	\n\/\* in-lookup ones only \*\/\n\};|
+			  struct list_head d_child;	\/\* child of parent list \*\/|
+			  struct list_head d_subdirs;	\/\* our children \*\/|
+			  \/\* d_alias and d_rcu can share memory \*\/|
+			  union \{\nstruct hlist_node d_alias;	\/\* inode alias list \*\/\nstruct hlist_bl_node d_in_lookup_hash;	\/\* only for in-lookup ones \*\/\nstruct rcu_head d_rcu;\n\} d_u;|
+			  \}",shape="record"];
+		
+		
+		"vfsmount" [label = "<f0> struct vfsmount \{|
+				     <f1> struct dentry *mnt_root;	\/\* root of the mounted tree \*\/ |
+				     <f2> struct super_block *mnt_sb;	\/\* pointer to superblock \*\/ |
+				     <f3> int mnt_flags;|
+				     <f4> struct user_namespace *mnt_userns;|
+				     <f5> \}",shape="record" ];
+		"vfsmount":f2 -> "super_block":f0;
+		"path" [label = "<f0>  struct path \{ \/\/文件路径 |
+			 <f1>  struct vfsmount *mnt;|
+			 <f2>  struct dentry *dentry;|
+			 <f3>  \}",shape = "record" ];
+		"path":f1 -> "vfsmount":f0;
+		"path":f2 -> "dentry":f0;
+		
+		"inode" [label ="<f0> struct inode \{ |
+				 <f1> umode_t			i_mode;|
+				 <f2> unsigned short		i_opflags;|
+				 <f3> kuid_t			i_uid;|
+				 <f4> kgid_t			i_gid;|
+				 <f5> unsigned int		i_flags;|
+				 <f6> struct posix_acl	*i_acl;|
+				 <f7> struct posix_acl	*i_default_acl;|
+				 <f8> const struct inode_operations	*i_op;|
+				 <f9> struct super_block	*i_sb;|
+				 <f10>struct address_space	*i_mapping;|
+				 <f11>void			*i_security;|
+				 <f12>unsigned long		i_ino;\n\/\* Stat data, not accessed from path walking \*\/|
+				 <f13>union \{\nconst unsigned int i_nlink;\nunsigned int __i_nlink;\n\};\n\/\/Filesystems may only read i_nlink directly.  \nThey shall use the following functions for modification:\n \(set\|clear\|inc\|drop\)_nlink \n inode_\(inc\|dec\)_link_count|
+				 <f14>dev_t			i_rdev;\/\/设备编号|
+				 <f15>loff_t			i_size;|
+				 <f16>struct timespec64	i_atime;|
+				 <f17>struct timespec64	i_mtime;|
+				 <f18>struct timespec64	i_ctime;|
+				 <f19>spinlock_t		i_lock;	\n\/\* i_blocks, i_bytes, maybe i_size \*\/|
+				 <f20>unsigned short          i_bytes;|
+				 <f21>u8			i_blkbits;|
+				 <f22>u8			i_write_hint;|
+				 <f23>blkcnt_t		i_blocks;|
+				 <f24>seqcount_t		i_size_seqcount;|
+				 <f25>unsigned long		i_state;|
+				 <f26>struct rw_semaphore	i_rwsem;|
+				 <f27>unsigned long		dirtied_when;\n\/\/jiffies of first dirtying |
+				 <f28>unsigned long		dirtied_time_when;|
+				 <f29>struct hlist_node	i_hash;|
+				 <f30>struct list_head	i_io_list;	\n\/\* backing dev IO list \*\/|
+				 <f31>struct bdi_writeback	*i_wb;		\n\/\* the associated cgroup wb \*\/|
+				 <f32>int			i_wb_frn_winner;\n\/\* foreign inode detection, see wbc_detach_inode() \*\/|
+				 <f33>u16			i_wb_frn_avg_time;|
+				 <f34>u16			i_wb_frn_history;|
+				 <f35>struct list_head	i_lru;		\n\/\* inode LRU list \*\/|
+				 <f36>struct list_head	i_sb_list;|
+				 <f37>struct list_head	i_wb_list;	\n\/\* backing dev writeback list \*\/|
+				 <f38>union \{\nstruct hlist_head	i_dentry;\nstruct rcu_head		i_rcu;\n\};|
+				 <f39>atomic64_t		i_version;|
+				 <f40>atomic64_t		i_sequence; \n\/\* see futex \*\/|
+				 <f41>atomic_t		i_count;|
+				 <f42>atomic_t		i_dio_count;|
+				 <f43>atomic_t		i_writecount;|
+				 <f44>atomic_t		i_readcount; \n\/\* struct files open RO \*\/|
+				<f45>union \{\n const struct file_operations	*i_fop;	\n \/ \* former \-\>i_op\-\>default_file_ops \*\/\nvoid \(*free_inode\)\(struct inode *\);\};|
+				<f46>struct file_lock_context	*i_flctx;|
+				<f47>struct address_space	i_data;|
+				<f48>struct list_head	i_devices;|
+				<f49>union \{\nstruct pipe_inode_info	*i_pipe;\nstruct cdev		*i_cdev;\/\/对应字符设备\nchar			*i_link;\nunsigned		i_dir_seq;\};|
+				<f50>__u32			i_generation;|
+				<f51>__u32			i_fsnotify_mask; \n\/\* all events this inode cares about \*\/|
+				<f52>struct fsnotify_mark_connector __rcu	*i_fsnotify_marks;|
+				<f53>truct fscrypt_info	*i_crypt_info;|
+				<f54>struct fsverity_info	*i_verity_info;|
+				<f55>void			*i_private; \n\/\* fs or device private pointer \*\/|
+				\}",
+				shape="record" ];
+		
+		"file" [label = "<f0> struct file \{|
+	                 <f1> union \{\nstruct llist_node	fu_llist;\nstruct rcu_head 	fu_rcuhead;\n\} f_u;|
+			 <f2> struct path		f_path;|
+			 <f3> struct inode		*f_inode;\n\/\* cached value \*\/|
+			 <f4> const struct file_operations	*f_op;|
+			 <f5> spinlock_t		f_lock;|
+			 <f6> enum rw_hint		f_write_hint;|
+			 <f7> atomic_long_t		f_count;|
+			 <f8> unsigned int 		f_flags;|
+			 <f9> fmode_t			f_mode;|
+			 <f10> struct mutex		f_pos_lock;|
+			 <f11> loff_t			f_pos;|
+			 <f12> struct fown_struct	f_owner;|
+			 <f13> const struct cred	*f_cred;|
+			 <f14> struct file_ra_state	f_ra;|
+			 <f15> u64			f_version;|
+			 <f16> void			*f_security;|
+			 <f17> void			*private_data;\n\/\* needed for tty driver, and maybe others \*\/|
+			 <f18> struct hlist_head	*f_ep;\/\* Used by fs\/eventpoll.c to link all the hooks to this file \*\/|
+			 <f19> struct address_space	*f_mapping;|
+			 <f20> errseq_t		f_wb_err;|
+			 <f21> errseq_t		f_sb_err; \n\/\* for syncfs \*\/|
+			 <f22> \}",shape="record"];
+		"file":f3 -> "inode":f0;
+		"file":f2 -> "path":f0; 
+		
+		"address_space"[ label="<f0> struct address_space \{\n \/\/ struct address_space \- Contents of a cacheable, mappable object.|
+				      <f1> struct inode		*host;\n\/\/Owner, either the inode or the block_device.|
+				      <f2> struct xarray		i_pages;\n\/\/ Cached pages.|
+				      <f3> gfp_t			gfp_mask;\n\/\/Memory allocation flags to use for allocating pages.|
+				      <f4> atomic_t		i_mmap_writable;\n\/\/Number of VM_SHARED mappings.|
+				      <f5> atomic_t		nr_thps;\n\/\/Number of THPs in the pagecache \(non-shmem only\).|
+				      <f6> struct rb_root_cached	i_mmap;\n\/\/Tree of private and shared mappings.|
+				      <f7> struct rw_semaphore	i_mmap_rwsem;\n\/\/Protects \@i_mmap and \@i_mmap_writable.|
+				      <f8> unsigned long		nrpages;\n\/\/Number of page entries, protected by the i_pages lock.|
+				      <f9> pgoff_t			writeback_index;\n\/\/Writeback starts here.|
+				      <f10>const struct address_space_operations *a_ops;\n\/\/Methods.|
+				      <f11>unsigned long		flags;\n\/\/Error bits and flags \(AS_*\).|
+				      <f12>errseq_t		wb_err;\n\/\/The most recent error which has occurred.|
+				      <f13>spinlock_t		private_lock;\n\/\/For use by the owner of the address_space.|
+				      <f14>struct list_head	private_list;\n\/\/For use by the owner of the address_space.|
+				      <f15>void			*private_data;\n\/\/For use by the owner of the address_space.|
+				      <f16>\}",shape="record"];
+
+		"file":f19 ->"address_space":f0
+		
+		subgraph cluster_2  {
+			label = "struct nameidata";
+		}
+	}
+	
+}

@@ -1,0 +1,72 @@
+digraph G {
+
+
+	label = "linux vfs fun";
+
+		
+						
+	subgraph cluster_0 {
+
+		label = "sys_mount";
+	
+		kernel_type[label="kernel_type = copy_mount_string\(type\)",shape="rect"];
+		kernel_dev[label = "kernel_dev = copy_mount_string\(dev_name\)",shape="rect"];
+		options[label = "options = copy_mount_string\(data\)",shape="rect"];
+		do_mount[label = "do_mount\(kernel_dev,dev_name,kernel_type,flags,options\)",shape="rect"];
+		
+		subgraph cluster_2 {
+    			color=blue;
+			label = "do_mount\(...\)";
+			path[label = " user_path_at\(AT_FDCWD, dir_name, LOOKUP_FOLLOW, &path\)",shape="rect"];
+			path_mount[label = "path_mount\(dev_name, &path, type_page, flags, data_page\)",shape="rect"];	
+			subgraph cluster_3 {
+				label = "path_mount";
+				sec_sb_mount[label="security_sb_mount:安全hook",shape="rect"];
+				do_nm[label = "do_new_mount\(path, type_page, sb_flags, mnt_flags, dev_name,data_page\)",shape="rect"];
+				sec_sb_mount -> do_nm;
+				do_nm -> gft[dir=none];
+				subgraph cluster_4 {
+					label = "do_new_mount";
+					gft[label="type = get_fs_type\(fstype\)",shape="rect"];
+					fcfm[label = "fs_context_for_mount\(type, sb_flags\)",shape="rect"];
+					vgt[label = "vfs_get_tree",shape="rect"];
+					dnmf[label = "do_new_mount_fc",shape="rect"];
+					gft -> fcfm -> vgt ->dnmf;
+					subgraph cluster_5 {
+						label = "do_new_mount_fc";
+						
+						security_sb_kern_mount
+						mnt = vfs_create_mount(fc);
+						do_add_mount(real_mount(mnt), mp, mountpoint, mnt_flags);
+						subgraph cluster_6 {
+							label = "do_add_mount";
+							real_mount(path->mnt)
+						
+						}
+					}
+				}
+			}	
+		
+		}
+		
+		do_mount -> path[dir=none] 
+		path -> path_mount -> sec_sb_mount[dir=none];
+		kernel_type -> kernel_dev -> options -> do_mount;
+	}
+	
+	subgraph cluster_1 {
+		label = "syscall:mount";
+		sys_mount[label = "sys_count\(char __user * dev_name, char __user * dir_name,\n
+					char __user * type, unsigned long flags, void __user * data\)",shape="rect"];
+		sys_mount -> kernel_type[dir=none];
+
+	}
+	
+
+	struct mount: vfs_crate_mount(fc):alloc_vfsmnt() --> (mnt->mnt_devname = name)
+		attach_recursive_mnt():主要函数吗？-> attach_mnt();
+			
+			
+			
+			
+}

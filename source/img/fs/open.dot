@@ -1,0 +1,68 @@
+digraph G {
+
+
+	label = "linux sys_open";
+
+		
+						
+	subgraph cluster_0 {
+
+		label = "sys_open";
+		
+		subgraph cluster_1 {
+			label = "do_sys_open";
+			
+			subgraph cluster_2 {
+				label = "do_sys_openat2";
+				do_filp_open;
+				subgraph cluster_3 {
+					label = "do_filp_open";
+					
+					set_nameidata(&nd,dfd,pathname,NULL);
+					path_openat();
+					
+					subgraph cluster_4 {
+						label = "path_openat";
+						alloc_empty_file;
+						path_init();
+						link_path_walk();
+						open_last_lookups();
+						do_open();
+						subgraph cluster_5 {
+							label = "do_open";//所以nameidata 是链接的关键：nameidata->path
+							may_open();
+							vfs_open();
+							ima_file_check();
+							subgraph cluster_6 {
+								label = "vfs_open";
+								do_dentry_open();
+								
+							}
+						}
+						terminate_walk();
+						
+						
+					
+				
+				}
+				
+				fsnotify_open;
+				fd_install
+				
+			}
+			
+		}
+		
+
+	}
+	
+	subgraph cluster_1 {
+		label = "syscall:mount";
+
+
+	}
+	
+write -> ksys_write -> vfs_write();
+
+			
+}

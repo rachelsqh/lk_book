@@ -1,0 +1,227 @@
+digraph g {
+label = "linux 内核布局-x64"
+graph [
+rankdir = "LR"
+];
+node [
+fontsize = "16"
+shape = "ellipse"
+
+];
+edge [
+];
+
+
+"sec_text" [
+	label = "<f0> .text: |
+		 <f1>  _text = _stext = . |
+		 <f3>  HEAD_TEXT |
+		 <f4>  TEXT_TEXT |
+		 <f5>  SCHED_TEXT|
+		 <f6>  CPUIDLE_TEXT |
+		 <f7>  LOCK_TEXT |
+		 <f8>  KPROBES_TEXT |
+		 <f9>  ALIGN_ENTRY_TEXT_BEGIN |
+		 <f10> ENTRY_TEXT |
+		 <f11> ALIGN_ENTRY_TEXT_END |
+		 <f12> SOFTIRQENTRY_TEXT |
+		 <f13> STATIC_CALL_TEXT |
+		 <f14> *\(.fixup\) |
+		 <f15> *\(.gnu.warning\) |
+		 <f16> __indirect_thunk_start = .;|
+		 <f17> *\(.text.__x86.indirect_thunk\)|
+		 <f18> text =0xcccc;_etext = .|
+		 <f19> .= ALIGN\(PAGE_SIZE\):页对齐|
+		 <f20> X86_ALIGN_RODATA_BEGIN |
+		 <f21> RO_DATA\(PAGE_SIZE\) |
+		 <f22> X86_ALIGN_RODATA_END |
+		 <f23> .data: \/\*数据\*\/|
+		 <f24> _stata = .|
+		 <f25> INIT_TASK_DATA\(THREAD_SIZE\) \/\* init_task \*\/ |
+		 <f26> PAGE_ALIGNED_DATA\(PAGE_SIZE\)
+		 <f27> CACHELINE_ALIGNED_DATA\(L1_CACHE_BYTES\) |
+		 <f28> DATA_DATA |
+		 <f29> CONSTRUCTORS |
+		 <f30> READ_MOSTLY_DATA\(NETERNODE_CACHE_BYTES\) \/\*rarely change data like cpu map \*\/|
+		 <f32> _edata=. \/\* End of data section \(\/ |
+		 <f33> BUG_TABLE |
+		 <f34> ORC_UNWIND_TABLE |
+		 <f35> .=ALIGN\(PAGE_SIZE\) 对齐设置 |
+		 <f36> __vvar_page = .|
+		 <f37> .vvar : |
+		 <f38> __vvar_beginning_hack = . \/\* 占一页\*\/|
+		 <f39> include \<asm\/vvar.h\> |
+		 <f40> . = __vvar_beginning_hack + PAGE_SIZE; |
+		 <f41> . = ALIGN\(__vvar_page + PAGE_SIZE,PAGE_SIZE\)
+		 <f42> . = ALIGN\(PAGE_SIZE\) 初始化数据，初始化完成后会释放 |
+		 <f43> .init.begin 
+		 <f44> __init_begin = . |
+		 <f45> PERCPU_VADDR\(INTERNODE_CACHE_BYTES,0, : percpu\) |
+		 <f46> ASSERT\(SIZEOF\(.data..percpu\) < CONFIG_PHYSICAL_START,\n
+		 	\"per-CPU data too large - increase CONFIG_PHYSICAL_START\"\) |
+		 <f47> INIT_TEXT_SECTION\(PAGE_SIZE\) |
+		 <f48> :init |
+		 <f49> .altinstr_aux: |
+		 <f50> *\(altinstr_aux\) |
+		 <f51> INIT_DATA_SECTION\(16\) |
+		 <f52> .x86_cpu_dev.init: |
+		 <f53> __x86_cpu_dev_start = . |
+		 <f54> *\(.x86_cpu_dev.init\)
+		 <f55> __x86_cpu_dev_end = . |
+		 <f56> . = ALIGN(8) |
+		 <f57> .parainstrutions : |
+		 <f58> __parainstructions = .|
+		 <f59> *\(.parainstructions\)|
+		 <f60> __parainstructions_end = .|
+		 <f61> .=ALIGN(8) |
+		 <f62> .parainstructions: |
+		 <f63> __parainstructions = .|
+		 <f64> *\(.parainstructions\) |
+		 <f65> __parainstructions_end = . |
+		 <f66> . = ALIGN\(8\)
+		 <f67> .altinstructions: |
+		 <f68> __alt_instrutions = . |
+		 <f69> *\(.altinstructions\)
+		 <f70> __alt_instructions_end = . |
+		 <f71> .altinstr_replacement: |
+		 <f72> .altinstr_replacement: |
+		 <f73> .iommu_table |\n
+		 	__iommu_table = .\n
+		 	*(.iommu_table)\n
+		 	__iommu_table_end = . |
+		 <f74> . = ALIGN(8) |
+		 <f75> .apicdrivers: {\
+		 	__apicdrivers = .\n
+		 	*\(.apicdriver\)\n
+		 	__apicdrivers_end = .|
+		 <f76> . = ALIGN\(*\)
+		 <f77> .exit.text \{\n
+		 	\tEXIT_TEXT\n\}
+		 <f78> .exit.data \{\n
+		 	\tEXIT_DATA \n|
+		 <f79> . = ALIGN\(PAGE_SIZE\)|
+		 <f80> .init.end:\{\t__init_end = .\n\}|
+		 <f81> . = ALIGN(PAGE_SIZE) |
+		 <f82> .smp_locks:\{\n\t
+		 	__smp_locks = .\n
+		 	*\(.smp_locks\)\n
+		 	. = ALIGN\(PAGE_SIZE\)\n
+		 	__smp_locks_end = .\n\}|
+		 	
+		 <f83> .data_nosave:\{\nNOSAVE_DATA\n\}|
+		 <f84> .ALIGN\(PAGE_SIZE\) BSS:|
+		 <f85> .bss: \{\n
+		 	\t__bss_start =.\n
+		 	*\(.bss..page_aligned\)\n
+		 	. = ALIGN\(PAGE_SIZE\) \n
+		 	*\(BSS_MAIN\)\nBSS_DECRYPTED\n . = ALIGN\(PAGE_SIZE\)\n __bss_stop = .|
+		 <f86> __end_of_kernel_reserve = .|
+		 <f87> . = ALIGN\(PAGE_SIZE\)|
+		 <f88> .brk:\{\n
+		 	\t __brk_base = .\n
+		 	\t . += 64 * 1024\n
+		 	\t *\(.brk_reservation\)\n
+		 	\t__brk_limit = .\n\}|
+		 <f89> .=ALIGN\(PAGE_SIZE\)|
+		 <f90> _end = . |
+		 <f92> .init.scratch:\n \{ |
+		 <f93> __init_scratch_begin = . |
+		 <f94>  *\(.init.scratch\) |
+		 <f95>  . = ALIGN(HPAGE_SIZE)
+		 <f96>  __init_scratch_end = .\n \} |
+		 <f97> STABS_DEBUG |
+		 <f98> DWARF_DEBUG |
+		 <f99> ELF_DETAILS |
+		 <f100>DISCARDS|
+		 <f101>.got.plt \(INFO\) : \{ *\(.got.plt\) \} |
+		 <f102> ASSERT\(SIZEOF\(.got.plt\) == 0 || SIZEOF\(.got.plt\) == 0x18,\"Unexpected GOT\/PLT entries detected!\"\) |
+		 <f103> .got : \{\n*\(.got\) *\(.igot.*\)\n\}\ |
+		 <f104> ASSERT\(SIZEOF\(.got\) == 0, \"Unexpected GOT entries detected!\"\) |
+		 <f105> .plt : \{\n*\(.plt\) *\(.plt.*\) *\(.iplt\)\n\} |
+		 <f106> ASSERT\(SIZEOF\(.plt\) == 0, \"Unexpected run-time procedure linkages detected!\"\)|
+		 <f107> .rel.dyn : \{\n*\(.rel.*\) *\(.rel_*\) \n\} |
+		 <f108> ASSERT\(SIZEOF\(.rel.dyn\) == 0, \"Unexpected run-time relocations \(.rel\) detected!\"\) |
+		 <f109> .rela.dyn : \{\n *\(.rela.*\) *\(.rela_*\)\n\}|
+		 <f110> ASSERT\(SIZEOF\(.rela.dyn\) == 0, \"Unexpected run-time relocations \(.rela\) detected!\"\) |
+		 <f111> \}",shape="record"];
+		 
+
+
+		 <f71> .altinstr_replacement: |
+		 <f72> .altinstr_replacement: |
+		 <f73> .iommu_table |\n
+		 	__iommu_table = .\n
+		 	*\(.iommu_table\)\n
+		 	__iommu_table_end = . |
+		 <f74> . = ALIGN(8) |
+		 <f75> .apicdrivers: \{
+		 	__apicdrivers = .\n
+		 	*\(.apicdriver\)\n
+		 	__apicdrivers_end = .|
+		 <f76> . = ALIGN\(*\)
+		 <f77> .exit.text \{\n
+		 	\tEXIT_TEXT\n\} |
+		 <f78> .exit.data \{\n
+		 	\tEXIT_DATA \n|
+		 <f79> . = ALIGN\(PAGE_SIZE\)|
+		 <f80> .init.end:\{\t__init_end = .\n\}|
+		 <f81> . = ALIGN\(PAGE_SIZE\) |
+		 <f82> .smp_locks:\{\n\t
+		 	__smp_locks = .\n
+		 	*\(.smp_locks\)\n
+		 	. = ALIGN\(PAGE_SIZE\)\n
+		 	__smp_locks_end = .\n\}|		 	
+		 <f83> .data_nosave:\{\nNOSAVE_DATA\n\}|
+		 <f84> .ALIGN\(PAGE_SIZE\) BSS:|
+		 <f85> .bss: \{\n
+		 	\t__bss_start =.\n
+		 	*\(.bss..page_aligned\)\n
+		 	. = ALIGN\(PAGE_SIZE\) \n
+		 	*\(BSS_MAIN\)\nBSS_DECRYPTED\n . = ALIGN\(PAGE_SIZE\)\n __bss_stop = .|
+		 <f86> __end_of_kernel_reserve = .|
+		 <f87> . = ALIGN\(PAGE_SIZE\)|
+		 <f88> .brk:\{\n
+		 	\t __brk_base = .\n
+		 	\t . += 64 * 1024\n
+		 	\t *\(.brk_reservation\)\n
+		 	\t__brk_limit = .\n\}|	 	
+
+
+
+		 <f89> .=ALIGN\(PAGE_SIZE\)|
+		 <f90> _end = . |
+		 <f92> .init.scratch:\n \{ |
+		 <f93> __init_scratch_begin = . |
+		 <f94>  *\(.init.scratch\) |
+		 <f95>  . = ALIGN\(HPAGE_SIZE\)
+		 <f96>  __init_scratch_end = .\n \} |
+		 <f97> STABS_DEBUG |
+		 <f98> DWARF_DEBUG |
+		 <f99> ELF_DETAILS |
+		 <f100>DISCARDS|
+		 <f101>.got.plt \(INFO\) : \{ *\(.got.plt\) \} |
+		 <f102> ASSERT\(SIZEOF\(.got.plt\) == 0 || SIZEOF\(.got.plt\) == 0x18,\"Unexpected GOT\/PLT entries detected!\"\) |
+		 <f103> .got : \{\n*\(.got\) *\(.igot.*\)\n\}\ |
+		 <f104> ASSERT\(SIZEOF\(.got\) == 0, \"Unexpected GOT entries detected!\"\) |
+		 <f105> .plt : \{\n*\(.plt\) *\(.plt.*\) *\(.iplt\)\n\} |
+		 <f106> ASSERT\(SIZEOF\(.plt\) == 0, \"Unexpected run-time procedure linkages detected!\"\)|
+		 <f107> .rel.dyn : \{\n*\(.rel.*\) *\(.rel_*\) \n\} |
+		 <f108> ASSERT\(SIZEOF\(.rel.dyn\) == 0, \"Unexpected run-time relocations \(.rel\) detected!\"\) |
+		 <f109> .rela.dyn : \{\n *\(.rela.*\) *\(.rela_*\)\n\}|
+		 <f110> ASSERT\(SIZEOF\(.rela.dyn\) == 0, \"Unexpected run-time relocations \(.rela\) detected!\"\) |	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}

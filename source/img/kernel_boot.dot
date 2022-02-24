@@ -1,0 +1,847 @@
+digraph G {
+	node [shape=rect,width=3, color="#145374"];
+	size = "40,140"
+	label = "linux kernel启动流程：5.14.16"
+	subgraph cluster_10 {
+
+	b0[label = "startup_64",shape="Mrecord",color = blue];
+	b0 -> b00[ dir = none];
+	
+	
+	subgraph cluster_0 {
+		label = "startup_64";
+		b00[label="unwind_orc",shape=rect,width = 2,height=1];
+		b01[label = "设置栈指针：rsp = __end_init_task - FRAME_SIZE"];
+		b02[label = "startup_64_setup_env\(physbase\(rdi\)\)"];
+		b02_note[label = "加载gdt/idt\n
+				  1.native_load_gdt:startup_gdt_descr\l
+				  2.ds = ss = es = __KERNEL_DS\l
+				  3.startup_64_load_idt(physbase)\l
+				  ->native_load_idt()\l",shape = note];
+		b02_note -> b02[style=dashed,dir=none]
+		b03[label = "加载cs = KERNEL_CS:lretq"];
+		b04[label = "unwind_orc:调试信息"];
+		b05[label = "verify_cpu:检查CPU"];
+		b06[label = "__startup_64\(_text\(rdi\),boot_param\(rsi\)\)"];
+		b06_note[label = "__startup_64() 中的代码可以在执行期间重定位，\l
+				  但编译器在从该函数访问全局变量时不必生成 PC 相对重定位。\l 
+				  Clang 实际上不会生成它们，这会导致启动时崩溃。 要解决此问题，\l
+				  必须使用 fixup_pointer() 调整每个全局指针。\l",shape = note];
+		b06_note -> b06[style = dashed,dir=none];
+		b07[label = "cr4 = X86_CR4_PAE | X86_CR4_PGE"];
+		b08[label = "sev_verify_cbit\(phys_base\(rdi\),boot_param\(rsi\)\)"];
+		b08_note[label = "在启动时切换到新的长模式页表之前调用 sev_verify_cbit()。\l
+				通过在当前页表上将随机值写入加密内存位置来验证 C 位位置是否正确。 \l
+				然后它切换到新的页表以验证内存内容是否仍然相同。 之后，它切换回当前页表，\l
+				并在检查成功时返回。 如果检查失败，则代码使堆栈指针无效并进入 hlt 循环。\l
+				 堆栈指针无效以确保没有中断或异常可以使 CPU 退出 hlt 循环。 \l
+				 %rdi 中需要新的页表指针（第一个参数）:\l
+				 CONFIG_AMD_MEM_ENCRYPT:\l",shape = note];
+		b08_note -> b08[style = dashed,dir = none];
+		b09[label = "加载cr3页表\lcr3 = early_top_pgt - 0xffffffff80000000"];
+		b010[label = "ANNOTATE_RETPOLINE_SAFE"];
+		b010_note[label = "这应该在间接跳转/调用之前立即使用。 它告诉 objtool\l
+				   随后的间接跳转/调用对于 retpoline 构建是安全的。\l",shape=note];
+		b010_note -> b010[style = dashed,dir = none];
+		b011[label = "调试信息unwind_ord"];
+		b012[label = "加载全局描述符表：lgdt early_gdt_descr"];
+		b013[label = "ds = ss = es = fs = es = 0"];
+		b014[label = "gs初始化: wrmsr\(ecx:0xc0000101,eax:initial_gs,edx:initial_gs + 4\)"];
+		b015[label = "重置栈指针：rsp = initial_stack"];
+		b016[label = "加载idt:early_setup_idt\(boot_param\(rsi\)\)"];
+		b016_note[label = "early_setup_idt:\l
+				   为运行在内核地址空间加载idt 表:\l
+				   native_load_idt(&bringup_idt_descr)\l",shape = note];
+		b016_note -> b016[style = dashed,dir = none];
+		b017[label = "cpuid:eax = 0x80000001,返回：edi = edx"];
+		b018[label = "rdmsr:ecx = 0xc0000080,..."];
+		b019[label = "wrmsr: ", ];
+		b020[label = "设置cr0:cr0 = CRO_STATE"];
+		b021[label = "清空EFLAGS：popfq"];
+
+		b00 -> b01 -> b02 -> b03 -> b04 -> b05 -> b06 -> b07 -> b08 -> b09 -> b010 ->b011 -> b012 -> b013 -> b014 -> b015;
+		b015 -> b016 -> b017 -> b018 -> b019 -> b020 -> b021 ;
+	}
+	
+	b1[label = "x86_64_start_kernel\(real_mode_data\(rdi = rsi = boot_param\)\)",color = blue];
+	b0 -> b1;
+	b1 -> b10[dir = none];
+
+	b1_note[label = "主要针对页表，gdt,idt，\lcpu寄存器等进行设置 \l",shape = note];
+	b1 -> b1_note[style = dashed,dir = none];
+	b0 -> b1_note[style = dashed,dir = none];
+	//b11_note[label = " ",shape = note];
+	//b11_note -> b11[style = dashed,dir = none];
+	subgraph cluster_5 {
+		label = "x86_64_start_kernel";
+		b10[label = "编译过程参数确认：BUILD_BUG_ON"];
+		b11[label = "cr4_init_shadow\(\)"];
+		b11_note[label = "初始化当前CPU shadow:\l
+				 this_cpu_write(cpu_tlbstate.cr4,__read_cr4()\l ",shape = note];
+		b11_note -> b11[style = dashed,dir = none];
+		b12[label = "reset_early_page_tables\(\)"];
+		b12_note[label = "擦除内核符号映射外的所有早期页表:(为啥感觉全擦除了？\l
+				  --memset(early_top_pgt,0,sizeof(pgd_t)*(PTRS_PER_PGD -1));\l
+				  --write_cr3(__sme_pa_nodebug(early_top_pgt));\l",shape = note];
+		b12_note -> b12[style = dashed,dir = none];
+		b13[label = "clear_bss\(\)"];
+		b13_note[label = "将bss段清零:\l
+				 memset(__bss_start,0,\l
+				__bss_stop - __bss_start)\l ",shape = note];
+		b13_note -> b13[style = dashed,dir = none];
+		b14[label = "clear_page\(init_top_pgt\)"];
+		b14_note[label = "清空页表:\linit_top_pgt\l",shape = note];
+		b14_note -> b14[style = dashed,dir = none];
+		b15[label = "sme_early_init\(\)"];
+			
+		b15_note[label = "说明：\l",shape = note];
+		b15_note -> b15[style = dashed,dir = none];
+		b16[label = "kasan_early_init\(\)"];
+
+		b16_note[label = "说明：\l",shape = note];
+		b16_note -> b16[style = dashed,dir = none];
+		b17[label = "idt_setup_early_handler\(\)"];
+		b17_note[label = "说明：初始化早期idt处理句柄\l",shape = note];
+		b17_note -> b17[style = dashed,dir = none];
+		b18[label = "copy_bootdata\(\(\(void *\)\(\(unsigned long\)\l
+			     \(real_mode_data\) + \(\(unsigned long\)page_offset_base\)\)\)\)"];
+		b19[label = "load_ucode_bsp\(\)"];
+
+		b19_note[label = "说明：CPU微码加载\l",shape = note];
+		b19_note -> b19[style = dashed,dir = none];
+		b110[label = "init_top_pgt\[511\] = early_top_pgt\[511\]"];
+
+		b110_note[label = "说明：set init_top_pgt kernel high mapping\l",shape = note];
+		b110_note -> b110[style = dashed,dir = none];
+		b10 -> b11 -> b12 -> b13 -> b14 -> b15 -> b16 -> b17 -> b18 -> b19 -> b110;
+		
+	}
+	b2[label = "x86_64_start_reservations\(real_mode_data\)",color=blue];	
+	b1 -> b2;
+	b3[label = "start_kernel",shape=rect,color=blue];
+
+	b2 -> b3;
+	b3 -> b30[dir = none];
+	subgraph cluster_6 {
+		label = "start_kernel";
+		b30[label = "set_task_stack_end_magic\(&init_task\)"];
+	//b11_note[label = " ",shape = note];
+	//b11_note -> b11[style = dashed,dir = none];
+
+		b30_note[label = "用于检测栈溢出：\l
+				  stackend = task->stack\l
+				  *stackend = STACK_END_MAGIC\l ",shape = note];
+		b30_note -> b30[style = dashed,dir = none];
+		b31[label = "smp_setup_processor_id\(\)"];
+		b31_note[label = "X86:空函数\l",shape = note];
+		b31_note -> b31[style = dashed,dir = none];
+
+		b32[label = "debug_objects_early_init\(\)"];
+		b32_note[label = "CONFIG_DEBUG_OBJECTS:\l",shape = note];
+		b32_note -> b32[style = dashed,dir = none];
+		
+		b33[label = "init_vmlinux_build_id\(\)"];
+		b33_note[label = "CONFIG_STACKTRACE_BUILD_ID:\l
+				  --lib/buildid.c:\l ",shape = note];
+		b33_note -> b33[style = dashed,dir = none];
+
+		b34[label = "cgroup_init_early\(\)"];
+		b34_note[label = "初始化需要的所有子系统\l ",shape = note];
+		b34_note -> b34[style = dashed,dir = none];
+		b35[label = "local_irq_disable\(\)"];
+		b36[label = "boot_cpu_init\(\)"];
+		b36_note[label = "激活第一个处理器:\l做标记\l",shape = note];
+		b36_note -> b36[style = dashed,dir = none];
+		b37[label = "page_address_init()"];
+		b37_note[label = "可做空函数",shape = note];
+		b37_note -> b37[style = dashed,dir = none];
+		b38[label = "early_security_init()"];
+		b38_note[label = "初始化lsm模块：\l
+				  --__start_early_lsm_info ~ __end_early_lsm_info\l",shape = note];
+		b38_note -> b38[style = dashed,dir = none];
+		b39[label = "setup_arch(&command_line)"];
+
+		b39_note[label = "setup_arch总结:\l
+				特定于体系结构的启动时初始化,总结：\l
+				1.初始化内存；
+				2.初始化ACPI；
+				3.初始化APIC；
+				4.初始化TSC；\l",shape = note];
+		b39_note -> b39[style = dashed,dir = none];
+		b39 -> b39_0[dir = none];
+		subgraph cluster_4 {
+			label = "setup_arch";
+			b39_0[label = "初始化物理存储位宽：\l
+					boot_cpu_data.x86_phys_bits \l
+					= MAX_PHYSMEM_BITS\l"];
+			b39_1[label = "更新idt:idt_setup_early_traps():\l
+					-1. early_idts -> idt_descr\l
+					-2. load_idt(&idt_descr)\l"];
+			d39_2[label = "CPU早期探测early_cpu_init()"];
+			d39_2_note[label = "CPU早期探测：\l
+					    1. 初始化cpu_devs:__x86_cpu_dev_start\/xxx_end\l
+					    2. early_identify_cpu(&boot_cpu_data)\l
+					    3. ......",shape = note];
+			d39_2 -> d39_2_note[dir = none,style = dashed];
+			d39_3[label = "jump_label_init():\l"];
+			d39_3_note[lable = "jump_label_init 初始化:\l
+					    1.iter_start~iter_end:__start__jump_table ~ __end__jump_table;\l
+					    2.对上一步的jump_entry排序;\l
+					    3.循环对每一个jump_entry项进行处理:\l
+					    ---a.arch_jump_label_transform_static;\l
+					    ---b.jump_entry_key --> interk;\l
+					    ---c.static_key_set_entries(interk,iter);\l",shape = note];
+			d39_3_note -> d30_3[dir = none,style = dashed];
+			d39_4[label = "static_call_init()"];
+			d39_4_note[label = "static_call_init说明:\l
+					    1.__static_call_init初始化:\l
+					    --a. 对象：__start_static_call_sites ~ __stop_static_call_sites\l
+					    --b. 原理：\l
+					    ----A:排序：static_call_sort_entries(start,stop);\l
+					    ----B:周期性处理;\l
+					    2.注册模块通知:register_module_notifier:关注模块事件\l
+					    --a.MODULE_STATE_OMING:static_call_add_module(mod);\l
+					    --b.MODULE_STATE_GOING:static_call_del_module(mod);\l",shape = note];
+			d39_4 -> d39_4_note[dir = none,style = dashed];
+			
+			d39_5[label = "early_ioremap_init():\l"];
+			d39_5_note[label = "早期初始化：iomap要总结一下\l
+					    1.early_ioremap_setup:\l
+					    --a.FIX_BTMAPS_SLOTS等信息;\l
+					    --b.slot_virt[] = __fix_to_virt();\l
+					    2.pmd:early_ioremap_pmd:fix_to_virt(FIX_BTMAP_BEGIN);\l
+					    3.?: pmd_populate_kernel(&init_mm,pmd,bm_pte)\l
+					    4.early_ioremap_pmd:fix_to_virt(FIX_BTMAP_END)\l",shape = note];
+					    
+			d39_5 -> d39_5_note[dir=none,style = dashed];	
+			d39_6[label = "ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev):MKDEV((val >> 8) & 255,val & 255)"];
+			d39_7[label = "x86_init.oem.arch_setup():x86_init_noop:{}"];
+			d39_8[label = "early_reserve_memory():"];
+			d39_8_note[label = early_reserve_memory分析：\l
+					   1.memblock_reserve:__pa_symbol(_text),
+					   --(unsigned long)__end_of_kernel_reserve -(unsigned long)_text:\l
+					   --在 _text 和 __end_of_kernel_reserve 符号之间保留内核占用的内存.\l
+					   __end_of_kernel_reserve 符号之后的任何内核部分都必须使用单独的 \l
+					   --memblock_reserve() 显式保留，否则它们将被丢弃。\l
+					   2.memblock_reserve(0, SZ_64K):前 4Kb 内存是 BIOS 拥有的区域，但通常不会在 E820 表中列出。\l
+					   --保留前 64K 内存，因为已知某些 BIOS 会损坏低内存。 分配实模式蹦床后，\l
+					   --保留低于 640k 的其余内存。 此外，请确保始终保留第 0 页，\l
+					   --因为在具有 L1TF 的系统上，其内容可能会泄露给用户进程。\l
+					   3.early_reserve_initrd():memblock_reserve:ramdisk_image ~ ramdisk_end\l
+					   4.IF EFI_BOOT:efi_memblock_x86_reserve_range:efi.memmap\l
+					   5.memblock_x86_reserve_range_setup_data():memblock_reserve:boot_params.hdr.setup_data\l
+					   6.reserve_ibft_region():iSCSI 启动格式表。存放在ibft_addr全局变量中\l
+					   --memblock_reserve(addr,size)\l
+					   7.reserve_bios_regions():\l
+					   --a.此功能保留所有常规 PC 系统 BIOS 相关的固件内存区域（其中一些是数据，其中一些是代码），内核不得将其用作可用 RAM。\l
+					   --b.BIOS 将 EBDA/XBDA 置于常规内存的顶部，并且通常也会减少报告的常规内存量 (int 0x12)。\l
+					   --c.这意味着作为大多数系统的初步近似值，我们可以通过查看低 BIOS RAM 大小值来猜测保留的 BIOS 区域，\l
+					   ----并假设高于该值（最多 1MB）的所有内容都被保留。\l
+					   --d.注意事项：\l
+					   -----A.此代码还包含戴尔系统的一个怪癖，该系统忽略了在“RAM 大小”值中保留 EBDA 区域......\l
+					   -----B.同样的怪癖也避免了 AMD768MPX 芯片组的问题：\l
+					   -------在 VGA 之前保留一个页面以防止 PCI 预取到它（勘误表 #56）。 \l
+					   -------（通常无论如何都会保留该页面，除非您没有插入 PS/2 鼠标。）\l
+					   -----C.另外，paravirt 系统在我们可以依赖的“BIOS RAM 大小”指针中没有可靠的值，\l
+					   -------因此我们也必须对它们进行 quirk。\l
+					   #define BIOS_RAM_SIZE_KB_PTR	0x413\l
+					   #define BIOS_START_MIN		0x20000U	\/\* 128K, less than this is insane \l
+					   #define BIOS_START_MAX		0x9f000U	\/\* 640K, absolute maximum \*\/\l
+					   memblock_reserve(bios_start, 0x100000 - bios_start):bios_start ~ 0x100000\l
+					   8.trim_snb_memory():\l
+					   --Sandy Bridge 图形在某些范围内有问题，将它们排除在分配之外。\l
+					   --memblock_reserve:ba_pages:保留特定的几页\l",shape = note];
+			d39_8 -> d39_8_note[dir=none,style = dashed];
+			
+			d39_9[label = "iomem_resource.end:boot_cpu_data.x86_phys.bits"];
+			d39_10[label = "e820__memory_setup()"];
+			d39_10_note[label = "本质上调用 e820__memory_setup_default() 以获取固件/引导加载程序\l
+					     E820 映射 - 具有可用于虚拟平台的可选平台怪癖，以覆盖此引导环境处理方法：\l
+					     1.x86_init.resources.memory_setup():e820__memory_setup_default:\l
+					     --将固件（引导加载程序）E820 映射传递给内核并对其进行处理：\l
+					     ---a.尝试复制 BIOS 提供的 E820 映射。 否则伪造内存映射； \l
+					     -----一个部分从 0k->640k，下一个部分从 1mb->appropriate_mem_k\l
+					     ---b.if append_e820_table(...) < 0\n:add to e820_table:物理地址空间:
+					     -----A.e820__range_add(0, LOWMEMSIZE(), E820_TYPE_RAM)\l
+					     -----B.e820__range_add(HIGH_MEMORY, mem_size << 10, E820_TYPE_RAM)\l
+					     2.e820_table_kexec = e820_table;\l
+					     3.e820_table_firmware = e820_table;\l",shape = note];
+			d39_10 -> d39_10_note[dir = none,style = dashed];
+			
+			d39_11[label = "parse_setup_data"];
+			d39_12[label = "copy_edd"];
+			d39_12_note[label = "copy_edd() - 将 BIOS EDD 信息从 boot_params 复制到安全的地方。\l
+					1.edd.mbr_signature = boot_params.edd_mbr_sig_buffer;\l
+					2.edd.edd_info = boot_params.eddbuf;\l
+					3.edd.mbr_signature_nr = boot_params.edd_mbr_sig_buf_entries;\l
+					4.edd.edd_info_nr = boot_params.eddbuf_entries;\l",shape = note];
+			d39_12 -> d39_12_note[dir = none,style = dashed];
+			
+			d39_13[label = "setup_initial_init_mm:\l"];
+			d39_13_note[label = "setup_initial_init_mm:_text,_etext,_edata,brk_end)\l
+					     init_mm.start_code = start_code;\l
+					     init_mm.end_code = end_code;\l
+					     init_mm.end_data = end_data;\l
+					     init_mm.brk = brk;\l",shape = note];
+			d39_13 -> d39_13_note[dir = none,style=dashed];	
+			
+			d39_14[label = "code_resource初始化"];
+			d39_15[label = "rodata_resource 初始化"];
+			d39_16[label = "data_resource初始化"];
+			d39_17[label = "bss_resource初始化"];
+			d39_18[label = "*cmdline_p = command_line = boot_command_line\l"];
+			d39_19[label = "x86_configure_nx():"];
+			d39_19_note[label = "x86_configure_nx() 在 parse_early_param() 之前调用，\l
+					     以检测硬件是否不支持 NX（以便早期 EHCI 调试控制台设置可以安全地调用 set_fixmap()）。\l
+					      然后可以在解析早期参数期间从 noexec_setup() 中再次调用它以支持相应的命令行选项。\l
+			d39_20[label = "x86_nx处理\l"];
+					      
+			d39_21[label = "parse_early_paraml"];
+			d39_21_note[label = "早期内核参数处理：\l
+					     1.tmp_cmdline = boot_command_line;\l
+					     2.parse_early_options(tmp_cmdline)\l",shape = note];
+			
+			e820__reserve_setup_data();//在初始化过程中后期调用，在 free_initmem() 中。 初始 e820_table 和 e820_table_kexec 是较大的 __initdata 数组。 将它们复制到一个（通常更小）动态分配的区域，该区域的大小正好在 e820 条目的数量之后。 这是在我们对表格执行所有修复和调整之后完成的。 所有修改它们的函数都是__init函数，在free_initmem()之后就不存在了。:builtin函数实现
+			e820__finish_early_params();//在 parse_early_param() 之后调用，在处理了早期参数（例如 mem=）之后，在这种情况下，我们已经通过参数回调函数填充了一个 E820 表，但它还没有排序和打印：
+			
+			dmi_setup();//扫描和处理DMI系统信息
+			init_hypervisor_platform();
+			tsc_early_init();
+			//tsc_early_init:1.loops_per_jiffy = get_llops_per_jiffy(),tsc_enable_sched_clock();
+			
+			x86_init.resources.probe_roms//rom 初始化
+			
+			insert_resource:iomem_resource +=code_resource + rodata_resource + data_resource + bss_resource;
+			
+			e820_and_kernel_range();//在 trim_bios_range() 之前调用以节省额外的开销：_text,_end 物理内存插入到e820_table:类型为E820_TYPE_RAM;
+			trim_bios_range();//一个特殊情况是前 4Kb 的内存； 这是 BIOS 拥有的区域，不是内核内存，但通常不会在 E820 表中列出。 这通常会保留额外的内存（默认为 64KiB），因为已知某些 BIOS 会损坏低内存。 请参阅 X86_RESERVE_LOW 的 Kconfig 帮助文本。 特殊情况：一些 BIOS 将 PC BIOS 区域 (640Kb -> 1Mb) 报告为 RAM，即使它不是。 带他们出去。
+			early_gart_iommu_check();//* 对于 kexec/kdump，如果第一个内核没有关闭 GART，而第二个内核分配了不同的 GART 区域，则可能存在两个重叠的 GART 区域：- 在第一个内核中初始化的 GART 仍然使用第一个。- 它的（子）集被第二个内核用作普通 RAM。这最终会导致内存损坏和内核恐慌。 如果 BIOS 忘记将 GART 区域标记为保留，也会发生这种情况。 尝试更新 e820 地图以将该新区域标记为保留。
+			max_pfn = e820__end_of_ram_pfn（）//设置最大pfn页框号：根据E820_table 各个段中的值进行查找，所以对E820_table的理解很是关键。
+			
+			
+			mtrr_bp_init();//CONFIG_MTRR：mtrr_bp_init - 在启动 CPU 上初始化 mtrrs 这需要尽早调用； 在任何其他 CPU 初始化之前（即在 smp_init() 之前）。
+			
+			max_possible_pfn = max_pfn ;
+			
+			init_cache_modes();//当 CPU 不支持 PAT 时需要此调用。 如果 mtrr_bp_init() 已经通过 pat_init() 调用它，则调用无效。
+					// MTRR与PAT总结一下，根据 PAT 配置将缓存模式更新为 pgprot 转换表。 首选使用较低的索引，因此我们从最高索引开始。如何理解？
+			kernel_randomize_memory();//KASLR：为使用 KASLR 随机化的每个内存区域初始化基址和填充，原理总结：
+			
+			check_x2apic();//参数设置
+			max_low_pf = max_pfn;
+			high_memory = （void *)__va(max_pfn * PAGE_SIZE - 1) + 1;//最高虚拟内存地址。,所以，max_pfn只是内核地址？
+			
+			find_smp_config();//扫描并获取SMP配置块
+			early_alloc_pgt_buf();//INIT_PGT_BUF_SIZE;extend_brk:memset(_brk_end,_brk_end + size);ret _brk_end;base = _brk_end;
+			//pgt_buf_start = base >> PAGE_SHIFT;初始页
+			//pgt_buf_end = pgt_buf_start;结束页
+			//pgt_buf_top = pgt_buf_start + (tables >> PAGE_SHIFT);结束页号
+			reserve_brk();//memblock_reserve(__pa_symbol(_brk_start),_brk_end - _brk_start);这部分加入内存保留块，_brk_start = 0;
+			cleanup_highmap();//这个需要静心理解一下：head.S 代码设置内核高映射：从__START_KERNEL_map 到__START_KERNEL_map + size (== _end-_text)，phys_base 持有内核的负偏移量，该偏移量被添加到编译时生成的pmds。 这会导致 pmds 无效，直到我们命中 physaddr 0 映射。我们将映射限制为从 _text 到 _brk_end 的区域。 _brk_end 向上舍入到 2MB 边界。 这也会捕获无效的 pmd，因为它们位于 _text 之前：
+			memblock_set_current_limit(ISA_END_ADDRESS);//memblock.current_limit = ISA_END_ADDRESS
+			e820__memblock_setup();//e820_table;E820_TYPE_SOFT_RESERVED:memblock_reserve;memblock_add:memblock;memblock_trim_memory(PAGE_SIZE):memblock_remove_region:memblock;memblock_dump_all;
+			//注意总结E820_TYPE_XXX;
+			
+			sev_setup_arch();//total_mem = memblock_phys_mem_size();
+			//
+			efi_fake_memap(0)...
+			
+			e820__memblock_alloc_reserved_mpc_new();//
+			
+			reserve_real_mode();// 为实模式留下的空间：memblock_reserve(0,SZ_1M);
+			
+			init_mem_mapping();//CONFIG_PAGE_TABLE_ISOLATION;pti:page table isolation,这个要细分析；
+			//probe_page_size_mask();
+			//init_memory_mapping(0,ISA_END_ADDRESS,PAGE_KERNEL):add_pfn_range_mapped()在 PAGE_OFFSET 处设置物理内存的直接映射。这在 bootmem 初始化之前运行并直接从物理内存中获取页面。 为了访问它们，它们被临时映射。全局变量pfn_mapped;
+			//init_trampoline();初始化蹦床，可能带有 KASLR 内存偏移:rampoline_pgd_entry = init_top_pgt[pgd_index(__PAGE_OFFSET)]/INIT_TRAMPOLINE_KASLR
+			//memory_map_top_down/memory_map_bottom_up();
+			//load_cr3(swapper_pg_dir);//加载init_task的页目录；
+			//__flush_tlb_all();//1:X86_FEATURE_PGE:__flush_tlb_global;
+						//native_flush_tlb_global;
+					    //2:!x86_FEATURE_PGE:flush_tlb_local:
+						//native_flush_tlb_local;
+			idt_setup_early_pf();//安装缺页中断异常；
+			memblock_set_current_limit（get_max_mapped())://memblock.current_limit = limit
+			
+			/* Allocate bigger log buffer */
+	setup_log_buf(1);//memblock_alloc....
+
+	reserve_initrd();//initrd
+
+	acpi_table_upgrade();//acpi
+	/* Look for ACPI tables and reserve memory occupied by them. */
+	acpi_boot_table_init();//acpi table
+
+	vsmp_init();//这个干啥？
+
+	io_delay_init();//0x80 0x3b,其实就是访问IO端口造成的延时
+
+
+
+	early_acpi_boot_init();//acpi早期初始化
+
+	initmem_init();//空？
+	dma_contiguous_reserve(max_pfn_mapped << PAGE_SHIFT);//dma连续内存
+
+	if (boot_cpu_has(X86_FEATURE_GBPAGES))//大连续内存
+		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
+
+	/*
+	 * Reserve memory for crash kernel after SRAT is parsed so that it
+	 * won't consume hotpluggable memory.
+	 */
+	reserve_crashkernel();//crashkernel空间初始化
+	//total_mem = memblock_phys_mem_size();
+	//parse_crashkernel();//分析启动指令；
+	//memblock_phys_allo_range
+	//crashk_res.start = crash_base;
+	//crashk_res.end = crash_base + crash_size - 1;
+	//insert_resource(&iomem_resource,&crashk_res);
+	
+
+	memblock_find_dma_reserve();//DMA空间初始化
+	//set_dma_reserve(nr_pages - nr_free_pages)--> dma_reserve = new_dma_reserve;
+
+	if (!early_xdbc_setup_hardware())//调试
+		early_xdbc_register_console();
+
+	x86_init.paging.pagetable_init();//native_pagetable_init --> paging_init:
+	//sparse_init()//分配累积的非线性部分，为每个部分分配一个 mem_map 并记录物理到部分的映射。
+	//node_clear_state();
+	//node_clear_state();
+	//zone_sizes_init();-->
+		//free_area_init:这个函数的通俗理解
+		//	[ZONE_NORMAL] = max_low_pfn;
+		//      [ZONE_HIGHMEM] = max_pfn;
+		//	-->memmap_init()
+
+	kasan_init();//内核地址清理器，一遍遍刷新页表；
+
+	/*
+	 * Sync back kernel address range.
+	 *
+	 * FIXME: Can the later sync in setup_cpu_entry_areas() replace
+	 * this call?
+	 */
+	sync_initial_page_table();//64bit 为空
+
+	tboot_probe();//内核使用的辅助函数的主要实现，用于支持英特尔(R) 可信执行技术的运行时支持：原理：
+
+	map_vsyscall();//vsyscall映射：__vsyscall_page
+
+	generic_apic_probe();//apic探测：driver: __apicdrivers ~ __apicdrivers_end
+
+	early_quirks();//early_pci_scan_bus
+		/*
+		 * check_dev_quirk - apply early quirks to a given PCI device
+ 		* @num: bus number
+ 		* @slot: slot number
+ 		* @func: PCI function
+ 		*
+		 * Check the vendor & device ID against the early quirks table.
+ 		*
+		 * If the device is single function, let early_pci_scan_bus() know so we don't
+ 		* poke at this device again.*/
+ 		//early_qrk[]数组（静态初始化）：递归扫描，扫描坚持的意思
+
+	acpi_boot_init();//ACPI资源初始化：ACPI表
+	x86_dtb_init();//设备树
+
+	/*
+	 * get boot-time SMP configuration:
+	 */
+	get_smp_config();//default_get_smp_config
+
+	/*
+	 * Systems w/o ACPI and mptables might not have it mapped the local
+	 * APIC yet, but prefill_possible_map() might need to access it.
+	 */
+	init_apic_mappings();//初始化APIC映射
+	
+	
+
+	prefill_possible_map();//cpu初始化
+
+	
+	
+	
+	
+	init_cpu_to_node();
+	init_gi_nodes();
+	
+
+	io_apic_init_mappings();
+	/* IOAPIC资源映射 */
+
+
+	e820__reserve_resources();
+	// e820_table --> iomem_resource
+	
+	// e820_table_firmware
+	
+	e820__register_nosave_regions(max_pfn);
+	
+	
+	
+
+	x86_init.resources.reserve_resources();
+	
+	//reserve_standard_io_resources()
+	/* request I/O space for devices used on all i[345]86 PCs */
+	/*for (i = 0; i < ARRAY_SIZE(standard_io_resources); i++)
+		request_resource(&ioport_resource, &standard_io_resources[i]);*/
+
+	
+
+	e820__setup_pci_gap();
+在 E820 内存空间的低 32 位中搜索最大的空间。 我们将此空间传递给 PCI 子系统，以便它可以为热插拔或未配置的设备分配 MMIO 资源。希望 BIOS 留出足够的空间
+
+	x86_init.oem.banner():default_banner;
+
+	x86_init.timers.wallclock_init():x86_wallclock_init;
+
+	/*
+	 * This needs to run before setup_local_APIC() which soft-disables the
+	 * local APIC temporarily and that masks the thermal LVT interrupt,
+	 * leading to softlockups on machines which have configured SMI
+	 * interrupt delivery.
+	 */
+	
+	b39_[label = "therm_lvt_init():获取温度中断向量号\l"];
+	
+
+	b39_[label = "mcheck_init()"];
+	b39__note[label = "mcheck_init():mce初始化：\l
+			   mce_register_decode_chain:early_nb\l
+			   mce_register_decode_chain:mce_uc_nb\l
+			   mce_register_decode_chain:mce_default_nb\l
+			   mcheck_vendor_init_severity;\l
+			   INIT_WORK(&mce_work,mce_gen_pool_process);\l
+			   init_irq_work(&mce_irq_work,mce_irq_work_cb);",shape = note];
+	
+
+	b39_[label = "register_refined_jiffies(CLOCK_TICK_RATE)"];
+	b39__note[label = "__clocksource_register(&refined_jiffies)",shape = note];
+
+
+	b39_[label = "unwind_init()"];
+	b39__note[label = "初始化orc_lookup[]:__start/stop_orc_unwind_ip\l
+			   struct orc_entry:存储区是这个结构的集合\l",label = note];
+		
+			
+			
+			
+			
+					     		     
+				    
+				    
+								
+					
+		}
+
+		b310[label = "setup_boot_config()"];
+		b310_note[label = "说明:\l",shape = note];
+		b310_note -> b310[style = dashed,dir = none];
+		b311[label = "setup_command_line(command_line)"];
+		b312[label = "setup_nr_cpu_ids()"];
+		b313[label = "setup_per_cpu_areas();"];
+		b314[label = "smp_prepare_boot_cpu()"];
+		b315[label = "boot_cpu_hotplug_init()"];
+		b316[label = "build_all_zonelists(NULL)"];
+		b317[label = "page_alloc_init();"];
+		b318[label = "jump_label_init();"];
+		b319[label = "parse_early_param();"];
+		b320[label = "after_dashes = parse_args(\"Booting kernel\",
+				  static_command_line, __start___param,
+				  __stop___param - __start___param,
+				  -1, -1, NULL, &unknown_bootoption);"];
+		b321[label = "print_unknown_bootoptions()"];
+		b322[label = "setup_log_buf(0)"];
+		b322_note[label = "memblock_alloc: ",shape = note];
+		b322_note -> b322[style = dashed,dir = none];
+		b323[label = "vfs_caches_init_early()"];
+		b324[label = "sort_main_extable()"];
+		b325[label = "trap_init()"];
+		b325_note[label = "初始化陷阱:\l",shape = note];
+		b325_note -> b325[style = dashed,dir = none];
+		b326[label = "mm_init()"];
+		b326_note[label = "初始化内核内存分配器:\l内存初始化核心部分,这个执行\l完后就可掉哦那个kzalloc\l ",shape = note];
+		b326_note -> b326[style = dashed,dir = none];
+		b327[label = "ftrace_init()"];
+		b327_note[label = "ftrace_init初始化:\l",shape = note];
+		b327_note -> b327[style = dashed,dir = none];
+		b328[label = "early_trace_init();"];
+
+		b328_note[label = "trace早期初始化:\l",shape = note];
+		b328_note -> b328[style = dashed,dir = none];
+		b329[label = "sched_init()"];
+		b329_note[label = "sched_init()说明:\l",shape = note];
+		b329_note -> b328[style = dashed,dir = none];
+		b330[label = "radix_tree_init()"];
+		b330_note[label = "红黑树初始化:\l",shape = note];
+		b330_note -> b330[style = dashed,dir = none];
+		b331[label = "housekeeping_init()"];
+
+		b331_note[label = "housekeeping_init:\l",shape = note];
+		b331_note -> b331[style = dashed,dir = none];
+		b332[label = "workqueue_init_early()"];
+
+		b332_note[label = "workqueue_init_early:\l",shape = note];
+		b332_note -> b332[style = dashed,dir = none];
+		b333[label = "rcu_init()"];
+
+		b333_note[label = "rcu_init:\l",shape = note];
+		b333_note -> b333[style = dashed,dir = none];
+		b334[label = "trace_init()"];
+
+		b334_note[label = "trace_init:\l",shape = note];
+		b334_note -> b334[style = dashed,dir = none];
+		b335[label = "initcall_debug_enable()"];
+		b336[label = "context_tracking_init()"];
+
+		b336_note[label = "context_tracking_init:\l",shape = note];
+		b336_note -> b336[style = dashed,dir = none];
+		b337[label = "early_irq_init()"];
+
+		b337_note[label = "early_irq_init:\l",shape = note];
+		b337_note -> b337[style = dashed,dir = none];
+		b338[label = "init_IRQ()"];
+
+		b338_note[label = "init_IRQ:\l",shape = note];
+		b338_note -> b338[style = dashed,dir = none];
+		b339[label = "tick_init()"];
+
+		b339_note[label = "tick_init:\l",shape = note];
+		b339_note -> b339[style = dashed,dir = none];
+		b340[label = "rcu_init_nohz()"];
+
+		b340_note[label = "rcu_init_nohz:\l",shape = note];
+		b340_note -> b340[style = dashed,dir = none];
+		b341[label = "init_timers()"];
+
+		b341_note[label = "init_timers:\l",shape = note];
+		b341_note -> b341[style = dashed,dir = none];
+		b342[label = "srcu_init()"];
+
+		b342_note[label = "srcu_init:\l",shape = note];
+		b342_note -> b342[style = dashed,dir = none];
+		b343[label = "hrtimers_init()"];
+
+		b343_note[label = "hrtimers_init:\l",shape = note];
+		b343_note -> b343[style = dashed,dir = none];
+		b344[label = "softirq_init()"];
+
+		b344_note[label = "softirq_init:\l",shape = note];
+		b344_note -> b344[style = dashed,dir = none];
+		b345[label = "timekeeping_init()"];
+
+		b345_note[label = "timekeeping_init:\l",shape = note];
+		b345_note -> b345[style = dashed,dir = none];
+		b346[label = "kfence_init()"];
+
+		b346_note[label = "kfence_init:\l",shape = note];
+		b346_note -> b346[style = dashed,dir = none];
+		b347[label = "rand_initialize()"];
+
+		b347_note[label = "rand_initialize:\l",shape = note];
+		b347_note -> b347[style = dashed,dir = none];
+		b348[label = "add_latent_entropy()"];
+
+		b348_note[label = "add_latent_entropy:\l",shape = note];
+		b348_note -> b348[style = dashed,dir = none];
+		b349[label = "add_device_randomness(command_line, strlen(command_line))"];
+		
+		b349_note[label = "add_latent_entropy:\l",shape = note];
+		b349_note -> b349[style = dashed,dir = none];
+b350[label = "boot_init_stack_canary()"];
+		
+		b350_note[label = "boot_init_stack_canary:\l",shape = note];
+		b350_note -> b350[style = dashed,dir = none];
+b351[label = "time_init()"];
+
+		b351_note[label = "time_init:\l",shape = note];
+		b351_note -> b351[style = dashed,dir = none];
+b352[label = "perf_event_init()"];
+		
+		b352_note[label = "perf_event_init:\l",shape = note];
+		b352_note -> b352[style = dashed,dir = none];
+b353[label = "profile_init()"];
+		
+		b353_note[label = "profile_init:\l",shape = note];
+		b353_note -> b353[style = dashed,dir = none];
+b354[label = "call_function_init()"];
+		
+		b354_note[label = "call_function_init:\l",shape = note];
+		b354_note -> b354[style = dashed,dir = none];
+b355[label = "local_irq_enable()"];
+		
+		b355_note[label = "local_irq_enable:\l",shape = note];
+		b355_note -> b355[style = dashed,dir = none];
+b356[label = "kmem_cache_init_late()"];
+		
+		b356_note[label = "kmem_cache_init_late:\l",shape = note];
+		b356_note -> b356[style = dashed,dir = none];
+b357[label = "console_init()"];
+		
+		b357_note[label = "console_init:\l",shape = note];
+		b357_note -> b357[style = dashed,dir = none];
+b358[label = "lockdep_init()"];
+		
+		b358_note[label = "lockdep_init:\l",shape = note];
+		b358_note -> b358[style = dashed,dir = none];
+b359[label = "locking_selftest()"];
+		
+		b359_note[label = "locking_selftest:\l",shape = note];
+		b359_note -> b359[style = dashed,dir = none];
+b360[label = "mem_encrypt_init()"];
+		
+		b360_note[label = "mem_encrypt_init:\l",shape = note];
+		b360_note -> b360[style = dashed,dir = none];
+b361[label = "initrd初始化"];
+		
+		b361_note[label = "initrd初始化:\l",shape = note];
+		b361_note -> b361[style = dashed,dir = none];
+b362[label = "setup_per_cpu_pageset()"];
+		
+		b362_note[label = "setup_per_cpu_pageset:\l",shape = note];
+		b362_note -> b362[style = dashed,dir = none];
+b363[label = "numa_policy_init()"];
+		
+		b363_note[label = "numa_policy_init:\l",shape = note];
+		b363_note -> b363[style = dashed,dir = none];
+b364[label = "acpi_early_init();"];
+		
+		b364_note[label = "acpi_early_init:\l",shape = note];
+		b364_note -> b364[style = dashed,dir = none];
+b365[label = "late_time_init()"];
+		
+		b365_note[label = "late_time_init:\l",shape = note];
+		b365_note -> b365[style = dashed,dir = none];
+b366[label = "sched_clock_init()"];
+		
+		b366_note[label = "sched_clock_init:\l",shape = note];
+		b366_note -> b366[style = dashed,dir = none];
+b367[label = "calibrate_delay()"];
+		
+		b367_note[label = "calibrate_delay:\l",shape = note];
+		b367_note -> b367[style = dashed,dir = none];
+b368[label = "pid_idr_init()"];
+		
+		b367_note[label = "pid_idr_init:\l",shape = note];
+		b367_note -> b367[style = dashed,dir = none];
+b369[label = "anon_vma_init()"];
+		
+		b369_note[label = "anon_vma_init:\l",shape = note];
+		b369_note -> b369[style = dashed,dir = none];
+b370[label = "thread_stack_cache_init()"];
+		
+		b370_note[label = "thread_stack_cache_init:\l",shape = note];
+		b370_note -> b370[style = dashed,dir = none];
+b371[label = "cred_init()"];
+		
+		b371_note[label = "cred_init:\l",shape = note];
+		b371_note -> b371[style = dashed,dir = none];
+b372[label = "fork_init()"];
+		
+		b372_note[label = "fork_init:\l",shape = note];
+		b372_note -> b372[style = dashed,dir = none];
+b373[label = "proc_caches_init()"];
+		
+		b373_note[label = "proc_caches_init:\l",shape = note];
+		b373_note -> b373[style = dashed,dir = none];
+b374[label = "uts_ns_init()"];
+		
+		b374_note[label = "uts_ns_init:\l",shape = note];
+		b374_note -> b374[style = dashed,dir = none];
+b375[label = "key_init()"];
+		
+		b375_note[label = "key_init:\l",shape = note];
+		b375_note -> b375[style = dashed,dir = none];
+b376[label = "security_init()"];
+		
+		b376_note[label = "security_init:\l",shape = note];
+		b376_note -> b376[style = dashed,dir = none];
+b377[label = "dbg_late_init()"];
+		
+		b377_note[label = "dbg_late_init:\l",shape = note];
+		b377_note -> b377[style = dashed,dir = none];
+b378[label = "vfs_caches_init()"];
+		
+		b378_note[label = "vfs_caches_init:\l",shape = note];
+		b378_note -> b378[style = dashed,dir = none];
+b379[label = "pagecache_init()"];
+		
+		b379_note[label = "pagecache_init:\l",shape = note];
+		b379_note -> b379[style = dashed,dir = none];
+b380[label = "signals_init()"];
+		
+		b380_note[label = "signals_init:\l",shape = note];
+		b380_note -> b380[style = dashed,dir = none];
+b381[label = "seq_file_init()"];
+		
+		b381_note[label = "seq_file_init:\l",shape = note];
+		b381_note -> b381[style = dashed,dir = none];
+b382[label = "proc_root_init()"];
+		
+		b382_note[label = "proc_root_init:\l",shape = note];
+		b382_note -> b382[style = dashed,dir = none];
+b383[label = "nsfs_init()"];
+		
+		b383_note[label = "nsfs_init:\l",shape = note];
+		b383_note -> b383[style = dashed,dir = none];
+b384[label = "cpuset_init()"];
+		
+		b384_note[label = "cpuset_init:\l",shape = note];
+		b384_note -> b384[style = dashed,dir = none];
+b385[label = "cgroup_init()"];
+		
+		b385_note[label = "cgroup_init:\l",shape = note];
+		b385_note -> b385[style = dashed,dir = none];
+b386[label = "taskstats_init_early()"];
+		
+		b386_note[label = "taskstats_init_early:\l",shape = note];
+		b386_note -> b386[style = dashed,dir = none];
+b387[label = "delayacct_init()"];
+		
+		b387_note[label = "delayacct_init:\l",shape = note];
+		b387_note -> b387[style = dashed,dir = none];
+b388[label = "poking_init()"];
+		
+		b388_note[label = "poking_init:\l",shape = note];
+		b388_note -> b388[style = dashed,dir = none];
+b389[label = "check_bugs()"];
+		
+		b389_note[label = "check_bugs:\l",shape = note];
+		b389_note -> b389[style = dashed,dir = none];
+b390[label = "acpi_subsystem_init()"];
+		
+		b390_note[label = "acpi_subsystem_init:\l",shape = note];
+		b390_note -> b390[style = dashed,dir = none];
+b391[label = "arch_post_acpi_subsys_init()"];
+		
+		b391_note[label = "arch_post_acpi_subsys_init:\l",shape = note];
+		b391_note -> b391[style = dashed,dir = none];
+b392[label = "kcsan_init()"];
+		
+		b392_note[label = "kcsan_init:\l",shape = note];
+		b392_note -> b392[style = dashed,dir = none];
+b393[label = "arch_call_rest_init()"];
+		
+		b393_note[label = "arch_call_rest_init:\l",shape = note];
+		b393_note -> b393[style = dashed,dir = none];
+b394[label = "prevent_tail_call_optimization()：mb()"];
+		b30 -> b31 -> b32 -> b33 -> b34 -> b35 -> b36 -> b37 -> b38 -> b39 -> b310;
+
+		b310 -> b311 -> b312 -> b313 -> b314 -> b315 -> b316 -> b317 -> b318 -> b319 -> b320;
+
+		b320 -> b321 -> b322 -> b323 -> b324 -> b325 -> b326 -> b327 -> b328 -> b329 -> b330;
+		b330 -> b331 -> b332 -> b333 -> b334 -> b335 -> b336 -> b337 -> b338 -> b339 -> b340;
+		b340 -> b341 -> b342 -> b343 -> b344 -> b345 -> b346 -> b347 -> b348 -> b349 -> b350;
+		b350 -> b351 -> b352 -> b353 -> b354 -> b355 -> b356 -> b357 -> b358 -> b359 -> b360;
+		b360 -> b361 -> b362 -> b363 -> b364 -> b365 -> b366 -> b367 -> b368 -> b369 -> b370;
+		b370 -> b371 -> b372 -> b373 -> b374 -> b375 -> b376 -> b377 -> b378 -> b379 -> b380;
+		b380 -> b381 -> b382 -> b383 -> b384 -> b385 -> b386 -> b387 -> b388 -> b389 -> b390;
+		b390 -> b391 -> b392 -> b393 -> b394;
+	}
+}
+}

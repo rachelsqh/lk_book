@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kernel debug 实验记录 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="linux 内核代码分析" href="../lk_code/index.html" />
+    <link rel="prev" title="dot画图" href="dot.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统架构分析</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="k_doc.html">内核文档综述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lk_build/index.html">linux 内核构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lk_comp/index.html">linux 内核编程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lk_debug/index.html">linux 内核调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dot.html">dot画图</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">kernel debug 实验记录</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#host">host</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#guest">guest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vma">vma虚拟机基本操作</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#xml">虚拟机xml设置</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">虚拟机与宿主机间信息共享</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">不同虚拟机镜像格式转换</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">磁盘扩容</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">内核函数跟踪</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id5">内核配置</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#demo">跟踪demo</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_code/index.html">linux 内核代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../os_sec/index.html">linux 操作系统安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../my_os/index.html">从零开始写一个系统（KVM）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../csxj/index.html">处世悬镜</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">linux 内核开发</a> &raquo;</li>
+      <li>kernel debug 实验记录</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/lk_devel/kernel_debug_ig.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="kernel-debug">
+<h1>kernel debug 实验记录<a class="headerlink" href="#kernel-debug" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="host">
+<h2>host<a class="headerlink" href="#host" title="Permalink to this headline">¶</a></h2>
+<p>os: kali
+hw:x86 8 core
+vm:</p>
+<blockquote>
+<div><p>vma 3.2.0</p>
+</div></blockquote>
+</div>
+<div class="section" id="guest">
+<h2>guest<a class="headerlink" href="#guest" title="Permalink to this headline">¶</a></h2>
+<p>os: kali
+hw: x86 2 core
+mem: 2048 M</p>
+<p>kernel: 5.14</p>
+</div>
+<div class="section" id="vma">
+<h2>vma虚拟机基本操作<a class="headerlink" href="#vma" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://virt-manager.org/">https://virt-manager.org/</a></p>
+<p>virt-manager应用程序是一个桌面用户界面，用于通过 libvirt 管理虚拟机。它主要针对KVM虚拟机，但也管理Xen和LXC（Linux 容器）。它提供了正在运行的域、它们的实时性能和资源利用率统计信息的摘要视图。向导可以创建新域，以及配置和调整域的资源分配和虚拟硬件。嵌入式 VNC 和 SPICE 客户端查看器向来宾域提供完整的图形控制台。
+关于 virt-manager 的配套工具
+virt-install是一个命令行工具，它提供了一种将操作系统配置到虚拟机中的简单方法。</p>
+<p>virt-viewer是一个轻量级的 UI 界面，用于与虚拟客户操作系统的图形显示进行交互。它可以显示 VNC 或 SPICE，并使用 libvirt 查找图形连接详细信息。</p>
+<p>virt-clone是一个用于克隆现有非活动客户的命令行工具。它复制磁盘映像，并使用指向复制磁盘的新名称、UUID 和 MAC 地址定义配置。</p>
+<p>virt-xml是一个命令行工具，用于使用 virt-install 的命令行选项轻松编辑 libvirt 域 XML。</p>
+<p>virt-bootstrap是一个命令行工具，提供了一种简单的方法来为基于 libvirt 的容器设置根文件系统。</p>
+<div class="section" id="xml">
+<h3>虚拟机xml设置<a class="headerlink" href="#xml" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://libvirt.org/formatdomain.html">https://libvirt.org/formatdomain.html</a></p>
+</div>
+<div class="section" id="id1">
+<h3>虚拟机与宿主机间信息共享<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>3，开启虚拟机，在虚拟机上执行：</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">guest加载共享文件</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># mount /usr/src /usr/src -t 9p -o trans=virtio</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>不同虚拟机镜像格式转换<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>VMDK–&gt;qcow2:</p>
+<p>qemu-img convert -f vmdk -O qcow2 SLES11SP1-single.vmdk SLES11SP1-single.img</p>
+</li>
+<li><p>qcow2–&gt;raw:</p>
+<p>qemu-img convert -O qcow2 image-raw.raw image-raw-converted.qcow</p>
+</li>
+<li><p>raw-&gt; qcow2:</p>
+<p>qemu-img convert -f raw -O qcow2 2fuel2.img  2fuel2.qcow2</p>
+</li>
+<li><p>其他格式转换。</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>磁盘扩容<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://blog.51cto.com/u_11101184/3136512">https://blog.51cto.com/u_11101184/3136512</a></p>
+</div>
+<div class="section" id="id4">
+<h2>内核函数跟踪<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h3>内核配置<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="demo">
+<h2>跟踪demo<a class="headerlink" href="#demo" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dot.html" class="btn btn-neutral float-left" title="dot画图" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../lk_code/index.html" class="btn btn-neutral float-right" title="linux 内核代码分析" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
