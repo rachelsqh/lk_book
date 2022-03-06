@@ -15,8 +15,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="内核开发工具" href="dev-tool/index.html" />
-    <link rel="prev" title="内核与ELF" href="comp_elf.html" /> 
+    <link rel="next" title="objtool" href="comp_objtool.html" />
+    <link rel="prev" title="ELF基础" href="comp_elf.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -35,42 +35,39 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发基础</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lk_build/index.html">linux 内核构建</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核编程</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="comp_api.html">linux 二进制接口</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id47">程序加载和动态链接</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id53">库</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id64">开发环境</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id65">约定</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id66">linux 约定</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_base.html">内核编程概述</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_as.html">内核汇编</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_as.html">AS:内核汇编</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_gcc.html">GCC 在linux 内核中的应用</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#id3">重要选项</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#c">C实现定义的行为</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#gcov">gcov</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#linux-gcc">linux 内核编程中GCC的高级应用</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">内核与ELF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">ELF基础</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">UWIND</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#dwarf">DWARF 规范</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#orc">ORC</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="dev-tool/index.html">内核开发工具</a></li>
-<li class="toctree-l3"><a class="reference internal" href="k_prog/index.html">内核编程示例</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_objtool.html">objtool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_bin_tool.html">二进制工具</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_st.html">内核测试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_debug_ig.html">kernel debug 实验记录</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gnuplot.html">曲线图-gnuplot</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
 </ul>
 
         </div>
@@ -87,7 +84,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发基础</a> &raquo;</li>
           <li><a href="index.html">linux 内核编程</a> &raquo;</li>
       <li>UWIND</li>
       <li class="wy-breadcrumbs-aside">
@@ -154,8 +151,8 @@ Objtool 通过与编译时堆栈元数据验证功能集成来生成 ORC 数据�
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="comp_elf.html" class="btn btn-neutral float-left" title="内核与ELF" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="dev-tool/index.html" class="btn btn-neutral float-right" title="内核开发工具" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="comp_elf.html" class="btn btn-neutral float-left" title="ELF基础" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="comp_objtool.html" class="btn btn-neutral float-right" title="objtool" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -3,18 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核代码分析
-------------------
+linux 内核基础代码分析
+---------------------
 .. toctree::
    :maxdepth: 4
    
-   kernel_base/index
-   kernel_ps/index
-   kernel_mem/index
-   kernel_fs/index
-   kernel_cpu/index
-   kernel_driver/index
-   lk_net/index
-   kernel_virt/index
+   base_arch
+   module
+   notifier
+   lock
+   hook
+   kexec
+   struct
+   umh
+   extable
+   jump_label
+   syscall
 
 

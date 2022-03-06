@@ -1,5 +1,5 @@
-内核汇编
--------
+AS:内核汇编
+-----------
 
 汇编器注解
 版权所有 (c) 2017-2019 Jiri Slaby
@@ -119,5 +119,1091 @@ SYM_START以上所有内容都归结为对, SYM_END或SYM_ENTRY最后的某种�
 
 覆盖宏
 体系结构还可以覆盖它们自己的任何宏 asm/linkage.h，包括指定符号类型（SYM_T_FUNC、、SYM_T_OBJECT和SYM_T_NONE）的宏。#ifdef由于此文件中描述的每个宏都由+包围#endif，因此在上述依赖于体系结构的标头中以不同方式定义宏就足够了。
+
+-------------------------------------------------------------------------
+
+
+c demo:
+
+#include <linux/kernel.h>
+#include <linux/module.h>
+static int __init k_mod_sample_init(void)
+{
+	pr_info("%s:%d\n",__func__,__LINE__);
+	return 0;
+}
+
+static void __exit k_mod_sample_exit(void)
+{
+	pr_info("%s:%d\n",__func__,__LINE__);
+}
+
+module_init(k_mod_sample_init)
+module_exit(k_mod_sample_exit)
+MODULE_LICENSE("GPL");
+
+
+
+汇编：as demo:
+
+	.file	"k_mod_sample.c"
+# GNU C89 (Debian 11.2.0-12) version 11.2.0 (x86_64-linux-gnu)
+#	compiled by GNU C version 11.2.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
+
+# GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+# options passed: -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -mindirect-branch=thunk-extern -mindirect-branch-register -mrecord-mcount -mfentry -march=x86-64 -O2 -std=gnu90 -p -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE -fcf-protection=none -falign-jumps=1 -falign-loops=1 -fno-asynchronous-unwind-tables -fno-jump-tables -fno-delete-null-pointer-checks -fno-allow-store-data-races -fstack-protector-strong -fno-stack-clash-protection -fno-strict-overflow -fstack-check=no -fconserve-stack
+	.text
+	.section	.rodata.str1.1,"aMS",@progbits,1
+.LC0:
+	.string	"\0016%s:%d\n"
+	.section	.init.text,"ax",@progbits
+	.type	k_mod_sample_init, @function
+k_mod_sample_init:
+1:	call	__fentry__
+	.section __mcount_loc, "a",@progbits
+	.quad 1b
+	.previous
+# drivers/char/k_mod_sample.c:5: 	pr_info("%s:%d\n",__func__,__LINE__);
+	movl	$5, %edx	#,
+	movq	$__func__.2, %rsi	#,
+	movq	$.LC0, %rdi	#,
+	call	printk	#
+# drivers/char/k_mod_sample.c:7: }
+	xorl	%eax, %eax	#
+	ret	
+	.size	k_mod_sample_init, .-k_mod_sample_init
+	.globl	init_module
+	.set	init_module,k_mod_sample_init
+	.section	.exit.text,"ax",@progbits
+	.type	k_mod_sample_exit, @function
+k_mod_sample_exit:
+# drivers/char/k_mod_sample.c:11: 	pr_info("%s:%d\n",__func__,__LINE__);
+	movl	$11, %edx	#,
+	movq	$__func__.3, %rsi	#,
+	movq	$.LC0, %rdi	#,
+	jmp	printk	#
+	.size	k_mod_sample_exit, .-k_mod_sample_exit
+	.globl	cleanup_module
+	.set	cleanup_module,k_mod_sample_exit
+	.section	.rodata
+	.align 16
+	.type	__func__.3, @object
+	.size	__func__.3, 18
+__func__.3:
+	.string	"k_mod_sample_exit"
+	.align 16
+	.type	__func__.2, @object
+	.size	__func__.2, 18
+__func__.2:
+	.string	"k_mod_sample_init"
+	.section	.modinfo,"a"
+	.type	__UNIQUE_ID_license176, @object
+	.size	__UNIQUE_ID_license176, 12
+__UNIQUE_ID_license176:
+	.string	"license=GPL"
+	.ident	"GCC: (Debian 11.2.0-12) 11.2.0"
+	.section	.note.GNU-stack,"",@progbits
+
+--------------------------------------------------------
+as 语法
+命令行：
+
+调用方法：
+
+as [-a[cdghlns][=file]] [–alternate] [-D]
+ [–compress-debug-sections]  [–nocompress-debug-sections]
+ [–debug-prefix-map old=new]
+ [–defsym sym=val] [-f] [-g] [–gstabs]
+ [–gstabs+] [–gdwarf-<N>] [–gdwarf-sections]
+ [–gdwarf-cie-version=VERSION]
+ [–help] [-I dir] [-J]
+ [-K] [-L] [–listing-lhs-width=NUM]
+ [–listing-lhs-width2=NUM] [–listing-rhs-width=NUM]
+ [–listing-cont-lines=NUM] [–keep-locals]
+ [–no-pad-sections]
+ [-o objfile] [-R]
+ [–statistics]
+ [-v] [-version] [–version]
+ [-W] [–warn] [–fatal-warnings] [-w] [-x]
+ [-Z] [@FILE]
+ [–sectname-subst] [–size-check=[error|warning]]
+ [–elf-stt-common=[no|yes]]
+ [–generate-missing-build-notes=[no|yes]]
+ [–multibyte-handling=[allow|warn|warn-sym-only]]
+ [–target-help] [target-options]
+ [–|files …]
+Target BPF options:
+   [-EL] [-EB]
+
+Target i386 options:
+   [–32|–x32|–64] [-n]
+   [-march=CPU[+EXTENSION…]] [-mtune=CPU]
+
+@file：从文件中读取命令行选项。读取的选项被插入以代替原始的@file选项。如果文件 不存在或无法读取，则该选项将按字面意思处理，而不是删除。文件中的选项由空格分隔。通过将整个选项括在单引号或双引号中，可以在选项中包含空格字符。通过在要包含的字符前加上反斜杠，可以包含任何字符（包括反斜杠）。该文件本身可能包含额外的@file选项；任何此类选项都将被递归处理。
+
+-a[cdghlmns]
+以多种方式打开列表：
+
+-ac
+省略假条件
+
+-ad
+省略调试指令
+
+-ag
+包括一般信息，例如通过的版本和选项
+
+-ah
+包括高级源
+
+-al
+包括组装
+
+-am
+包括宏扩展
+
+-an
+省略表格处理
+
+-as
+包括符号
+
+=file
+设置列表文件的名称
+
+您可以组合这些选项；例如，使用'-aln' 用于没有表单处理的装配列表。这 '=文件' 选项，如果使用，必须是最后一个。通过它自己， '-一种' 默认为 '-ahls'。
+
+--alternate
+从备用宏模式开始。见.altmacro。
+
+--compress-debug-sections
+使用来自 ELF ABI 的带有 SHF_COMPRESSED 的 zlib 压缩 DWARF 调试部分。生成的目标文件可能与旧的链接器和目标文件实用程序不兼容。请注意，如果压缩会使给定部分变大，那么它不会被压缩。
+
+--compress-debug-sections=none
+--compress-debug-sections=zlib
+--compress-debug-sections=zlib-gnu
+--compress-debug-sections=zlib-gabi
+这些选项控制 DWARF 调试部分的压缩方式。 --compress-debug-sections=none相当于 --nocompress-debug-sections. --compress-debug-sections=zlib和 --compress-debug-sections=zlib-gabi相当于 --compress-debug-sections. --compress-debug-sections=zlib-gnu使用 zlib 压缩 DWARF 调试部分。调试部分被重命名为以'开头.zdebug'。请注意，如果压缩会使给定部分 变大，则它不会被压缩或重命名。
+
+--nocompress-debug-sections
+不要压缩 DWARF 调试部分。这通常是除 x86/x86_64 之外的所有目标的默认值，但可以使用配置时间选项来覆盖它。
+
+-D
+忽略。接受此选项是为了与调用其他汇编程序的脚本兼容。
+
+--debug-prefix-map old=new
+在目录中组装文件时老的, 记录描述它们的调试信息，如新的反而。
+
+--defsym sym=value
+在组装输入文件之前 将符号sym定义为值。value必须是整数常量。与 C 中一样，前导 '0x' 表示十六进制值，前导 '0' 表示八进制值。可以通过使用.set伪操作在源文件中覆盖符号的值。
+
+-f
+“快速”——跳过空格和注释预处理（假设源是编译器输出）。
+
+-g
+--gen-debug
+使用目标首选的调试格式为每个汇编源代码行生成调试信息。这目前意味着 STABS、ECOFF 或 DWARF2。当调试格式为 DWARF时，只有在程序集文件本身不生成时才会发出 .debug_infoand 部分。.debug_line
+
+--gstabs
+为每个汇编行生成 stabs 调试信息。如果调试器可以处理它，这可能有助于调试汇编代码。
+
+--gstabs+
+为每个汇编程序行生成 stabs 调试信息，带有可能只有 gdb 可以处理的 GNU 扩展，这可能会使其他调试器崩溃或拒绝读取您的程序。这可能有助于调试汇编代码。目前唯一的 GNU 扩展是在汇编时当前工作目录的位置。
+
+--gdwarf-2
+为每个汇编行生成 DWARF2 调试信息。如果调试器可以处理它，这可能有助于调试汇编代码。注意—此选项仅受某些目标支持，而不是全部目标。
+
+--gdwarf-3
+此选项与--gdwarf-2选项，除了它允许根据 DWARF 规范的版本 3 生成额外的调试信息的可能性。注意 - 启用此选项并不能保证生成任何额外的信息，这样做的选择是基于每个目标。
+
+--gdwarf-4
+此选项与--gdwarf-2选项，除了它允许根据 DWARF 规范的版本 4 生成额外的调试信息的可能性。注意 - 启用此选项并不能保证生成任何额外的信息，这样做的选择是基于每个目标。
+
+--gdwarf-5
+此选项与--gdwarf-2选项，除了它允许根据 DWARF 规范的第 5 版生成额外的调试信息的可能性。注意 - 启用此选项并不能保证生成任何额外的信息，这样做的选择是基于每个目标。
+
+--gdwarf-sections
+与其创建 .debug_line 部分，不如创建一系列 .debug_line。foo部分，其中foo是相应代码部分的名称。例如，名为.text.func的代码段 将其矮小的行号信息放置在名为 .debug_line.text.func的段中。如果代码部分仅称为.text ，则调试行部分仍将仅称为.debug_line，不带任何后缀。
+
+--gdwarf-cie-version=version
+控制生成哪个版本的 DWARF 通用信息条目 (CIE)。如果未指定此标志，则默认值为版本 1，尽管某些目标可以修改此默认值。版本的其他可能值是 3 或 4。
+
+--size-check=error
+--size-check=warning
+针对无效的 ELF .size 指令发出错误或警告。
+
+--elf-stt-common=no
+--elf-stt-common=yes
+这些选项控制 ELF 汇编器是否应生成具有该STT_COMMON类型的通用符号。默认值可以通过配置选项控制--enable-elf-stt-common.
+
+--generate-missing-build-notes=yes
+--generate-missing-build-notes=no
+这些选项控制 ELF 汇编器是否应该在输入源中不存在 GNU Build 属性注释时生成。默认值可以由--enable-generate-build-notes 配置选项。
+
+--help
+打印命令行选项的摘要并退出。
+
+--target-help
+打印所有目标特定选项的摘要并退出。
+
+-I dir
+将目录dir.include添加到指令 的搜索列表中。
+
+-J
+不要警告签名溢出。
+
+-K
+当差异表因长位移而改变时发出警告。
+
+-L
+--keep-locals
+保留（在符号表中）局部符号。这些符号以系统特定的本地标签前缀开头，通常是 '.L' 对于 ELF 系统或 '大号' 对于传统的 a.out 系统。请参阅符号名称。
+
+--listing-lhs-width=number
+将汇编程序列表的输出数据列的最大宽度（以字为单位）设置为number。
+
+--listing-lhs-width2=number
+将汇编程序列表中连续行的输出数据列的最大宽度（以字为单位）设置为number。
+
+--listing-rhs-width=number
+将列表中显示的输入源行的最大宽度设置为 字节 数。
+
+--listing-cont-lines=number
+将单行输入的列表中打印的最大行数设置为number + 1。
+
+--multibyte-handling=allow
+--multibyte-handling=warn
+--multibyte-handling=warn-sym-only
+控制汇编器如何处理输入中的多字节字符。默认值（可以通过使用允许论点）是允许这样的字符无怨无悔。使用警告参数将使汇编程序在遇到任何多字节字符时生成警告消息。使用仅警告符号仅当使用包含多字节字符的名称定义符号时，参数才会导致生成警告。（对未定义符号的引用不会产生警告）。
+
+--no-pad-sections
+停止汇编程序以将输出部分的末端填充到该部分的对齐位置。默认设置是填充这些部分，但这会浪费内存限制较紧的目标可能需要的空间。
+
+-o objfile
+as 命名来自objfile的目标文件输出。
+
+-R
+将数据部分折叠到文本部分。
+
+--sectname-subst
+尊重节名称中的替换序列。见。 .section name
+
+--statistics
+打印程序集使用的最大空间（以字节为单位）和总时间（以秒为单位）。
+
+--strip-local-absolute
+从传出符号表中删除局部绝对符号。
+
+-v
+-version
+打印as版本。
+
+--version
+打印as版本并退出。
+
+-W
+--no-warn
+禁止警告消息。
+
+--fatal-warnings
+将警告视为错误。
+
+--warn
+不要隐藏警告消息或将其视为错误。
+
+-w
+忽略。
+
+-x
+忽略。
+
+-Z
+即使在出错后也生成目标文件。
+
+-- | files …
+标准输入，或要组装的源文件。
+
+
+--------------
+除了 '--' 任何以连字符 ('-') 是一个选项。每个选项都会改变 as. 没有选项会改变另一个选项的工作方式。一个选项是'-' 后跟一个或多个字母；信的大小写很重要。所有选项都是可选的。
+
+一些选项期望只有一个文件名跟随它们。文件名可以紧跟选项的字母（与旧的汇编程序兼容），也可以是下一个命令参数（GNU 标准）。这两个命令行是等价的：
+
+以下两种方式是等价的：
+
+as -o my-object-file.o mumble.s
+as -omy-object-file.o mumble.s
+
+
+警告信息：
+格式：
+
+file_name:NNN:Warning Message Text
+
+demo:
+  .file 2 "bar.c"
+     error_assembler_source
+  .file "foo.c"
+  .line 30
+      error_c_source
+输出：
+
+  Assembler messages:
+  asm.s:2: Error: no such instruction: `error_assembler_source'
+  foo.c:31: Error: no such instruction: `error_c_source'
+
+
+错误信息的格式：
+file_name:NNN:FATAL:Error Message Text
+
+-----------------------------------------
+命令行选项：
+如果您as通过GNU C 编译器调用，您可以使用 '-Wa' 将参数传递给汇编器的选项。汇编器参数必须彼此分开（并且 '-Wa') 用逗号。例如：
+
+gcc -c -g -O -Wa,-alh,-L file.c
+
+通常你不需要使用这个'-Wa' 机制，因为许多编译器命令行选项由编译器自动传递给汇编器。（您可以使用 ' 调用GNU编译器驱动程序-v' 选项以准确查看它传递给每个编译过程的选项，包括汇编程序。）
+
+
+• a	  	-a[cdghlns] enable listings
+• alternate	  	–alternate enable alternate macro syntax
+• D	  	-D for compatibility
+• f	  	-f to work faster
+• I	  	-I for .include search path
+• K	  	-K for difference tables
+
+• L	  	-L to retain local symbols
+• listing	  	–listing-XXX to configure listing output
+• M	  	-M or –mri to assemble in MRI compatibility mode
+• MD	  	–MD for dependency tracking
+• no-pad-sections	  	–no-pad-sections to stop section padding
+• o	  	-o to name the object file
+• R	  	-R to join data and text sections
+• statistics	  	–statistics to see statistics about assembly
+• traditional-format	  	–traditional-format for compatible output
+• v	  	-v to announce version
+• W	  	-W, –no-warn, –warn, –fatal-warnings to control warnings
+• Z	  	-Z to make object file even after errors
+
+--------------------------------------------------------------
+
+预处理：
+- 调整并删除多余的空格。它在一行的关键字之前留下一个空格或制表符，并将该行上的任何其他空格转换为一个空格。
+- 删除所有注释，用一个空格或适当数量的换行符替换它们。
+- 将字符常量转换为适当的数值。
+
+它不进行宏处理、包含文件处理或您可能从 C 编译器的预处理器获得的任何其他内容。.include您可以使用该指令进行包含文件处理（请参阅 参考资料.include）。您可以使用GNU C 编译器驱动程序来获得其他“CPP”风格的预处理，方法是给输入文件一个 '.S' 后缀。 有关详细信息，请参阅 GCC 手册的“控制输出类型的选项”部分
+
+多余的空格、注释和字符常量不能用于未预处理的输入文本部分。
+
+如果输入文件的第一行是#NO_APP或者如果您使用 '-F' 选项，空格和注释不会从输入文件中删除。在输入文件中，您可以通过在#APP可能包含空格或注释的文本之前放置一行，并 #NO_APP在该文本之后放置一行来要求删除特定部分中的空格和注释。此功能主要用于支持 asm编译器中的语句，否则其输出没有注释和空格。
+
+- Whitespace
+空格是一个或多个空格或制表符，以任何顺序排列。空格用于分隔符号，并使程序更整洁以供人们阅读。除非在字符常量内（请参阅字符常量），否则任何空格都与一个空格相同。
+
+- Comments
+有两种方法可以将评论呈现到as. 在这两种情况下，注释都相当于一个空格。任何来自 '/*'通过下一个'*/' 是评论。这意味着您不能嵌套这些注释。
+
+  在评论中包含换行符 ('\n') 的唯一方法
+  是使用这种评论。
+*/
+
+/* 这种注释不嵌套。*/
+
+- Symbols:符号是从所有字母（大写和小写）、数字和三个字符的集合中选择的一个或多个字符'_.$'。在大多数机器上，您还可以$在符号名称中使用；机器依赖项中记录了例外情况。任何符号都不能以数字开头。案例意义重大。没有长度限制；所有字符都很重要。支持多字节字符，但请注意 --多字节处理选项可能会阻止它们的使用。符号由不在该集合中的字符或文件的开头分隔（由于源程序必须以换行符结尾，文件的结尾不是可能的符号分隔符）。请参阅符号。符号名称也可以用双引号"字符括起来。在这种情况下，允许使用任何字符，但 NUL 字符除外。如果要在符号名称中包含双引号字符，则必须在其前面加上反斜杠\字符。
+
+-  Statements:语句以换行符结束 ('\n') 或 行分隔符。行分隔符是特定于目标的，并在每个目标文档的语法部分中进行了描述。并非所有目标都支持行分隔符。换行符或行分隔符被认为是前面语句的一部分。字符常量中的换行符和分隔符是一个例外：它们不会结束语句。以文件结尾结束任何语句是错误的：任何输入文件的最后一个字符都应该是换行符。允许使用空语句，并且可能包含空格。它被忽略。一个语句以零个或多个标签开始，可选地后跟一个确定语句类型的键符号。键符号确定语句其余部分的语法。如果符号以点开头 '.' 那么该语句是一个汇编指令：通常对任何计算机都有效。如果符号以字母开头，则语句是汇编语言指令：它汇编成机器语言指令。不同版本的as不同计算机识别不同的指令。事实上，相同的符号可能代表不同计算机汇编语言中的不同指令。标签是紧跟冒号 ( :) 的符号。标签之前或冒号之后的空格是允许的，但标签的符号和冒号之间不能有空格。请参阅标签。对于 HPPA 目标，标签不必紧跟冒号，但标签的定义必须从第 0 列开始。这也意味着每行只能定义一个标签。
+
+label:     .directive    followed by something
+another_label:           # This is an empty statement.
+           instruction   operand_1, operand_2, …
+           
+           
+- Constants:常量是一个数字，其值可以通过检查得知，无需了解任何上下文。像这样：
+
+.byte  74, 0112, 092, 0x4A, 0X4a, 'J, '\J # All the same value.
+.ascii "Ring the bell\7"                  # A string constant.
+.octa  0x123456789abcdef0123456789ABCDEF0 # A bignum.
+.float 0f-314159265358979323846264338327\
+95028841971.693993751E-40                 # - pi, a flonum.
+
+
+
+。。。。。。
+
+--------------------------------------------
+节和重定位（section 和 Relocation)
+
+- section:是一个地址范围，没有间隔；出于某些特定目的，这些地址“中”的所有数据都被视为相同。例如，可能有一个“只读”部分。
+- 链接器ld:读取许多目标文件（部分程序）并将它们的内容组合成一个可运行的程序。当as 发出一个目标文件时，假设部分程序从地址 0 开始。 ld为部分程序分配最终地址，以便不同的部分程序不重叠。这实际上是一种过度简化，但足以解释如何as使用部分。ld将程序的字节块移动到它们的运行时地址。这些块作为刚性单元滑动到它们的运行时地址；它们的长度不会改变，它们中的字节顺序也不会改变。这种刚性单元称为截面。将运行时地址分配给节称为重定位。它包括调整提及的目标文件地址的任务，以便它们引用正确的运行时地址。对于 H8/300 和 Renesas / SuperH SH， as如果需要，填充部分以确保它们以字（16 位）边界结束。
+---------------------------------------------
+连接器部分：
+named section
+text section
+data section:这些部分包含您的程序。 as并将ld它们视为独立但相等的部分。你可以对一个部分说的任何话都适用于另一个部分。然而，当程序运行时，文本部分通常是不可更改的。文本部分通常在进程之间共享：它包含指令、常量等。正在运行的程序的数据部分通常是可更改的：例如，C 变量将存储在数据部分中。
+
+bss section:当您的程序开始运行时，此部分包含零字节。它用于保存未初始化的变量或公共存储。每个部分程序的 bss 部分的长度很重要，但是因为它开始包含零字节，所以不需要在目标文件中存储显式零字节。bss 部分的发明是为了从目标文件中消除那些显式的零。
+
+absolute section:此部分的地址 0 始终“重定位”到运行时地址 0。如果您想要引用ld在重定位时不得更改的地址，这很有用。在这个意义上，我们说绝对地址是“不可重定位的”：它们在重定位期间不会改变。
+
+undefined section:这个“部分”是对前面部分中没有的对象的地址引用的全部内容。
+
+......
+--------------------------------------------------------
+
+汇编器内部section:这些部分仅供内部使用as。它们在运行时没有任何意义。大多数情况下，您实际上并不需要了解这些部分；但它们可以在as 警告消息中提及，因此了解它们的含义可能会有所帮助as。这些段用于允许您的汇编语言程序中的每个表达式的值都是相对于段的地址。
+
+ASSEMBLER-INTERNAL-LOGIC-ERROR!发现内部汇编程序逻辑错误。这意味着汇编程序中存在错误
+
+expr section:汇编器在内部将复杂表达式存储为符号组合。当它需要将表达式表示为符号时，它会将其放在 expr 部分。
+
+
+Sub-Sections:
+组装的字节通常分为两部分：文本和数据。您可能在命名部分中有单独的数据组，您希望在目标文件中最终彼此靠近，即使它们在汇编程序源代码中不连续.as允许您为此目的使用小节。在每个部分中，可以有编号从 0 到 8192 的子部分。组装到同一子部分中的对象与同一子部分中的其他对象一起进入目标文件。例如，编译器可能希望将常量存储在文本部分中，但可能不希望它们散布在正在组装的程序中。在这种情况下，编译器可以发出 '.text 0' 在输出每一段代码之前，以及一个 '.text1' 在输出每组常量之前。
+
+Subsections是可选的。 如果您不使用小节，则所有内容都在第零小节中。
+
+要指定要将后续语句组装到哪个小节中，请使用数字参数来指定它，
+
+每个部分都有一个位置计数器，对于组装到该部分中的每个字节，位置计数器都会增加一。因为小节只是一种方便，as所以没有小节位置计数器的概念。无法直接操作位置计数器——但 .align指令会更改它，并且任何标签定义都会捕获其当前值。正在组装语句的部分的位置计数器称为活动位置计数器。
+
+bss section:
+
+bss 部分用于本地公共变量存储。您可以在 bss 部分分配地址空间，但您不能在程序执行之前指定要加载的数据。当您的程序开始运行时，bss 部分的所有内容都是零字节。
+
+.lcomm伪操作在 bss 部分定义了一个符号；见 .lcomm。
+
+.comm伪操作可以用来声明一个公共符号，这是未初始化符号的另一种形式；见.comm。
+
+当为支持多段的目标（如ELF或COFF）进行汇编时，您可以.bss像往常一样切换到段并定义符号；见.section。您只能将零值组装到该部分中。通常，该部分将仅包含符号定义和 .skip指令（请参阅 参考资料.skip）。
+
+
+----------------------------------------
+符号
+
+• Labels	  	Labels
+标签写为一个符号，后跟一个冒号 '：'。该符号则表示活动位置计数器的当前值，并且例如是合适的指令操作数。如果您使用相同的符号来表示两个不同的位置，则会收到警告：第一个定义会覆盖任何其他定义。
+
+
+• Setting Symbols	  	Giving Symbols Other Values
+
+可以通过写一个符号，后跟一个等号'来给一个符号一个任意值='，后跟一个表达式（请参阅表达式）。这相当于使用.set 指令。见.set。同样，使用双等号 '=''=.eqv' 这里表示指令的等价物 。见.eqv。
+
+
+
+
+• Symbol Names	  	Symbol Names
+符号名称以字母或 ' 之一开头._'。在大多数机器上，您还可以$在符号名称中使用；机器依赖项中记录了例外情况。该字符后面可以跟任何数字、字母、美元符号（除非针对特定目标机器另有说明）和下划线的字符串。当用 ' 引用符号名称时，这些限制不适用"'，这对于大多数目标都是允许的。用 ' 转义带引号的符号名称中的字符\' 通常只延伸到 '\' 本身和 '"'，在撰写本文时。
+
+字母大小写很重要：foo是与 . 不同的符号名称Foo。
+
+符号名称不以数字开头。本地标签是此规则的一个例外。见下文。
+
+支持多字节字符，但请注意 多字节处理选项可能会阻止它们的使用。要生成包含多字节字符的符号名称，请将其括在双引号中并使用转义码。cf 请参阅字符串。当前不支持从标签生成多字节符号名称。
+
+由于多字节符号名称不常见，并且可能被恶意使用，因此as提供了一个命令行选项 (--multibyte-handling=warn-sym-only) 可用于在定义包含多字节字符的符号名称时生成警告消息。
+
+每个符号只有一个名称。汇编语言程序中的每个名称都只指一个符号。您可以在程序中多次使用该符号名称。
+
+本地符号名称
+本地符号是任何以某些本地标签前缀开头的符号。默认情况下，本地标签前缀是 '.L' 对于 ELF 系统或 '大号' 对于传统的 a.out 系统，但每个目标可能有自己的一组本地标签前缀。在 HPPA 上，本地符号以 ' 开头美元'。
+
+局部符号在汇编程序中定义和使用，但它们通常不保存在目标文件中。因此，它们在调试时不可见。你可以使用'-L' 选项（请参阅包含本地符号）以在目标文件中保留本地符号。
+
+本地标签
+局部标签不同于局部符号。本地标签帮助编译器和程序员临时使用名称。它们创建的符号保证在输入源代码的整个范围内都是唯一的，并且可以通过简单的符号来引用。要定义本地标签，请编写格式为 'ñ：'（其中N表示任何非负整数）。要参考该标签的最新先前定义，请写入 '铌_'，使用与定义标签时相同的数字。要引用本地标签的下一个定义，请编写 'N f'。这 'b' 代表“向后”，而 'F' 代表“前锋”。
+
+对如何使用这些标签没有任何限制，您也可以重复使用它们。这样就可以重复定义相同的本地标签（使用相同的数字'ñ')，尽管您只能引用该编号的最近定义的本地标签（用于向后引用）或特定本地标签的下一个定义以用于向前引用。还值得注意的是，前 10 个本地标签 ('0：“……”9：') 以比其他方式更有效的方式实现。
+
+这是一个例子：
+
+1：分支 1f
+2：分支 1b
+1：分支 2f
+2：分支 1b
+相当于：
+
+label_1：分支 label_3
+label_2：分支 label_1
+label_3：分支 label_4
+label_4：分支 label_3
+本地标签名称只是一个符号设备。在汇编器使用它们之前，它们会立即转换为更传统的符号名称。符号名称存储在符号表中，出现在错误消息中，并且可以选择发送到目标文件。名称由以下部分构成：
+
+local label prefix
+所有本地符号都以系统特定的本地标签前缀开头。通常都as和ld忘记以本地标签前缀开头的符号。这些标签用于您永远不会看到的符号。如果你使用'-L' 选项然后as将这些符号保留在目标文件中。如果您还指示ld保留这些符号，则可以在调试中使用它们。
+
+number
+这是在本地标签定义中使用的数字。所以如果标签写着'55：' 那么数字是 '55'。
+
+C-B
+包含了这个不寻常的字符，因此您不会意外发明同名的符号。该字符的 ASCII 值为 '\002'（控制-B）。
+
+ordinal number
+这是一个序列号，用于保持标签的区别。'的第一个定义0：'得到号码'1'。'的第15个定义0：'得到号码'15'， 等等。同样的第一个定义 '1：'得到号码'1' 并且它的第 15 个定义得到 '15' 也是如此。
+
+例如，第一个1:可能被命名，第 44个可能被命名。 .L1C-B13:.L3C-B44
+
+美元本地标签
+在某些目标上as还支持一种更加本地化的本地标签形式，称为美元标签。一旦定义了非本地标签，这些标签就会超出范围（即，它们变得未定义）。因此，它们仅对输入源代码的一小部分区域有效。相比之下，正常的本地标签保留在整个文件的范围内，或者直到它们被另一个相同的本地标签重新定义。
+
+美元标签的定义方式与普通本地标签完全相同，只是它们的数值有一个美元符号后缀，例如，'55 美元：'。
+
+它们还可以通过使用 ASCII 字符的转换名称与普通本地标签区分开来\001' (control-A) 作为魔术字符将它们与普通标签区分开来。例如，'的第五个定义6 美元'可能被命名为'.L6 C-A5'。
+
+
+
+
+
+
+
+• Dot	  	The Special Dot Symbol
+
+特殊符号 '.' 是指正在 as组装的当前地址。因此，表达式'melvin: .long .' 定义melvin包含它自己的地址。将值分配给与 指令.相同。.org因此，表达式'.=.+4'和说'是一样的.space 4'。
+
+
+
+
+
+• Symbol Attributes	  	Symbol Attributes
+
+每个符号除了其名称外，还具有“值”和“类型”属性。根据输出格式，符号还可以具有辅助属性。
+
+如果您使用符号而不定义它，则as所有这些属性都假定为零，并且可能不会警告您。这使符号成为外部定义的符号，这通常是您想要的。
+
+•符号值	  	值
+•符号类型	  	类型
+• a.out 符号	  	符号属性：a.out
+
+
+
+
+- 符号值：符号的值（通常）是 32 位。对于在文本、数据、bss 或绝对部分中标记位置的符号，该值是从该部分开始到标签的地址数。对于文本、数据和 bss 段，符号的值自然会随着ld链接期间段基地址的变化而变化。绝对符号的值在链接期间不会改变：这就是它们被称为绝对符号的原因。未定义符号的值以特殊方式处理。如果为 0，则该符号未在此汇编源文件中定义，并 ld尝试从链接到同一程序的其他文件中确定其值。您只需提及符号名称而不定义它即可制作这种符号。非零值表示一个.comm 通用声明。该值是要保留多少公共存储，以字节（地址）为单位。该符号是指分配存储的首地址。
+
+- 符号类型：符号的类型属性包含重定位（节）信息、指示符号是外部的任何标志设置，以及（可选）链接器和调试器的其他信息。确切的格式取决于使用的目标代码输出格式。
+
+- 符号属性：
+  a.符号描述：这是一个任意的 16 位值。您可以使用.desc语句来建立符号的描述符值（请参阅 参考资料.desc）。描述符值对 没有任何意义 as。
+  b.其他：这是一个任意的 8 位值。没有任何意义as。
+ 
+--------------------------------------------------------
+表达式
+
+表达式指定地址或数值。空格可以在表达式之前和/或之后。表达式的结果必须是绝对数，或者是特定部分的偏移量。如果表达式不是绝对的，并且在as看到表达式时没有足够的信息来了解其部分，则可能需要对源程序进行第二次遍历来解释表达式 - 但第二次遍历当前尚未实现。 as在这种情况下中止并显示错误消息。
+
+
+• Empty Exprs	  	Empty Expressions
+
+空表达式没有值：它只是空格或空值。无论何时需要绝对表达式，您都可以省略该表达式，并as假定值为（绝对）0。这与其他汇编程序兼容。
+
+
+• Integer Exprs	  	Integer Expressions
+
+整数表达式是由运算符分隔的一个或多个参数。
+
+
+• Arguments	  	Arguments
+参数是符号、数字或子表达式。在其他情况下，参数有时被称为“算术操作数”。在本手册中，为避免将它们与机器语言的“指令操作数”混淆，我们使用术语“参数”仅指表达式的一部分，保留“操作数”一词仅指机器指令操作数。
+
+评估符号以产生 { section NNN }，其中 section是 text、data、bss、absolute 或 undefined 之一。 NNN是一个有符号的 2 的补码 32 位整数。
+
+数字通常是整数。
+
+数字可以是 flonum 或 bignum。在这种情况下，系统会警告您只使用低 32 位，并as假装这 32 位是整数。您可以编写作用于奇异常量的整数操作指令，与其他汇编程序兼容。
+
+子表达式是左括号 '(' 后跟一个整数表达式，后跟一个右括号 ')'; 或前缀运算符后跟参数。
+
+
+
+
+• Operators	  	Operators
+
+运算符是算术函数，例如+or %。前缀运算符后跟一个参数。中缀运算符出现在它们的参数之间。运算符可以在空格之前和/或之后。
+
+• Prefix Ops	  	Prefix Operators
+as具有以下前缀运算符。他们每个人都有一个论点，这个论点必须是绝对的。
+
+-
+否定。二进制补码否定。
+
+~
+互补。按位不是。
+
+
+• Infix Ops	  	Infix Operators
+
+中缀运算符有两个参数，两边各一个。运算符具有优先级，但具有相同优先级的运算从左到右执行。除了+或-，两个参数都必须是绝对的，结果是绝对的。
+
+最高优先级
+*
+乘法。
+
+/
+师。截断与 C 运算符 ' 相同/'
+
+%
+剩下的。
+
+<<
+左移。与 C 运算符相同 '<<'。
+
+>>
+右移。与 C 运算符相同 '>>'。
+
+中间优先级
+|
+按位包含或。
+
+&
+按位与。
+
+^
+按位异或。
+
+!
+按位与否。
+
+低优先级
++
+加法。如果任一参数是绝对的，则结果具有另一个参数的部分。您不能将来自不同部分的参数加在一起。
+
+-
+减法。如果右参数是绝对的，则结果具有左参数的部分。如果两个参数都在同一节中，则结果是绝对的。你不能从不同的部分减去参数。
+
+==
+等于
+
+<>
+!=
+不等于
+
+<
+小于
+
+>
+大于
+
+>=
+大于或等于
+
+<=
+小于或等于
+
+比较运算符可以用作中缀运算符。真结果的值为 -1，而假结果的值为 0。请注意，这些运算符执行有符号比较。
+
+最低优先级
+&&
+逻辑与。
+
+||
+逻辑或。
+
+这两个逻辑运算可以用来组合子表达式的结果。请注意，与比较运算符不同，true 结果返回值 1，但 false 结果仍返回 0。还要注意，逻辑或运算符的优先级略低于逻辑与。
+
+简而言之，只有在地址中添加或减去偏移量才有意义；您只能在两个参数之一中有一个已定义的部分。
+
+----------------------------------------------------------------------------
+汇编指令
+
+所有汇编程序指令的名称都以句点 ('.'）。对于大多数目标，名称不区分大小写，并且通常以小写形式编写。
+
+本章讨论了无论GNU汇编器的目标机器配置如何都可用的指令。一些机器配置提供了额外的指令。请参阅机器依赖项。
+
+
+• Abort	  	.abort
+该指令立即停止程序集。这是为了与其他汇编程序兼容。最初的想法是汇编语言源将通过管道传输到汇编器中。如果源的发送者退出，它可以使用这个指令告诉as也退出。.abort未来会被淘汰。
+
+• Align	  	.align [abs-expr[, abs-expr[, abs-expr]]]
+
+将位置计数器（在当前小节中）填充到特定的存储边界。第一个表达式（必须是绝对的）是所需的对齐方式，如下所述。如果省略此表达式，则使用默认值 0，有效地禁用对齐要求。
+
+第二个表达式（也是绝对的）给出要存储在填充字节中的填充值。它（和逗号）可以省略。如果省略，填充字节通常为零。但是，在大多数系统上，如果该部分被标记为包含代码并且省略了填充值，则该空间将被无操作指令填充。
+
+第三个表达式也是绝对的，也是可选的。如果存在，则它是此对齐指令应跳过的最大字节数。如果进行对齐需要跳过比指定最大值更多的字节，则根本不进行对齐。您可以完全省略填充值（第二个参数），只需在所需对齐后使用两个逗号即可；如果您希望在适当的时候用无操作指令填充对齐，这将很有用。
+
+指定所需对齐的方式因系统而异。对于使用 ELF 的 arc、hppa、i386、iq2000、m68k、or1k、s390、sparc、tic4x 和 xtensa，第一个表达式是以字节为单位的对齐请求。例如 '.align 8' 使位置计数器前进，直到它是 8 的倍数。如果位置计数器已经是 8 的倍数，则不需要更改。对于 tic54x，第一个表达式是单词的对齐请求。
+
+对于其他系统，包括使用 a.out 格式的 ppc、i386、arm 和 strongarm，它是位置计数器在前进后必须具有的低位零位的数量。例如 '.对齐 3' 使位置计数器前进，直到它是 8 的倍数。如果位置计数器已经是 8 的倍数，则不需要更改。
+
+这种不一致是由于 GAS 必须模拟的这些系统的各种本地汇编程序的不同行为。GAS 还提供.balign和.p2align指令，稍后描述，它们在所有架构中具有一致的行为（但特定于 GAS）。
+
+
+• Altmacro	  	.altmacro
+
+启用备用宏模式，启用：
+
+LOCAL name [ , … ]
+有一个附加指令 ,LOCAL可用。它用于为每个name参数生成字符串替换，并替换每个宏扩展中name的任何实例。替换字符串在程序集中是唯一的，并且对于每个单独的宏扩展都不同。 LOCAL允许您编写定义符号的宏，而不必担心单独的宏扩展之间的冲突。
+
+String delimiters
+除了以下之外，您还可以编写以其他方式分隔的字符串 ： "string"
+
+'string'
+您可以使用单引号字符分隔字符串。
+
+<string>
+您可以使用匹配的尖括号来分隔字符串。
+
+single-character string escape
+要在字符串中包含任何单个字符（即使该字符本来有一些特殊含义），您可以在字符前加上 '！'（感叹号）。例如，你可以写 '<4.3 ！> 5.4 ！！>' 获取文字文本 '4.3 > 5.4！'。
+
+Expression results as strings
+你可以写 '%表达式' 计算表达式expr 并将结果用作字符串。
+
+
+
+
+
+
+
+
+
+• Ascii	  	.ascii "string"…
+
+.ascii需要用逗号分隔的零个或多个字符串文字（请参阅Strings ）。它将每个字符串（没有自动尾随零字节）组装成连续的地址。
+
+
+
+
+
+
+
+
+
+
+
+
+
+• Asciz	  	.asciz "string"…
+.asciz就像.ascii，但每个字符串后跟一个零字节。'中的“z”.asciz' 代表“零”。请注意，未用逗号分隔的多个字符串参数将连接在一起，并且仅存储一个最终的零字节。
+
+
+
+
+
+
+
+• Attach_to_group	  	.attach_to_group name
+
+将当前部分附加到命名组。这就像使用G属性声明节一样，但可以在创建节后完成。请注意，如果在使用此指令时 group 部分不存在，那么它将被创建。
+
+
+
+• Balign	  	.balign [abs-expr[, abs-expr]]
+
+将位置计数器（在当前小节中）填充到特定的存储边界。第一个表达式（必须是绝对的）是以字节为单位的对齐请求。例如 '.balign 8' 使位置计数器前进，直到它是 8 的倍数。如果位置计数器已经是 8 的倍数，则不需要更改。如果省略表达式，则使用默认值 0，从而有效地禁用对齐要求。
+
+第二个表达式（也是绝对的）给出要存储在填充字节中的填充值。它（和逗号）可以省略。如果省略，填充字节通常为零。但是，在大多数系统上，如果该部分被标记为包含代码并且省略了填充值，则该空间将被无操作指令填充。
+
+第三个表达式也是绝对的，也是可选的。如果存在，则它是此对齐指令应跳过的最大字节数。如果进行对齐需要跳过比指定最大值更多的字节，则根本不进行对齐。您可以完全省略填充值（第二个参数），只需在所需对齐后使用两个逗号即可；如果您希望在适当的时候用无操作指令填充对齐，这将很有用。
+
+.balignw和指令是指令的.balignl变体 .balign。该.balignw指令将填充模式视为两个字节的字值。这些.balignl指令将填充模式视为一个四字节长字值。例如，.balignw 4,0x368d将对齐到 4 的倍数。如果它跳过两个字节，它们将被填充 0x368d 值（字节的确切位置取决于处理器的字节序）。如果它跳过 1 或 3 个字节，则填充值未定义。
+
+
+• Bss	  	.bss subsection
+
+.bss告诉as将以下语句组装到 bss 部分的末尾。对于基于 ELF 的目标，可以提供可选的小节表达式（必须计算为正整数）。在这种情况下，语句被附加到指定的 bss 小节的末尾。
+
+
+
+• Bundle directives	  	.bundle_align_mode abs-expr, etc
+
+.bundle_align_mode启用或禁用对齐指令包模式。在这种模式下，相邻指令序列被分组到固定大小的包中。如果参数为零，则禁用此模式（这是默认状态）。如果参数不为零，它会将指令包的大小作为 2 的幂（至于 .p2align指令，请参见P2align）。
+
+对于某些目标，ABI 要求没有指令可以跨越某个对齐的边界。捆绑包只是从对齐的边界开始的一系列指令。例如，如果 abs-expr是5，则包大小为 32，因此每个对齐的 32 字节块是一个包。当对齐指令束模式生效时，没有一条指令可以跨越束之间的边界。如果一条指令的开始距离太接近包的结尾，以至于该特定指令的长度无法容纳在包中，那么该包末尾的空间将被无操作指令填充，因此该指令在下一个包中开始. 作为推论，如果任何单个指令的编码长于捆绑包大小，则会出现错误。
+
+和.bundle_lock指令.bundle_unlock指令允许显式控制指令束填充。这些指令仅.bundle_align_mode在用于启用对齐指令包模式时才有效。如果它们在 .bundle_align_mode根本没有被使用时出现，或者当最后一个指令是.bundle_align_mode 0.
+
+对于某些目标，ABI 要求某些指令只能作为指定允许的多条指令序列的一部分出现，所有指令都在同一个包中。一对.bundle_lock 和.bundle_unlock指令定义了一个捆绑锁定 指令序列。出于对齐指令束模式的目的，以 开头.bundle_lock和结尾 的序列.bundle_unlock被视为单个指令。也就是说，整个序列必须适合单个束，并且不能跨越束边界。如有必要，将在序列的第一条指令之前插入无操作指令，以便整个序列从对齐的捆绑边界开始。如果序列长于包大小，则为错误。
+
+为了方便在汇编器宏中使用.bundle_lock和内部（请参阅宏），可以嵌套捆绑锁定序列。也就是说，在下一个指令之前的 第二个指令没有任何效果，除非它必须与另一个关闭匹配，以便有相同数量的和指令。 .bundle_unlock.bundle_lock.bundle_unlock.bundle_unlock.bundle_lock.bundle_unlock
+
+• Byte	  	.byte expressions
+
+.byte需要零个或多个表达式，用逗号分隔。每个表达式都组装到下一个字节中。
+
+
+
+• CFI directives	  	.cfi_startproc [simple], .cfi_endproc, etc.
+
+CFI指令原因：
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+• Comm	  	.comm symbol , length
+
+.comm声明一个名为symbol的通用符号。链接时，一个对象文件中的公共符号可能与另一个对象文件中已定义或同名的公共符号合并。如果ld没有看到符号的定义——只有一个或多个常见符号——那么它将分配长度字节的未初始化内存。 长度必须是绝对表达式。如果ld看到多个具有相同名称的常用符号，并且它们的大小不同，它将使用最大的大小分配空间。
+
+当使用 ELF 或（作为 GNU 扩展）PE 时，该.comm指令采用可选的第三个参数。这是所需的符号对齐方式，对于 ELF 指定为字节边界（例如，对齐 16 意味着地址的最低有效 4 位应为零），对于 PE 指定为 2 的幂（例如，对齐 5 表示对齐到 32 字节边界）。对齐必须是绝对表达式，并且必须是 2 的幂。如果ld为公共符号分配未初始化的内存，则在放置符号时将使用对齐方式。如果未指定对齐方式，as则将对齐方式设置为小于或等于符号大小的 2 的最大幂，在 ELF 上最多为 16，或者在 PE 1上设置为 4 的默认节对齐方式。
+
+HPPA的语法.comm略有不同。语法是'符号.comm，长度'; 符号是可选的。
+
+
+
+
+• Data	  	.data subsection
+.data告诉as将以下语句组装到数据子节编号子节的末尾（这是一个绝对表达式）。如果省略subsection，则默认为零。
+
+
+
+
+
+• Dc	  	.dc[size] expressions
+
+该.dc指令需要零个或多个用逗号分隔的表达式。对这些表达式求值，并将它们的值插入当前部分。发出值的大小取决于 .dc指令的后缀：
+
+‘.a’
+发出 N 位值，其中 N 是目标系统上地址的大小。
+
+‘.b’
+发出 8 位值。
+
+‘.d’
+发出双精度浮点值。
+
+‘.l’
+发出 32 位值。
+
+‘.s’
+发出单精度浮点值。
+
+‘.w’
+发出 16 位值。注意 - 即使在.word指令会发出 32 位值的目标上也是如此。
+
+‘.x’
+发出长双精度浮点值。
+
+如果不使用后缀，则 '.w' 假设。
+
+字节顺序取决于目标，浮点值的大小和格式也是如此。
+
+
+
+
+
+
+
+
+
+
+• Dcb	  	.dcb[size] number [,fill]
+• Ds	  	.ds[size] number [,fill]
+• Def	  	.def name
+• Desc	  	.desc symbol, abs-expression
+• Dim	  	.dim
+
+• Double	  	.double flonums
+• Eject	  	.eject
+• Else	  	.else
+• Elseif	  	.elseif
+• End	  	.end
+• Endef	  	.endef
+
+• Endfunc	  	.endfunc
+• Endif	  	.endif
+• Equ	  	.equ symbol, expression
+
+该指令将symbol的值设置为expression。与.set同义
+
+
+• Equiv	  	.equiv symbol, expression
+• Eqv	  	.eqv symbol, expression
+• Err	  	.err
+如果as汇编一个.err指令，它将打印一条错误消息，除非-Z使用了选项，它不会生成目标文件。这可用于在条件编译的代码中发出错误信号。
+• Error	  	.error string
+
+与 类似.err，此指令发出错误，但您可以指定将作为错误消息发出的字符串。如果您不指定消息，则默认为".error directive invoked in source file". 请参阅错误和警告消息。
+
+.error "此代码尚未组装和测试。"
+• Exitm	  	.exitm
+
+提前退出当前宏定义。
+
+
+• Extern	  	.extern
+.extern在源程序中被接受——为了与其他汇编程序兼容——但它被忽略了。 as将所有未定义的符号视为外部符号。
+• Fail	  	.fail
+生成错误或警告。如果表达式的值是 500 或更大，as将打印一条警告消息。如果该值小于 500，as将打印一条错误消息。该消息将包含表达式的值。这有时在复杂的嵌套宏或条件汇编中很有用。
+• File	  	.file
+.file该指令有两种不同的版本。支持 DWARF2 行号信息的目标使用 DWARF2 版本的 .file. 其他目标使用默认版本。
+
+默认版本
+这个版本的.file指令告诉as我们即将开始一个新的逻辑文件。语法是：
+
+.file字符串
+string是新的文件名。通常，无论文件名是否被引号 ' 包围，都会被识别"'; 但如果你想指定一个空文件名，你必须给引号 - ""。这种说法将来可能会消失：它只被认为与旧as程序兼容。
+
+DWARF2 版本
+当发出 DWARF2 行号信息时，.file将文件名分配给.debug_line文件名表。语法是：
+
+.file文件号 文件名
+fileno操作数应该是唯一的正整数，用作表中条目的索引。文件名操作数是用双引号括起来的 C 字符串文字。文件名可以包含目录元素。如果是这样，那么目录将被添加到目录表中，并且基本名称将被添加到文件表中。
+
+文件名索引的详细信息向用户公开，因为文件名表与.debug_infoDWARF2 调试信息部分共享，因此用户必须知道表条目将具有的确切索引。
+
+如果已通过-gdwarf-5.file选项然后也允许 扩展版本：
+
+.file文件号[目录名]文件名[md5值]
+在此版本中，允许使用单独的目录名称，但如果使用此名称，则filename不应包含任何目录组件，除了fileno等于 0：在这种情况下，dirname应为当前目录，而filename应为当前处理的文件，后者不必位于前者中。此外，可以提供文件名内容的 MD5 哈希值。这也将存储在文件表中，并且可以被读取调试信息的工具用来验证源文件的内容与编译文件的内容是否匹配。
+
+
+• Fill	  	.fill repeat , size , value
+
+repeat、size和value是绝对表达式。这会发出size字节 的重复副本。重复 可能为零或更多。 size可能是零或更大，但如果大于 8，则认为其值为 8，与其他人的汇编程序兼容。每个重复字节的内容取自一个 8 字节的数字。最高 4 个字节为零。最低顺序的 4 个字节是以正在组装的计算机上的整数的字节顺序呈现的值。重复中的每个size字节取自最低顺序 大小as这个数字的字节。同样，这种奇怪的行为与其他人的汇编程序兼容。
+
+大小和值是可选的。如果第二个逗号和value不存在，则value假定为零。如果第一个逗号和后面的标记不存在， 则假定大小为 1。
+
+
+• Float	  	.float flonums
+• Func	  	.func
+.func发出调试信息以表示函数名称，除非文件是在启用调试的情况下组装的，否则将被忽略。仅有的 '--gstabs[+]' 目前支持。 label是函数的入口点，如果省略name 前面带有 '前导字符' 用来。'前导字符' 通常是_或没有，取决于目标。当前所有函数都定义为具有void返回类型。该函数必须以 终止.endfunc。
+• Global	  	.global symbol, .globl symbol
+.global使符号对 可见ld。如果您在部分程序中定义 符号，则其值可用于与其链接的其他部分程序。否则， 符号从链接到同一程序的另一个文件的同名符号中获取其属性。
+
+两种拼写（'.globl' 和 '。全球的') 被接受，以与其他汇编程序兼容。
+
+• Gnu_attribute	  	.gnu_attribute tag,value
+• Hidden	  	.hidden names
+
+• hword	  	.hword expressions
+• Ident	  	.ident
+• If	  	.if absolute expression
+• Incbin	  	.incbin "file"[,skip[,count]]
+• Include	  	.include "file"
+• Int	  	.int expressions
+• Internal	  	.internal names
+
+• Irp	  	.irp symbol,values…
+• Irpc	  	.irpc symbol,values…
+• Lcomm	  	.lcomm symbol , length
+• Lflags	  	.lflags
+• Line	  	.line line-number
+
+• Linkonce	  	.linkonce [type]
+• List	  	.list
+• Ln	  	.ln line-number
+• Loc	  	.loc fileno lineno
+• Loc_mark_labels	  	.loc_mark_labels enable
+• Local	  	.local names
+
+• Long	  	.long expressions
+
+• Macro	  	.macro name args…
+• MRI	  	.mri val
+• Noaltmacro	  	.noaltmacro
+• Nolist	  	.nolist
+• Nop	  	.nop
+该指令发出无操作指令。它在所有架构上都提供，允许创建涉及实际代码的架构中立测试。生成指令的大小是特定于目标的，但如果给出了可选的 大小参数，并且在汇编中的该点解析为绝对正值（不允许前向表达式），那么发出的无操作指令最少等于或超过总大小（以字节为单位）。 .nop确实会影响 DWARF 调试行信息的生成。一些目标不支持使用.nopwith size。
+
+
+• Nops	  	.nops size[, control]
+• Octa	  	.octa bignums
+• Offset	  	.offset loc
+• Org	  	.org new-lc, fill
+• P2align	  	.p2align [abs-expr[, abs-expr[, abs-expr]]]
+• PopSection	  	.popsection
+• Previous	  	.previous
+
+• Print	  	.print string
+• Protected	  	.protected names
+
+• Psize	  	.psize lines, columns
+• Purgem	  	.purgem name
+• PushSection	  	.pushsection name
+
+• Quad	  	.quad bignums
+• Reloc	  	.reloc offset, reloc_name[, expression]
+• Rept	  	.rept count
+• Sbttl	  	.sbttl "subheading"
+• Scl	  	.scl class
+• Section	  	.section name[, flags]
+
+• Set	  	.set symbol, expression
+• Short	  	.short expressions
+• Single	  	.single flonums
+• Size	  	.size [name , expression]
+• Skip	  	.skip size [,fill]
+
+• Sleb128	  	.sleb128 expressions
+• Space	  	.space size [,fill]
+• Stab	  	.stabd, .stabn, .stabs
+
+• String	  	.string "str", .string8 "str", .string16 "str", .string32 "str", .string64 "str"
+• Struct	  	.struct expression
+• SubSection	  	.subsection
+• Symver	  	.symver name,name2@nodename[,visibility]
+
+• Tag	  	.tag structname
+
+• Text	  	.text subsection
+• Title	  	.title "heading"
+• Tls_common	  	.tls_common symbol, length[, alignment]
+• Type	  	.type <int | name , type description>
+
+• Uleb128	  	.uleb128 expressions
+• Val	  	.val addr
+
+• Version	  	.version "string"
+• VTableEntry	  	.vtable_entry table, offset
+• VTableInherit	  	.vtable_inherit child, parent
+
+• Warning	  	.warning string
+• Weak	  	.weak names
+• Weakref	  	.weakref alias, symbol
+• Word	  	.word expressions
+• Zero	  	.zero size
+• 2byte	  	.2byte expressions
+• 4byte	  	.4byte expressions
+• 8byte	  	.8byte bignums
+• Deprecated	  	Deprecated Directives
+
+
+
+----------------------------------------------------------------------------
+
+对象属性
+^^^^^^^^^^^^^
+GNU对象属性：
+""""""""""
+
+该.gnu_attribute指令使用 vendor ' 记录对象属性牛'。
+
+除了 '标签兼容性'，它的值有一个整数和一个字符串，如果标签号是奇数，GNU属性有一个字符串值，如果标签号是偶数，则有一个整数值。第二位 (tag & 2为与架构无关的属性设置，为与架构相关的属性设置清除。
+
+
+
+机器相关
+^^^^^^^^^
+BPF
+"""""
+80386依赖属性
+"""""""""""""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

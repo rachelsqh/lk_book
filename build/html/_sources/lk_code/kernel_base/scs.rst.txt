@@ -1,2 +1,0 @@
-Shadow Call Stack support
----------------------------

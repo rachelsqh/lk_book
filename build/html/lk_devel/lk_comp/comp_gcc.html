@@ -15,7 +15,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="内核与ELF" href="comp_elf.html" />
+    <link rel="next" title="ELF基础" href="comp_elf.html" />
     <link rel="prev" title="ld 在linux中的应用" href="comp_ld.html" /> 
 </head>
 
@@ -35,122 +35,113 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发基础</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lk_build/index.html">linux 内核构建</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核编程</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="comp_api.html">linux 二进制接口</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id47">程序加载和动态链接</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id53">库</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id64">开发环境</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id65">约定</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id66">linux 约定</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_base.html">内核编程概述</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_as.html">内核汇编</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_as.html">AS:内核汇编</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">GCC 在linux 内核中的应用</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gccc">Gcc对C语言的支持</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#id3">重要选项</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id4">控制输出种类的选项</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id5">控制诊断消息格式的选项</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id6">控制静态分析的选项</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id7">调试程序选项</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id8">控制优化的选项</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id11">程序工具选项(3.12)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id22">控制预处理器的选项</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id23">将选项传递给汇编器</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id24">链接选项</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id25">目录搜索选项</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id26">代码生成约定的选项:</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id33">机器相关的选项</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id34">指定子流程和传递给它们的开关</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id49">影响GCC的环境变量</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id50">使用预编译头</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#c">C实现定义的行为</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id51">表达式中的陈述和声明</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id52">本地声明的标签 （通过实验来理解）</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id53">标签作为值</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id64">嵌套函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">控制输出种类的选项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">控制诊断消息格式的选项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">控制静态分析的选项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">调试程序选项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">控制优化的选项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">程序工具选项(3.12)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id21">控制预处理器的选项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id22">将选项传递给汇编器</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id23">链接选项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id24">目录搜索选项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id25">代码生成约定的选项:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id32">机器相关的选项</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id33">指定子流程和传递给它们的开关</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id48">影响GCC的环境变量</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id49">使用预编译头</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id50">表达式中的陈述和声明</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id51">本地声明的标签 （通过实验来理解）</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id52">标签作为值</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id63">嵌套函数</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gotos">非本地Gotos</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id69">构造函数调用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id68">构造函数调用</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#typeoftype">用typeof引用Type</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id70">省略操作数的条件</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id71">命名地址空间</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id72">长度为零的数组</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id73">没有成员的结构</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id74">可变长度的数组</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id75">参数可变的宏</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id76">转义换行符的较宽松规则</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id69">省略操作数的条件</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id70">命名地址空间</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id71">长度为零的数组</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id72">没有成员的结构</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id73">可变长度的数组</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id74">参数可变的宏</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id75">转义换行符的较宽松规则</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#non-lvalue">Non-Lvalue 数组可能带有下标</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id77">无效指针和函数指针的算法</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id78">可变参数函数中的指针参数</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id81">带有限定符的数组的指针按预期工作</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id82">非常数初始化器</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id83">复合字面量</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id86">指定的初始化程序</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id76">无效指针和函数指针的算法</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id77">可变参数函数中的指针参数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id80">带有限定符的数组的指针按预期工作</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id81">非常数初始化器</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id82">复合字面量</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id85">指定的初始化程序</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#case">case范围</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id87">转换为联合类型</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id88">混合声明，标签和代码</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id89">声明函数的属性</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id208">指定变量的属性</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id255">指定类型的属性</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id268">标签属性</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id271">枚举器属性</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id272">语句属性</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id273">属性语法</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id284">原型和旧式函数定义</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id291">标识符名称中的美元符号</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id86">转换为联合类型</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id87">混合声明，标签和代码</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id88">声明函数的属性</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id207">指定变量的属性</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id254">指定类型的属性</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id267">标签属性</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id270">枚举器属性</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id271">语句属性</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id272">属性语法</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id283">原型和旧式函数定义</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id290">标识符名称中的美元符号</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#esc">常量中的字符ESC</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id292">确定函数，类型或变量的对齐方式</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id293">内联函数的速度与宏一样快</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id306">什么时候访问易失对象？</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id323">如何在C代码中使用内联汇编语言</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id326">备用关键字</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id327">不完整的枚举类型</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id328">函数名称为字符串</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id329">获取函数的返回地址或帧地址</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id332">通过内置函数使用矢量指令</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id291">确定函数，类型或变量的对齐方式</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id292">内联函数的速度与宏一样快</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id305">什么时候访问易失对象？</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#c">如何在C代码中使用内联汇编语言</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id324">备用关键字</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id325">不完整的枚举类型</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id326">函数名称为字符串</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id327">获取函数的返回地址或帧地址</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id330">通过内置函数使用矢量指令</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#offsetof">支持offsetof</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sync">用于原子内存访问的旧版__sync内置函数</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id333">内存模型感知原子操作的内置函数</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id344">内置函数，可通过溢出检查执行算术运算</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id345">x86特定于事务性内存的内存模型扩展</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id346">对象大小检查内置函数</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id347">GCC提供的其他内置函数</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id362">特定于目标机器的内置函数</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id367">特定于特定目标计算机的格式检查</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id368">接受的用语说明</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id369">未命名的结构和联合字段</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id370">线程本地存储</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id331">内存模型感知原子操作的内置函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id342">内置函数，可通过溢出检查执行算术运算</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id343">x86特定于事务性内存的内存模型扩展</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id344">对象大小检查内置函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id345">GCC提供的其他内置函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id360">特定于目标机器的内置函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id365">特定于特定目标计算机的格式检查</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id366">接受的用语说明</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id367">未命名的结构和联合字段</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id368">线程本地存储</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#b">使用“ 0b”前缀的二进制常量</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#c-linux">C 扩展部分在linux 内核中的应用</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#gcov">gcov</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gcov-tool">gcov-tool</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gcov-dump">gcov-dump</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#lto-dump">lto-dump</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#linux-gcc">linux 内核编程中GCC的高级应用</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">内核与ELF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">ELF基础</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_uwind.html">UWIND</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dev-tool/index.html">内核开发工具</a></li>
-<li class="toctree-l3"><a class="reference internal" href="k_prog/index.html">内核编程示例</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_objtool.html">objtool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_bin_tool.html">二进制工具</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_st.html">内核测试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_debug_ig.html">kernel debug 实验记录</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gnuplot.html">曲线图-gnuplot</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
 </ul>
 
         </div>
@@ -167,7 +158,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发基础</a> &raquo;</li>
           <li><a href="index.html">linux 内核编程</a> &raquo;</li>
       <li>GCC 在linux 内核中的应用</li>
       <li class="wy-breadcrumbs-aside">
@@ -211,12 +202,10 @@
 <p>您可以混合使用选项和其他参数。 在大多数情况下，您使用的顺序无关紧要。 当您使用相同种类的多个选项时，顺序确实很重要。 例如，如果您多次指定“ -L”，则会以指定的顺序搜索目录。 同样，“-l”选项的位置也很重要。</p>
 <p>许多选项的长名称都以“ -f”或“ -W”开头，例如“ -fmove-loop-invariants”，“-Wformat”等。 其中大多数都有积极和消极的形式。 “ -ffoo”的否定形式是“ -fno-foo”。 本手册仅记录这两种形式中的一种，不是默认形式。</p>
 <p>某些选项采用一个或多个参数，通常在选项名称之间用空格或等号（’=’）分隔。 除非特别说明，否则参数可以是数字或字符串。数值参数通常必须是小的无符号十进制或十六进制整数。 十六进制参数必须以“ 0x”前缀开头。用于指定某种大小阈值的选项的参数可以是任意大的十进制或十六进制整数，后跟一个字节大小后缀，用于指定千字节和kibibyte的多个字节，例如kB和KiB， MB和MiB分别表示兆字节和兆字节，GB和GiB表示千兆字节和千兆字节，依此类推。 在下面的文本中，此类参数由字节大小指定。 有关二进制和十进制字节大小前缀的完整列表和说明，请参阅NIST，IEC和其他相关的国家和国际标准。</p>
-</div>
+<p>重要选项</p>
 </div>
 <div class="section" id="id3">
-<h1>重要选项<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id4">
-<h2>控制输出种类的选项<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<h2>控制输出种类的选项<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <p>编译可能涉及四个阶段 ：预处理，编译，汇编和链接，始终按该顺序进行。 GCC能够将多个文件预处理并编译为多个汇编程序输入文件或一个汇编程序输入文件； 然后，每个汇编程序输入文件都会生成一个目标文件，并将所有目标文件（新编译的和指定为输入的那些目标文件）的链接合并到一个可执行文件中。</p>
 <p>对于任何给定的输入文件，文件名后缀确定完成哪种编译：</p>
 <p>file.c ：需要预处理的C源代码。
@@ -224,8 +213,8 @@ file.i ：不需要预处理的C源代码。
 file.h ：C头文件（or C, C++ header file to be turned into an Ada spec (via the ‘-fdump-ada-spec’ switch）</p>
 <p>而已利用’-x’选项来准确制定输入语言：</p>
 <p>-x language：为后面的输入文件指定使用的语言（代替处理器利用文件名后缀来确定输入语言）。这个选项接受所有下一个’-x’选项出来前的输入文件采用指定的语言。语言的名字可以指定为：</p>
-<div class="literal-block-wrapper docutils container" id="id375">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id375" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id377">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id377" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -402,8 +391,8 @@ shell scripts to capture the driver-generated command lines.</p></li>
 </li>
 </ul>
 </div>
-<div class="section" id="id5">
-<h2>控制诊断消息格式的选项<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h2>控制诊断消息格式的选项<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <p>传统上，诊断消息的格式与输出设备的外观无关（例如，其宽度等）。您可以使用下面描述的选项来控制诊断消息的格式算法，例如，每行多少个字符，应该多久报告一次源位置信息。请注意，某些语言的前端可能不支持这些选项。</p>
 <p>-fmessage-length=n</p>
 <blockquote>
@@ -415,8 +404,8 @@ shell scripts to capture the driver-generated command lines.</p></li>
 <dd><p>此选项要求诊断输出看起来尽可能简单，这在运行 dejagnu 或其他需要解析诊断输出并希望它随时间保持更稳定的实用程序时可能很有用。-fdiagnostics-plain-output目前等同于以下选项。</p>
 </dd>
 </dl>
-<div class="literal-block-wrapper docutils container" id="id376">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id376" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id378">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id378" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -450,8 +439,8 @@ shell scripts to capture the driver-generated command lines.</p></li>
 <p>颜色由环境变量 GCC_COLORS 定义。它的值是用冒号分隔的功能和选择图形渲染（SGR）子字符串列表。SGR命令由终端或终端仿真器解释。（有关允许的值及其作为字符属性的含义，请参见文本终端文档中的部分。）这些子字符串值是十进制表示形式的整数，可以与分号连接。连接的常见值包括“1“大胆”4“下划线”5“眨眼，”7“反之，”39’为默认前景色，’30’ 至 ‘37“代表前景色”90’ 至 ‘97’用于16色模式前景色，’38;5;0’ 至 ‘38;5;255’用于88色和256色模式的前景色，’49’为默认背景色，’40’ 至 ‘47’为背景色’100’ 至 ‘107’用于16色模式背景色，和’48;5;0’ 至 ‘48;5;255’代表88色和256色模式的背景色。</p>
 <p>默认的 GCC_COLORS 是</p>
 </div></blockquote>
-<div class="literal-block-wrapper docutils container" id="id377">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id377" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id379">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id379" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -580,8 +569,8 @@ type-diff=01;32
 <dd><p>默认情况下,当打印源代码时(通过-fdiagnostics-show-caret），诊断程序可以使用相关信息（例如表达式的类型）标记源代码范围：</p>
 </dd>
 </dl>
-<div class="literal-block-wrapper docutils container" id="id378">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id378" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id380">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id380" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -615,15 +604,15 @@ type-diff=01;32
 <dd><p>以机器可解析的格式发出修复提示，适合IDE使用。对于每个修复程序，将在相关诊断后打印一行，以字符串“ fix-it：”开头。例如：</p>
 </dd>
 </dl>
-<div class="literal-block-wrapper docutils container" id="id379">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id379" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id381">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id381" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">fix</span><span class="o">-</span><span class="nl">it</span><span class="p">:</span><span class="s">&quot;test.c&quot;</span><span class="o">:</span><span class="p">{</span><span class="mi">45</span><span class="o">:</span><span class="mi">3-45</span><span class="o">:</span><span class="mi">21</span><span class="p">}</span><span class="o">:</span><span class="s">&quot;gtk_widget_show_all&quot;</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>该位置表示为半开范围，表示为字节数，从初始列的字节1开始。在上面的示例中，“ test.c”的第45行的字节3到20将用给定的字符串替换：</p>
-<div class="literal-block-wrapper docutils container" id="id380">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id380" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id382">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id382" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -654,8 +643,8 @@ type-diff=01;32
 <dd><p>在C++前端,当打印诊断结果显示模板类型不匹配时,如。</p>
 </dd>
 </dl>
-<div class="literal-block-wrapper docutils container" id="id381">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id381" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id383">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id383" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -685,8 +674,8 @@ type-diff=01;32
 <dd><p>默认情况下，当C ++前端打印出显示模板类型不匹配的诊断信息时，这些类型的公共部分将打印为“ […]”以简化错误消息。例如：</p>
 </dd>
 </dl>
-<div class="literal-block-wrapper docutils container" id="id382">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id382" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id384">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id384" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -704,8 +693,8 @@ type-diff=01;32
 <p>‘none’表示不打印诊断路径。</p>
 <p>‘separate-events表示要为诊断中的每个事件打印单独的“注释”诊断。例如：</p>
 </div></blockquote>
-<div class="literal-block-wrapper docutils container" id="id383">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id383" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id385">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id385" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -724,8 +713,8 @@ type-diff=01;32
 </pre></div>
 </td></tr></table></div>
 </div>
-<div class="literal-block-wrapper docutils container" id="id384">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id384" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id386">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id386" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -770,8 +759,8 @@ type-diff=01;32
 </pre></div>
 </td></tr></table></div>
 </div>
-<div class="literal-block-wrapper docutils container" id="id385">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id385" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id387">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id387" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -887,8 +876,8 @@ type-diff=01;32
 <p>JSON是以一行的形式发出的,没有格式化;为了清楚起见,下面的例子已经进行了格式化。</p>
 <p>诊断程序可以有子诊断程序。例如,这个错误和说明。</p>
 </div></blockquote>
-<div class="literal-block-wrapper docutils container" id="id386">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id386" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id388">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id388" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1059,7 +1048,7 @@ type-diff=01;32
 <blockquote>
 <div><p>发出严格的ISO C和ISO C++所要求的所有警告;拒绝所有使用禁止扩展的程序,以及其他一些不遵循ISO C和ISO C++的程序。对于ISO C,遵循ISO C标准指定的版本,由任何一个-std使用的选项。</p>
 <p>不管有没有这个选项,有效的ISO C和ISO C++程序都应该能正常编译(尽管有极少数的程序需要使用-ansi或-std选项指定了所需的ISO C版本)。)但是,如果没有这个选项,某些GNU扩展和传统的C和C++特性也会被支持。有了这个选项,它们会被拒绝。</p>
-<p>-Wpedantic不会引起警告消息，提示使用名称以’结尾’<a href="#id400"><span class="problematic" id="id401">的替代关键字__</span></a>’。这种替代格式也可以用于禁用非ISO’__intN’类型，即’__intN__’。在 __extension__ 后面的表达式中也禁用了Pedantic警告。但是，只有系统头文件才应使用这些转义路由。应用程序应避免使用它们。请参阅备用关键字。</p>
+<p>-Wpedantic不会引起警告消息，提示使用名称以’结尾’<a href="#id402"><span class="problematic" id="id403">的替代关键字__</span></a>’。这种替代格式也可以用于禁用非ISO’__intN’类型，即’__intN__’。在 __extension__ 后面的表达式中也禁用了Pedantic警告。但是，只有系统头文件才应使用这些转义路由。应用程序应避免使用它们。请参阅备用关键字。</p>
 <p>一些用户尝试使用-Wpedantic检查程序是否严格符合ISOC。他们很快发现它并没有达到他们想要的功能：它发现了一些非ISO的实践，但不是全部-仅发现那些需要 ISO C 进行诊断的实践，以及发现了一些已添加诊断的实践。</p>
 <p>在某些情况下,报告任何不符合ISO C的情况的功能可能是有用的,但需要做大量的额外工作,并将在很大程度上不同于ISO C。-Wpedantic。我们没有计划在不久的将来支持这种功能。</p>
 <p>在以下标准的情况下:-std代表C的GNU扩展方言，例如’gnu90’ 要么 ‘gnu99’，有一个相应的基本标准，即GNU扩展方言所基于的ISO C版本。来自的警告-Wpedantic在基本标准要求的地方给出警告。(如果只对不在指定的GNU C方言中的特性发出警告,那是没有意义的,因为根据定义,GNU C方言包括了编译器支持的所有特性,所以没有什么需要警告的。)</p>
@@ -1771,8 +1760,8 @@ return i;</p>
 <p>如果第一个函数声明使用数组形式,那么数组中指定的边界被假定为在调用该函数时预期提供的最小元素数和它所访问的最大元素数。未能提供足够大小的参数或访问超过最大数量的元素可能会被诊断为警告,如-Warray-bounds. 在第 1 级，警告诊断涉及使用 T[static N] 形式声明的数组参数的不一致。</p>
 <p>例如，以下重新声明会触发警告，因为第一个允许将任意大小的数组传递给 f ,而第二个带有关键字 static 的指定数组参数必须至少有四个元素。</p>
 </div></blockquote>
-<div class="literal-block-wrapper docutils container" id="id387">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id387" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id389">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id389" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -2378,8 +2367,8 @@ else if (p-&gt;q != NULL) { … }</p>
 <div><p>当使用位置初始值设定项来初始化已用 designated_init 属性标记的结构时，禁止显示警告。</p>
 </div></blockquote>
 </div>
-<div class="section" id="id6">
-<h2>控制静态分析的选项<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h2>控制静态分析的选项<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
 <dl class="option-list">
 <dt><kbd><span class="option">-f<var>analyzer</var></span></kbd></dt>
 <dd><p>此选项可对程序流进行静态分析，以通过代码寻找“有趣的”过程间路径，并对在其上发现的问题发出警告。</p>
@@ -2387,8 +2376,8 @@ else if (p-&gt;q != NULL) { … }</p>
 <p>启用该选项可有效地启用以下警告:</p>
 </dd>
 </dl>
-<div class="literal-block-wrapper docutils container" id="id388">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id388" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id390">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id390" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -2629,8 +2618,8 @@ else if (p-&gt;q != NULL) { … }</p>
 </dd>
 </dl>
 </div>
-<div class="section" id="id7">
-<h2>调试程序选项<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>调试程序选项<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <p>要告诉GCC发出额外的信息供调试器使用,在几乎所有的情况下,您只需要添加-g到你的其他选项。</p>
 <p>GCC允许您使用-gwith-O。优化的代码所采用的快捷方式有时可能会令人惊讶：您声明的某些变量可能根本不存在。控制流可能会短暂移动到您未曾想到的地方；某些语句可能无法执行，因为它们计算的是恒定结果或它们的值已在手边；由于某些语句已移出循环，因此它们可能在不同的位置执行。不过，可以调试优化的输出。这使得将优化程序用于可能存在错误的程序变得合理。</p>
 <p>如果您没有使用其他优化选项,可以考虑使用-Og（请参阅优化选项）-g。没有-O选项,一些收集对调试有用的信息的编译器通证根本不会运行,所以-Og可能会带来更好的调试体验。</p>
@@ -2827,8 +2816,8 @@ else if (p-&gt;q != NULL) { … }</p>
 </dd>
 </dl>
 </div>
-<div class="section" id="id8">
-<h2>控制优化的选项<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id7">
+<h2>控制优化的选项<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
 <p>这些选项控制各种优化。</p>
 <p>没有任何优化选项，编译器的目标是降低编译成本并使调试产生预期的结果。语句是独立的：如果您在语句之间使用断点来停止程序，则可以将新值分配给任何变量，或者将程序计数器更改为函数中的任何其他语句，并从源代码中准确获取期望的结果。</p>
 <p>开启优化标志使编译器试图以牺牲编译时间和可能的程序调试能力为代价来提高性能和/或代码大小。</p>
@@ -2849,8 +2838,8 @@ else if (p-&gt;q != NULL) { … }</p>
 <div><p>优化更多。GCC几乎执行了所有支持的优化,不涉及空间速度的折衷。与-O，此选项会增加编译时间和所生成代码的性能。</p>
 <p>-O2打开所有由-O。它还打开以下优化标志：</p>
 </div></blockquote>
-<div class="literal-block-wrapper docutils container" id="id389">
-<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id389" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id391">
+<div class="code-block-caption"><span class="caption-text">可以指定的语言</span><a class="headerlink" href="#id391" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span> 请注意以下警告-fgcse关于调用-O2在使用计算的 gotos 的程序上。
 </pre></div>
 </td></tr></table></div>
@@ -4430,7 +4419,7 @@ tracer-min-branch-probability-feedback</p>
 <p>ggc-min-expand</p>
 <blockquote>
 <div><p>GCC使用垃圾回收器来管理自己的内存分配。此参数指定允许垃圾收集器的堆在收集之间扩展的最小百分比。进行调整可以提高编译速度；它对代码生成没有影响。</p>
-<p>当RAM&gt; = 1GB时，默认值为30％+ 70％<a href="#id9"><span class="problematic" id="id10">*</span></a>（RAM / 1GB），上限为100％。如果 getrlimit 可用，则“ RAM”的概念是实际RAM和 RLIMIT_DATA 或 RLIMIT_AS 中的最小值。如果GCC无法在特定平台上计算RAM，则使用30％的下限。设置此参数和ggc-min-heapsize为零会导致每一次机会都会发生完整的收集。这非常慢,但对调试很有用。</p>
+<p>当RAM&gt; = 1GB时，默认值为30％+ 70％<a href="#id8"><span class="problematic" id="id9">*</span></a>（RAM / 1GB），上限为100％。如果 getrlimit 可用，则“ RAM”的概念是实际RAM和 RLIMIT_DATA 或 RLIMIT_AS 中的最小值。如果GCC无法在特定平台上计算RAM，则使用30％的下限。设置此参数和ggc-min-heapsize为零会导致每一次机会都会发生完整的收集。这非常慢,但对调试很有用。</p>
 </div></blockquote>
 <p>ggc-min-heapsize</p>
 <blockquote>
@@ -5129,8 +5118,8 @@ sra-max-scalarization-size-Osize</p>
 </div></blockquote>
 </div></blockquote>
 </div>
-<div class="section" id="id11">
-<h2>程序工具选项(3.12)<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id10">
+<h2>程序工具选项(3.12)<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
 <p>GCC支持许多命令行选项,这些选项可以控制在它通常生成的代码中添加运行时工具。例如,工具化的一个目的是收集剖析统计数据,用于查找程序热点、代码覆盖率分析或剖析引导的优化。另一类程序工具化是增加运行时检查,以检测程序错误,如无效指针取消引用或越界数组访问,以及故意的敌对攻击,如堆栈粉碎或C++vtable hijacking。还有一个通用的钩子,可以用来实现其他形式的跟踪或函数级工具,以达到调试或程序分析的目的。</p>
 <p>-p
 -pg</p>
@@ -5191,7 +5180,7 @@ sra-max-scalarization-size-Osize</p>
 {</p>
 <blockquote>
 <div><p>PROVIDE (__gcov_info_start = .);
-KEEP (<a href="#id12"><span class="problematic" id="id13">*</span></a>(.gcov_info))
+KEEP (<a href="#id11"><span class="problematic" id="id12">*</span></a>(.gcov_info))
 PROVIDE (__gcov_info_end = .);</p>
 </div></blockquote>
 <p>}</p>
@@ -5464,9 +5453,9 @@ a++;</p>
 <dt><kbd><span class="option">-f<var>instrument-functions</var></span></kbd></dt>
 <dd><p>生成用于调用和退出函数的检测调用。在函数进入之后和函数退出之前，将使用当前函数的地址及其调用位置来调用以下概要分析函数。（在某些平台上， __builtin_return_address 在当前功能之外无法正常工作，因此，否则分析功能可能无法使用呼叫站点信息。）</p>
 <dl class="simple">
-<dt>void __cyg_profile_func_enter (void <a href="#id14"><span class="problematic" id="id15">*</span></a>this_fn,</dt><dd><p>void <a href="#id16"><span class="problematic" id="id17">*</span></a>call_site);</p>
+<dt>void __cyg_profile_func_enter (void <a href="#id13"><span class="problematic" id="id14">*</span></a>this_fn,</dt><dd><p>void <a href="#id15"><span class="problematic" id="id16">*</span></a>call_site);</p>
 </dd>
-<dt>void __cyg_profile_func_exit  (void <a href="#id18"><span class="problematic" id="id19">*</span></a>this_fn,</dt><dd><p>void <a href="#id20"><span class="problematic" id="id21">*</span></a>call_site);</p>
+<dt>void __cyg_profile_func_exit  (void <a href="#id17"><span class="problematic" id="id18">*</span></a>this_fn,</dt><dd><p>void <a href="#id19"><span class="problematic" id="id20">*</span></a>call_site);</p>
 </dd>
 </dl>
 <p>第一个参数是当前函数的起始地址,可在符号表中准确查找。</p>
@@ -5495,8 +5484,8 @@ a++;</p>
 <p>N 和 M 的最大值为 65535。</p>
 </div></blockquote>
 </div>
-<div class="section" id="id22">
-<h2>控制预处理器的选项<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id21">
+<h2>控制预处理器的选项<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h2>
 <p>这些选项控制了C预处理器,它在实际编译之前在每个C源文件上运行。</p>
 <p>如果您使用-E选项,除了预处理之外,什么都不做。其中一些选项只有与-E因为它们会导致预处理器的输出不适合实际编译。</p>
 <p>除了此处列出的选项外，还有许多选项可控制“ 目录选项”中记录的包含文件的搜索路径。警告选项中列出了用于控制预处理器诊断的选项。</p>
@@ -5740,8 +5729,8 @@ Replacement:      [    ]    {    }    #       ^    |    ~</p>
 </dd>
 </dl>
 </div>
-<div class="section" id="id23">
-<h2>将选项传递给汇编器<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id22">
+<h2>将选项传递给汇编器<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h2>
 <p>你可以将选项传递给汇编器。</p>
 <p>-Wa,option</p>
 <blockquote>
@@ -5753,8 +5742,8 @@ Replacement:      [    ]    {    }    #       ^    |    ~</p>
 <p>如果你想传递一个接受参数的选项,你必须使用-Xassembler两次,一次是选项,一次是参数。</p>
 </div></blockquote>
 </div>
-<div class="section" id="id24">
-<h2>链接选项<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id23">
+<h2>链接选项<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h2>
 <p>当编译器将对象文件链接到可执行输出文件时,这些选项就会发挥作用。如果编译器不进行链接步骤,这些选项就没有意义。</p>
 <p>object-file-name</p>
 <blockquote>
@@ -5908,8 +5897,8 @@ Replacement:      [    ]    {    }    #       ^    |    ~</p>
 (1)</p>
 <p>在某些系统上，gcc -shared需要构建补充存根代码以使构造函数正常工作。在多库系统上，gcc -shared’必须选择正确的支持库进行链接。不提供正确的标志可能会导致细微的缺陷。在不需要它们的情况下提供它们是无害的。</p>
 </div>
-<div class="section" id="id25">
-<h2>目录搜索选项<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id24">
+<h2>目录搜索选项<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h2>
 <p>这些选项指定了要搜索头文件、库和编译器部分的目录。</p>
 <p>-I dir
 -iquote dir
@@ -5994,15 +5983,15 @@ Replacement:      [    ]    {    }    #       ^    |    ~</p>
 </dd>
 </dl>
 </div>
-<div class="section" id="id26">
-<h2>代码生成约定的选项:<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id25">
+<h2>代码生成约定的选项:<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h2>
 <p>这些与机器无关的选项控制了代码生成中使用的接口约定。</p>
 <p>它们大多有积极和消极两种形式,消极形式的有-ffoois-fno-foo。在下表中，仅列出了一种形式-不是默认形式。您可以通过删除“no-或添加它。</p>
 <p>-fstack-reuse=reuse-level</p>
 <blockquote>
 <div><p>此选项控制用户声明的局部/自动变量和编译器生成的临时变量的堆栈空间重用。 reuse_level 可以是“all’，’named_vars’， 要么 ‘none’。’all’启用所有局部变量和临时变量的堆栈重用，’named_vars’仅对具有名称的用户定义局部变量启用重用，并且’none’完全禁用堆栈重用。默认值为“all’。当程序将作用域范围内的局部变量的寿命延长或临时生成的编译器的寿命超出该语言定义的终点时，需要使用该选项。当变量的生存期结束时，并且如果该变量存在于内存中，则优化编译器可以自由地将其堆栈空间与其他临时变量或作用域范围不重叠的局部作用域局部变量重用。延长本地生存期的旧代码很可能会因堆栈重用优化而中断。</p>
 <p>例如:</p>
-<p>int <a href="#id27"><span class="problematic" id="id28">*</span></a>p;
+<p>int <a href="#id26"><span class="problematic" id="id27">*</span></a>p;
 {</p>
 <blockquote>
 <div><p>int local1;</p>
@@ -6017,7 +6006,7 @@ local2 = 20;
 </div></blockquote>
 <p>}</p>
 <dl>
-<dt>if (<a href="#id29"><span class="problematic" id="id30">*</span></a>p == 10)  // 超出范围使用local1</dt><dd><p>{</p>
+<dt>if (<a href="#id28"><span class="problematic" id="id29">*</span></a>p == 10)  // 超出范围使用local1</dt><dd><p>{</p>
 <p>}</p>
 </dd>
 </dl>
@@ -6030,7 +6019,7 @@ int i;
 int j;</p>
 </div></blockquote>
 <p>};</p>
-<p>A <a href="#id31"><span class="problematic" id="id32">*</span></a>ap;</p>
+<p>A <a href="#id30"><span class="problematic" id="id31">*</span></a>ap;</p>
 <p>void foo(const A&amp; ar)
 {</p>
 <blockquote>
@@ -7020,8 +7009,8 @@ jmp     .L2     #</p>
 </dl>
 </div>
 </div>
-<div class="section" id="id33">
-<h2>机器相关的选项<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id32">
+<h2>机器相关的选项<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="ebpf">
 <h3>eBPF选项<a class="headerlink" href="#ebpf" title="Permalink to this headline">¶</a></h3>
 <p>-mframe-limit=bytes</p>
@@ -8007,8 +7996,8 @@ char bar;</p>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id34">
-<h2>指定子流程和传递给它们的开关<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id33">
+<h2>指定子流程和传递给它们的开关<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h2>
 <p>gcc 是一个驱动程序。它通过调用一系列其他程序来完成其工作，以进行编译，组装和链接。GCC解释其命令行参数，并使用这些参数推断应调用的程序以及应在命令行上放置的命令行选项。此行为由规范字符串控制。在大多数情况下，GCC可以为每个程序调用一个规范字符串，但是少数程序具有多个规范字符串来控制其行为。可以使用以下命令覆盖GCC内置的规范字符串-specs=命令行开关来指定一个规范文件。</p>
 <p>规格文件是用于构造规格字符串的纯文本文件。它们由用空行分隔的一系列指令组成。指令的类型由该行上的第一个非空白字符决定，该字符可以是下列之一：</p>
 <p>%command</p>
@@ -8027,7 +8016,7 @@ char bar;</p>
 <div><p>将规范字符串 old_name 重命名为 new_name 。</p>
 </div></blockquote>
 </div></blockquote>
-<p><a href="#id35"><span class="problematic" id="id36">*</span></a>[spec_name]:</p>
+<p><a href="#id34"><span class="problematic" id="id35">*</span></a>[spec_name]:</p>
 <blockquote>
 <div><p>这告诉编译器创建，覆盖或删除命名的规范字符串。该指令之后直到下一个指令的所有行或空白行均被视为规范字符串的文本。如果结果为空字符串，则删除规范。 （或者，如果该规范不存在，那么什么也不会发生。）否则，如果该规范当前不存在，则会创建一个新的规范。如果规范确实存在，则该指令的文本将覆盖其内容，除非该文本的第一个字符为’+’字符，在这种情况下，文字会附加到规范中。</p>
 </div></blockquote>
@@ -8071,7 +8060,7 @@ signed_char  Defines to pass to CPP to say whether char is signed</p>
 <p>startfile    Object files to include at the start of the link</p>
 <p>下面是一个规范文件的小例子。</p>
 <p>%rename lib                 old_lib</p>
-<p><a href="#id37"><span class="problematic" id="id38">*</span></a>lib:
+<p><a href="#id36"><span class="problematic" id="id37">*</span></a>lib:
 –start-group -lgcc -lc -leval1 –end-group %(old_lib)</p>
 <p>本示例将规范重命名为“lib’ 至 ‘old_lib’，然后覆盖先前的’lib换一个新的。新定义在包含旧定义的文本之前会添加一些额外的命令行选项。</p>
 <p>规范字符串是要传递到其相应程序的命令行选项的列表。此外，规范字符串可以包含“%前缀序列，以替换变量文本或有条件地将文本插入命令行。使用这些构造，可以生成非常复杂的命令行。</p>
@@ -8262,13 +8251,13 @@ signed_char  Defines to pass to CPP to say whether char is signed</p>
 <p>if-exists</p>
 <blockquote>
 <div><p>在 if-exists 规范函数有一个参数，绝对路径名的文件。如果文件存在， if-exists 返回路径名。这是其用法的一个小例子：</p>
-<p><a href="#id39"><span class="problematic" id="id40">*</span></a>startfile:
+<p><a href="#id38"><span class="problematic" id="id39">*</span></a>startfile:
 crt0%O%s %:if-exists(crti%O%s) crtbegin%O%s</p>
 </div></blockquote>
 <p>if-exists-else</p>
 <blockquote>
 <div><p>在 if-exists-else 规格功能类似于 if-exists 规范功能，但它有两个参数。第一个参数是文件的绝对路径名。如果文件存在， if-exists-else 返回路径名。如果不存在，则返回第二个参数。这样， if-exists-else 可以用于根据一个文件的存在来选择一个文件或另一个文件。这是其用法的一个小例子：</p>
-<p><a href="#id41"><span class="problematic" id="id42">*</span></a>startfile:
+<p><a href="#id40"><span class="problematic" id="id41">*</span></a>startfile:
 crt0%O%s %:if-exists(crti%O%s) %:if-exists-else(crtbeginT%O%s crtbegin%O%s)</p>
 </div></blockquote>
 <p>if-exists-then-else</p>
@@ -8365,7 +8354,7 @@ crt0%O%s %:if-exists(crti%O%s) %:if-exists-else(crtbeginT%O%s crtbegin%O%s)</p>
 </div></blockquote>
 <p>%{S*}</p>
 <blockquote>
-<div><p>替换所有指定给GCC的开关，这些开关的名称以 -S 开头，但也带有一个参数。这用于像-o,-D,-I等等。GCC认为-o富作为名称以“’o’。％{o <a href="#id43"><span class="problematic" id="id44">*</span></a>}替换此文本，包括空格。这样就产生了两个参数。</p>
+<div><p>替换所有指定给GCC的开关，这些开关的名称以 -S 开头，但也带有一个参数。这用于像-o,-D,-I等等。GCC认为-o富作为名称以“’o’。％{o <a href="#id42"><span class="problematic" id="id43">*</span></a>}替换此文本，包括空格。这样就产生了两个参数。</p>
 </div></blockquote>
 <p>%{S*&amp;T*}</p>
 <blockquote>
@@ -8424,13 +8413,13 @@ jim.d         -bar -boggle
 </div></blockquote>
 <p>开关匹配’中的文本 S%{S}’，’%{S:X}’或类似的构造可以使用反斜杠来忽略其后字符的特殊含义，从而允许对字符进行字面匹配，否则将对其进行特殊处理。例如， ‘%{std=iso9899:1999:X}’ 如果 X 代替X-std=iso9899:1999给出了选项。</p>
 <p>有条件的文字 X 在’%{S:X}’或类似的构造可能包含其他嵌套的’%的结构或空间，甚至是换行符。如上所述，对它们进行常规处理。 X 中的尾随空白将被忽略。在这些结构中，除了之间的空白，空格也可能出现在结肠左侧的任何位置 . 或 * 和相应的单词。</p>
-<p>The-O,-f,-m， 和-W开关在这些构造中得到了具体的处理。如果另一个值是-O或否定形式的-f,-m， 或者-W在命令行的后面找到switch，则忽略前面的switch值，除非{ S <a href="#id45"><span class="problematic" id="id46">*</span></a>}，其中 S 只是一个字母，它会传递所有匹配的选项。</p>
-<p>人物 ‘<a href="#id47"><span class="problematic" id="id48">|</span></a>谓词文本开头的’用于表示应将命令通过管道传递给以下命令，但仅当-pipe是指定的。</p>
+<p>The-O,-f,-m， 和-W开关在这些构造中得到了具体的处理。如果另一个值是-O或否定形式的-f,-m， 或者-W在命令行的后面找到switch，则忽略前面的switch值，除非{ S <a href="#id44"><span class="problematic" id="id45">*</span></a>}，其中 S 只是一个字母，它会传递所有匹配的选项。</p>
+<p>人物 ‘<a href="#id46"><span class="problematic" id="id47">|</span></a>谓词文本开头的’用于表示应将命令通过管道传递给以下命令，但仅当-pipe是指定的。</p>
 <p>它内置在GCC中，它的开关接受参数，而参数则不接受。（您可能会认为将其通用化以允许每个编译器的规范说出哪些开关接受参数是有用的。但这不能以一致的方式完成。GCC甚至无法在不知道哪些开关接受参数的情况下确定已指定了哪些输入文件，并且必须知道要编译哪个输入文件才能知道要运行哪个编译器。</p>
 <p>GCC也隐含地知道,以-l被视为编译器输出文件,并在其他输出文件中的适当位置传递给链接器。</p>
 </div>
-<div class="section" id="id49">
-<h2>影响GCC的环境变量<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id48">
+<h2>影响GCC的环境变量<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h2>
 <p>本节介绍了影响GCC运行方式的几个环境变量。其中一些环境变量通过指定搜索各种文件时要使用的目录或前缀来工作。有些环境变量用于指定编译环境的其他方面。</p>
 <p>需要注意的是,您还可以使用以下选项指定搜索地点,如-B,-Iand-L（请参阅目录选项）。这些优先于使用环境变量指定的位置，而环境变量又优先于 GCC 配置指定的位置。请参阅控制编译驱动程序海湾合作委员会 在 GNU 编译器集合 (GCC) 内部。</p>
 <p>LANG
@@ -8526,8 +8515,8 @@ OBJC_INCLUDE_PATH</p>
 <p>这个值应该是一个已知的时间戳,比如源代码或软件包的最后修改时间,它应该由构建过程设置。</p>
 </div></blockquote>
 </div>
-<div class="section" id="id50">
-<h2>使用预编译头<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id49">
+<h2>使用预编译头<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h2>
 <p>通常，大型项目在每个源文件中都包含许多头文件。编译器一次又一次地处理这些头文件所花费的时间几乎可以占构建项目所需的全部时间。为了使构建更快，GCC允许您预编译头文件。</p>
 <p>要创建一个预编译的头文件,只需像编译其他文件一样简单地编译它,必要时使用-x选项，使驱动程序将其视为C或C ++头文件。您可能想要使用诸如 make 之类的工具，以在包含头文件的标头发生更改时保持最新状态。</p>
 <p>当在编译中看到 #include 时，将搜索预编译的头文件。当它搜索包含文件时（请参阅C 预处理器中的搜索路径），编译器会在每个目录中查找包含文件之前在该目录中查找预编译头文件。搜索的名称是 #include 中指定的名称，带有 ‘.gch”。如果无法使用预编译的头文件，则将其忽略。</p>
@@ -8557,23 +8546,21 @@ OBJC_INCLUDE_PATH</p>
 </div></blockquote>
 <p>对于除最后一个之外的所有这些，如果不满足条件，编译器会自动忽略预编译头。如果您发现一个选项组合不起作用并且不会导致预编译头被忽略，请考虑提交错误报告，请参阅错误。</p>
 <p>如果您在生成和使用预编译头时使用了不同的选项,那么实际的行为就是这些选项的混合行为。例如,如果您使用-g来生成预编译头,但在使用它时,你可能会或可能不会得到预编译头中例程的调试信息。</p>
-</div>
-</div>
-<div class="section" id="c">
-<h1>C实现定义的行为<a class="headerlink" href="#c" title="Permalink to this headline">¶</a></h1>
+<p>C实现定义的行为</p>
 <blockquote>
 <div><p>GNU C提供了ISO 标准C中找不到的很多语言特性（”-pedantic”会对这些扩展特性的应用打印警告信息).要在条件编译中测试这些功能的可用性，可以通过测试是否存在宏定义__GNUC__来实现。GCC下会定义这个宏。</p>
 </div></blockquote>
 <p>我们只关注针对C语言部分。</p>
 <p>ISO C99中的某些功能不在C90中的一些功能，GCC会把些特性当作C90模式的扩展进行包含。</p>
-<div class="section" id="id51">
-<h2>表达式中的陈述和声明<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id50">
+<h2>表达式中的陈述和声明<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h2>
 <p>括号中的复合语句可能会在GNU C中作为表达式出现。这使您可以在表达式中使用循环，switch和局部变量。</p>
 <blockquote>
 <div><p>回想一下，复合语句是用大括号括起来的一系列语句； 在此构造中，大括号被括号括起来。 例如：</p>
 </div></blockquote>
-<div class="literal-block-wrapper docutils container" id="id390">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id390" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id392">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id392" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">({</span> <span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="n">foo</span> <span class="p">();</span> <span class="kt">int</span> <span class="n">z</span><span class="p">;</span>    <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="n">z</span> <span class="o">=</span> <span class="n">y</span><span class="p">;</span>       <span class="k">else</span> <span class="n">z</span> <span class="o">=</span> <span class="o">-</span> <span class="n">y</span><span class="p">;</span>   <span class="n">z</span><span class="p">;</span> <span class="p">})</span>
 </pre></div>
 </td></tr></table></div>
@@ -8581,23 +8568,23 @@ OBJC_INCLUDE_PATH</p>
 <p>对于foo（）的绝对值是一个有效的表达式（尽管比必需的复杂一些）。</p>
 <p>复合语句中的最后一件事应该是一个表达式，后跟一个分号； 该子表达式的值用作整个构造的值。 （如果最后在花括号内使用其他类型的语句，则该构造的类型为void，因此实际上没有任何值。）</p>
 <p>这种应用方式在保证宏定义的安全性时尤其有用。如以下定义方式：</p>
-<div class="literal-block-wrapper docutils container" id="id391">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id391" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id393">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id393" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define max(a,b) ((a) &gt; (b) ? (a) : (b))</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>但是此定义计算a或b两次，如果操作数有副作用，则结果会很差。 在GNU C中，如果您知道操作数的类型（此处为int），则可以通过如下定义宏来避免此问题：</p>
-<div class="literal-block-wrapper docutils container" id="id392">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id392" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id394">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id394" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define maxint(a,b) \        ({int _a = (a), _b = (b); _a &gt; _b ? _a : _b; })</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>请注意，引入变量声明（如我们在maxint中所做的那样）可能会导致变量阴影，因此，在使用max宏的此示例中，可以产生正确的结果：</p>
 </div>
-<div class="section" id="id52">
-<h2>本地声明的标签 （通过实验来理解）<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id51">
+<h2>本地声明的标签 （通过实验来理解）<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h2>
 <p>CC允许您在任何嵌套块范围内声明局部标签。 本地标签就像普通标签一样，但是您只能在声明它的块内引用它（使用goto语句，或通过获取其地址）。</p>
 <p>本地标签声明如下所示：</p>
 <p>本地标签声明必须在任何普通声明或语句之前的块的开头处声明。</p>
@@ -8606,9 +8593,9 @@ OBJC_INCLUDE_PATH</p>
 <p>局部标签声明还会使它们声明的标签对嵌套函数可见（如果有的话）。</p>
 <p>总结：内核中使用了这个功能，基本功能可以理解，为什么必须通过__label__来声明？通常难道不是定义就成了？</p>
 </div>
-<div class="section" id="id53">
-<h2>标签作为值<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h2>
-<p>可以利用“&amp;&amp;”运算符来获取点给钱函数中定义的一个符号的地址。类型为void <a href="#id54"><span class="problematic" id="id55">*</span></a>。这个值是一个常量，可以在有效范围内使用，如：
+<div class="section" id="id52">
+<h2>标签作为值<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h2>
+<p>可以利用“&amp;&amp;”运算符来获取点给钱函数中定义的一个符号的地址。类型为void <a href="#id53"><span class="problematic" id="id54">*</span></a>。这个值是一个常量，可以在有效范围内使用，如：
 .. code-block:: c</p>
 <blockquote>
 <div><dl class="field-list simple">
@@ -8621,31 +8608,31 @@ OBJC_INCLUDE_PATH</p>
 <dt class="field-odd">linenos</dt>
 <dd class="field-odd"><p></p></dd>
 </dl>
-<p>void <em>ptr;/</em> … <a href="#id56"><span class="problematic" id="id57">*</span></a>/ptr = &amp;&amp;foo;</p>
+<p>void <em>ptr;/</em> … <a href="#id55"><span class="problematic" id="id56">*</span></a>/ptr = &amp;&amp;foo;</p>
 </div></blockquote>
-<p>在可以跳转到标签的位置使用这个值。这是通过计算得出的goto声明，goto <a href="#id58"><span class="problematic" id="id59">*</span></a>exp;例如：</p>
-<div class="literal-block-wrapper docutils container" id="id393">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id393" title="Permalink to this code">¶</a></div>
+<p>在可以跳转到标签的位置使用这个值。这是通过计算得出的goto声明，goto <a href="#id57"><span class="problematic" id="id58">*</span></a>exp;例如：</p>
+<div class="literal-block-wrapper docutils container" id="id395">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id395" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">goto</span> <span class="o">*</span><span class="n">ptr</span><span class="p">;</span>
 </pre></div>
 </td></tr></table></div>
 </div>
-<p>允许使用任何类型为void <a href="#id60"><span class="problematic" id="id61">*</span></a>的表达式。使用这些常量的一种方法是初始化用作跳转表的静态数组：</p>
-<div class="literal-block-wrapper docutils container" id="id394">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id394" title="Permalink to this code">¶</a></div>
+<p>允许使用任何类型为void <a href="#id59"><span class="problematic" id="id60">*</span></a>的表达式。使用这些常量的一种方法是初始化用作跳转表的静态数组：</p>
+<div class="literal-block-wrapper docutils container" id="id396">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id396" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">void</span> <span class="o">*</span><span class="n">array</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="o">&amp;&amp;</span><span class="n">foo</span><span class="p">,</span><span class="o">&amp;&amp;</span><span class="n">bar</span><span class="p">,</span><span class="o">&amp;&amp;</span><span class="n">hack</span> <span class="p">};</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>然后，您可以选择带有索引的标签，如下所示：</p>
-<p>goto <a href="#id62"><span class="problematic" id="id63">*</span></a>array[i];</p>
+<p>goto <a href="#id61"><span class="problematic" id="id62">*</span></a>array[i];</p>
 <p>请注意，这不会检查下标是否在边界内— C中的数组索引从不执行此操作。</p>
 <p>这样的标签值数组的用途很像switch语句。 switch语句更简洁，因此，除非该问题不能很好地适合switch语句，否则使用它而不是数组。</p>
 <p>标签值的另一种用法是在线程代码的解释器中。 解释器功能内的标签可以存储在线程代码中，以进行超快速调度。</p>
 <p>您可能不使用此机制来跳转到其他函数中的代码。 如果这样做，则完全会发生不可预测的事情。 避免这种情况的最佳方法是仅将标签地址存储在自动变量中，并且切勿将其作为参数传递。</p>
 <p>编写以上示例的另一种方法是 :</p>
-<div class="literal-block-wrapper docutils container" id="id395">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id395" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id397">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id397" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">array</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="o">&amp;&amp;</span><span class="n">foo</span> <span class="o">-</span> <span class="o">&amp;&amp;</span><span class="n">foo</span><span class="p">,</span> <span class="o">&amp;&amp;</span><span class="n">bar</span> <span class="o">-</span> <span class="o">&amp;&amp;</span><span class="n">foo</span><span class="p">,</span><span class="o">&amp;&amp;</span><span class="n">hack</span> <span class="o">-</span> <span class="o">&amp;&amp;</span><span class="n">foo</span> <span class="p">};</span><span class="k">goto</span> <span class="o">*</span><span class="p">(</span><span class="o">&amp;&amp;</span><span class="n">foo</span> <span class="o">+</span> <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
 </pre></div>
 </td></tr></table></div>
@@ -8655,27 +8642,27 @@ OBJC_INCLUDE_PATH</p>
 <p>如果依靠它们的程序总是相同的 ，__attribute__((__noinline__,__noclone__))用于禁止内联和克隆。如果&amp;&amp;foo在一个静态初始化的变量中，禁止内联和克隆。</p>
 <p>注意：这是非常重要的功能，需要进一步理解。</p>
 </div>
-<div class="section" id="id64">
-<h2>嵌套函数<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id63">
+<h2>嵌套函数<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h2>
 <p>嵌套函数指在另外一个函数中定义的函数。GNU C中支持，GNU C++不支持。</p>
 <p>嵌套函数针对其定义的块是局部的。例如，</p>
-<div class="literal-block-wrapper docutils container" id="id396">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id396" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id398">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id398" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">foo</span> <span class="p">(</span><span class="kt">double</span> <span class="n">a</span><span class="p">,</span> <span class="kt">double</span> <span class="n">b</span><span class="p">){</span>    <span class="kt">double</span> <span class="nf">square</span> <span class="p">(</span><span class="kt">double</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">z</span> <span class="o">*</span> <span class="n">z</span><span class="p">;</span> <span class="p">}</span>      <span class="k">return</span> <span class="nf">square</span> <span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">square</span> <span class="p">(</span><span class="n">b</span><span class="p">);}</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>嵌套函数可以访问包含函数的所有变量，这些变量在其定义点可见。 这称为词汇作用域。 例如，这里显示了一个嵌套函数，该函数使用一个名为offset的继承变量：</p>
-<div class="literal-block-wrapper docutils container" id="id397">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id397" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id399">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id399" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">bar</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">array</span><span class="p">,</span> <span class="kt">int</span> <span class="n">offset</span><span class="p">,</span> <span class="kt">int</span> <span class="n">size</span><span class="p">){</span><span class="kt">int</span> <span class="nf">access</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">array</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">){</span> <span class="k">return</span> <span class="n">array</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="n">offset</span><span class="p">];</span> <span class="p">}</span><span class="kt">int</span> <span class="n">i</span><span class="p">;</span><span class="cm">/* . . . */</span><span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="cm">/* . . . */</span> <span class="n">access</span> <span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="cm">/* . . . */</span><span class="p">}</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>在允许变量定义的地方，允许在函数内使用嵌套函数定义； 也就是说，在任何块中，都与该块中的其他声明和语句混合在一起。</p>
 <p>可以通过存储嵌套函数的地址或将该地址传递给另一个函数来从其名称范围之外调用嵌套函数：</p>
-<div class="literal-block-wrapper docutils container" id="id398">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id398" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id400">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id400" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">hack</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">array</span><span class="p">,</span> <span class="kt">int</span> <span class="n">size</span><span class="p">){</span> <span class="kt">void</span> <span class="nf">store</span> <span class="p">(</span><span class="kt">int</span> <span class="n">index</span><span class="p">,</span> <span class="kt">int</span> <span class="n">value</span><span class="p">)</span>       <span class="p">{</span> <span class="n">array</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span> <span class="p">}</span>       <span class="n">intermediate</span> <span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">size</span><span class="p">);}</span>
 </pre></div>
 </td></tr></table></div>
@@ -8684,13 +8671,13 @@ OBJC_INCLUDE_PATH</p>
 <p>如果您尝试在包含函数退出后通过其地址调用嵌套函数，那么所有地狱都将变得松散。 如果您尝试在包含作用域级别退出后调用它，并且它引用了不再属于作用域的某些变量，那么您可能会很幸运，但是冒险是不明智的。 但是，如果嵌套函数未引用超出范围的任何内容，那么您应该是安全的。</p>
 <p>GCC使用称为蹦床的技术来实现嵌套函数的地址。 在C ++的词法闭包中对此技术进行了描述（Thomas M. Breuel，USENIX C ++ Conference Proceedings，1988年10月17-21日）。</p>
 <p>嵌套函数可以跳转到从包含函数继承的标签，前提是该标签在包含函数中显式声明（请参见第6.2节[局部标签]，第497页）。 这样的跳转立即返回到包含函数，退出执行了goto的嵌套函数以及任何中间函数。 这是一个例子：</p>
-<div class="literal-block-wrapper docutils container" id="id399">
-<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id399" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id401">
+<div class="code-block-caption"><span class="caption-text">test</span><a class="headerlink" href="#id401" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">bar</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">array</span><span class="p">,</span> <span class="kt">int</span> <span class="n">offset</span><span class="p">,</span> <span class="kt">int</span> <span class="n">size</span><span class="p">){</span>      <span class="n">__label__</span> <span class="n">failure</span><span class="p">;</span>      <span class="kt">int</span> <span class="nf">access</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">array</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">)</span>      <span class="p">{</span>               <span class="k">if</span> <span class="p">(</span><span class="n">index</span> <span class="o">&gt;</span> <span class="n">size</span><span class="p">)</span>                       <span class="k">goto</span> <span class="n">failure</span><span class="p">;</span>           <span class="k">return</span> <span class="n">array</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="n">offset</span><span class="p">];</span>   <span class="p">}</span>       <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>  <span class="cm">/* . . . */</span>     <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>      <span class="cm">/* . . . */</span> <span class="n">access</span> <span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="cm">/* . . . */</span>       <span class="cm">/* . . . */</span>     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span><span class="cm">/* Control comes here from access      if it detects an error. */</span><span class="nl">failure</span><span class="p">:</span>      <span class="k">return</span> <span class="mi">-1</span><span class="p">;}</span>
 </pre></div>
 </td></tr></table></div>
 </div>
-<p><a href="#id65"><span class="problematic" id="id66">``</span></a><a href="#id67"><span class="problematic" id="id68">`</span></a></p>
+<p><a href="#id64"><span class="problematic" id="id65">``</span></a><a href="#id66"><span class="problematic" id="id67">`</span></a></p>
 <blockquote>
 <div><p>嵌套函数始终没有链接。 用extern或static声明一个是错误的。 如果需要在定义嵌套函数之前先声明它，请使用auto（否则对于函数声明是没有意义的）。</p>
 </div></blockquote>
@@ -8706,8 +8693,8 @@ OBJC_INCLUDE_PATH</p>
 <p>由于__builtin_longjmp依赖于函数返回机制来还原堆栈上下文，因此无法从调用__builtin_setjmp的同一函数中调用它来初始化buf。 只能从调用__builtin_setjmp的函数直接（或间接）调用的函数中调用它。</p>
 <p>总结：这个与jump label应该有关，对我来说也是全新的东西。</p>
 </div>
-<div class="section" id="id69">
-<h2>构造函数调用<a class="headerlink" href="#id69" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id68">
+<h2>构造函数调用<a class="headerlink" href="#id68" title="Permalink to this headline">¶</a></h2>
 <p>使用下面描述的内置函数，可以在不知道参数的数量或类型的情况下，将参数记录为收到的函数，并使用相同的参数调用另一个函数。</p>
 <p>您还可以记录该函数调用的返回值，然后在不知道函数试图返回哪种数据类型的情况下返回该值（只要调用者期望该数据类型）。</p>
 <p>但是，这些内置函数可能会与某些复杂的功能或语言的其他扩展发生不良交互。 因此，不建议在非常简单的函数之外仅将其用作参数的转发器使用它们。</p>
@@ -8784,8 +8771,8 @@ OBJC_INCLUDE_PATH</p>
 </ul>
 <p>总结：这部分了解，但不精通，这次要做到精通的,需要复习一遍。</p>
 </div>
-<div class="section" id="id70">
-<h2>省略操作数的条件<a class="headerlink" href="#id70" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id69">
+<h2>省略操作数的条件<a class="headerlink" href="#id69" title="Permalink to this headline">¶</a></h2>
 <p>条件表达式中的中间操作数可以省略。 然后，如果第一个操作数不为零，则其值为条件表达式的值。 因此，表达式：</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">x</span> <span class="pre">?</span> <span class="pre">:</span> <span class="pre">y</span>
@@ -8798,8 +8785,8 @@ OBJC_INCLUDE_PATH</p>
 <p>在这种简单情况下，忽略中间操作数的功能不是特别有用。 当第一个操作数确实有用或可能（如果它是宏参数）可能包含副作用时，它才变得有用。 然后在中间重复操作数将产生两次副作用。忽略中间操作数将使用已经计算的值，而不会产生重新计算的不良影响。</p>
 <p>总结：这个问题不大，重点在总结。</p>
 </div>
-<div class="section" id="id71">
-<h2>命名地址空间<a class="headerlink" href="#id71" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id70">
+<h2>命名地址空间<a class="headerlink" href="#id70" title="Permalink to this headline">¶</a></h2>
 <p>作为扩展，GNU C支持ISO / IEC DTR 18037的N1275草案中定义的命名地址空间。随着技术报告草案的更改，对GCC中命名地址空间的支持也将不断发展。 任何目标的调用约定也可能会更改。 目前，只有AVR，M32C，RL78和x86目标设备支持通用地址空间以外的地址空间。 地址空间标识符可以与其他任何C类型限定符（例如const或volatile）完全一样地使用。 有关更多详细信息，请参见N1275文档。</p>
 <p>总结：</p>
 <div class="section" id="x86">
@@ -8814,8 +8801,8 @@ OBJC_INCLUDE_PATH</p>
 <p>总结：</p>
 </div>
 </div>
-<div class="section" id="id72">
-<h2>长度为零的数组<a class="headerlink" href="#id72" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id71">
+<h2>长度为零的数组<a class="headerlink" href="#id71" title="Permalink to this headline">¶</a></h2>
 <p>在GNU C中允许声明零长度数组作为扩展。 零长度数组可以用作结构的最后一个元素，该结构实际上是可变长度对象的标头 :</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">struct</span> <span class="pre">line</span> <span class="pre">{</span>&#160;&#160; <span class="pre">int</span> <span class="pre">length;</span>&#160;&#160;&#160;&#160; <span class="pre">char</span> <span class="pre">contents[0];};struct</span> <span class="pre">line</span> <span class="pre">*thisline</span> <span class="pre">=</span> <span class="pre">(struct</span> <span class="pre">line</span> <span class="pre">*)malloc</span> <span class="pre">(sizeof</span> <span class="pre">(struct</span> <span class="pre">line)</span> <span class="pre">+</span> <span class="pre">this_length);thisline-&gt;length</span> <span class="pre">=</span> <span class="pre">this_length;</span>
@@ -8843,8 +8830,8 @@ OBJC_INCLUDE_PATH</p>
 <span class="pre">`</span></code></p>
 <p>总结：了解，重点在总结,等待一遍总结。</p>
 </div>
-<div class="section" id="id73">
-<h2>没有成员的结构<a class="headerlink" href="#id73" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id72">
+<h2>没有成员的结构<a class="headerlink" href="#id72" title="Permalink to this headline">¶</a></h2>
 <p>GCC允许C结构没有成员：</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">struct</span> <span class="pre">empty</span> <span class="pre">{};</span>
@@ -8852,8 +8839,8 @@ OBJC_INCLUDE_PATH</p>
 <p>该结构的大小为零。 在C ++中，空结构是该语言的一部分。 G ++将空结构视为具有char类型的单个成员。</p>
 <p>总结：</p>
 </div>
-<div class="section" id="id74">
-<h2>可变长度的数组<a class="headerlink" href="#id74" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id73">
+<h2>可变长度的数组<a class="headerlink" href="#id73" title="Permalink to this headline">¶</a></h2>
 <p>ISO C99允许使用可变长度自动数组，并且作为扩展，GCC在C90模式和C ++中接受它们。 这些数组的声明与其他任何自动数组一样，但是其长度不是常量表达式。 存储在声明时分配，并在包含声明的块作用域退出时释放。 例如：</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">FILE</span> <span class="pre">*concat_fopen</span> <span class="pre">(char</span> <span class="pre">*s1,</span> <span class="pre">char</span> <span class="pre">*s2,</span> <span class="pre">char</span> <span class="pre">*mode){</span>&#160;&#160;&#160; <span class="pre">char</span> <span class="pre">str[strlen</span> <span class="pre">(s1)</span> <span class="pre">+</span> <span class="pre">strlen</span> <span class="pre">(s2)</span> <span class="pre">+</span> <span class="pre">1];</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">strcpy</span> <span class="pre">(str,</span> <span class="pre">s1);</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">strcat</span> <span class="pre">(str,</span> <span class="pre">s2);</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">return</span> <span class="pre">fopen</span> <span class="pre">(str,</span> <span class="pre">mode);}</span>
@@ -8877,8 +8864,8 @@ OBJC_INCLUDE_PATH</p>
 <p>您可以在参数列表中编写任意数量的此类参数前向声明。它们可以用逗号或分号分隔，但最后一个必须以分号结尾，后跟“真实”参数声明。 每个前向声明必须与参数名称和数据类型中的“真实”声明匹配。 ISO C99不支持参数转发声明。</p>
 <p>总结：需要回头看一遍</p>
 </div>
-<div class="section" id="id75">
-<h2>参数可变的宏<a class="headerlink" href="#id75" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id74">
+<h2>参数可变的宏<a class="headerlink" href="#id74" title="Permalink to this headline">¶</a></h2>
 <p>在1999年的ISO C标准中，可以声明宏以接受可变数量的参数，就像函数可以接受的那样。 定义宏的语法与函数的语法相似。 这是一个例子：</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">#define</span> <span class="pre">debug(format,</span> <span class="pre">...)</span> <span class="pre">fprintf</span> <span class="pre">(stderr,</span> <span class="pre">format,</span> <span class="pre">__VA_ARGS__)</span>
@@ -8904,8 +8891,8 @@ OBJC_INCLUDE_PATH</p>
 </div></blockquote>
 <p>总结：这个需要，理解上一直有偏差。</p>
 </div>
-<div class="section" id="id76">
-<h2>转义换行符的较宽松规则<a class="headerlink" href="#id76" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id75">
+<h2>转义换行符的较宽松规则<a class="headerlink" href="#id75" title="Permalink to this headline">¶</a></h2>
 <p>与C90标准所指定的相比，转义的换行符对预处理程序的处理更为宽松，C90标准要求换行符立即跟随反斜杠。 GCC的实现允许以空格，水平和垂直制表符的形式出现空格，并在反斜杠和后续换行符之间形成换页。 预处理器发出警告，但将其视为有效的转义换行符，并将这两行合并以形成一条逻辑行。 这适用于注释和标记以及标记之间。 出于放松目的，注释不被视为空格，因为它们尚未被空格代替。</p>
 <p>总结：</p>
 </div>
@@ -8917,37 +8904,37 @@ OBJC_INCLUDE_PATH</p>
 <span class="pre">`</span></code></p>
 <p>总结：</p>
 </div>
-<div class="section" id="id77">
-<h2>无效指针和函数指针的算法<a class="headerlink" href="#id77" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id76">
+<h2>无效指针和函数指针的算法<a class="headerlink" href="#id76" title="Permalink to this headline">¶</a></h2>
 <p>在GNU C中，指向void的指针和指向函数的指针支持加法和减法运算。 这是通过将void或函数的大小视为1来完成的。</p>
 <p>这样的结果是在void和函数类型上还允许sizeof，并返回1。</p>
 <p>如果使用了这些扩展名，则选项-Wpointer-arith会发出警告。</p>
 <p>总结：</p>
 </div>
-<div class="section" id="id78">
-<h2>可变参数函数中的指针参数<a class="headerlink" href="#id78" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id77">
+<h2>可变参数函数中的指针参数<a class="headerlink" href="#id77" title="Permalink to this headline">¶</a></h2>
 <p>标准C要求具有可变参数列表的函数中与va_arg一起使用的指针类型必须与实际参数的指针类型兼容，或者一种类型必须是指向void的指针，而另一种必须是指向字符类型的指针。 GNU C实现了POSIX XSI扩展，该扩展另外允许使用带有指针类型的va_arg来接收任何其他指针类型的参数。</p>
-<p>特别是在GNU C中，可以安全地使用“ va_arg（ap，void <a href="#id79"><span class="problematic" id="id80">*</span></a>）”来使用任何指针类型的参数。</p>
+<p>特别是在GNU C中，可以安全地使用“ va_arg（ap，void <a href="#id78"><span class="problematic" id="id79">*</span></a>）”来使用任何指针类型的参数。</p>
 <p>总结：重要</p>
 </div>
-<div class="section" id="id81">
-<h2>带有限定符的数组的指针按预期工作<a class="headerlink" href="#id81" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id80">
+<h2>带有限定符的数组的指针按预期工作<a class="headerlink" href="#id80" title="Permalink to this headline">¶</a></h2>
 <p>在GNU C中，指向带有限定符的数组的指针的工作方式类似于指向其他限定类型的指针。 例如，可以使用类型为int（*）[5]的值来初始化类型为const int（*）[5]的变量。 这些类型在ISO C中不兼容，因为const限定符正式附加到数组的元素类型，而不是数组本身。</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">extern</span> <span class="pre">voidtranspose</span> <span class="pre">(int</span> <span class="pre">N,</span> <span class="pre">int</span> <span class="pre">M,</span> <span class="pre">double</span> <span class="pre">out[M][N],</span> <span class="pre">const</span> <span class="pre">double</span> <span class="pre">in[N][M]);double</span> <span class="pre">x[3][2];double</span> <span class="pre">y[2][3];...transpose(3,</span> <span class="pre">2,</span> <span class="pre">y,</span> <span class="pre">x);</span>
 <span class="pre">`</span></code></p>
 <p>总结：</p>
 </div>
-<div class="section" id="id82">
-<h2>非常数初始化器<a class="headerlink" href="#id82" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id81">
+<h2>非常数初始化器<a class="headerlink" href="#id81" title="Permalink to this headline">¶</a></h2>
 <p>像在标准C ++和ISO C99中一样，自动变量的聚合初始化程序的元素在GNU C中不需要是常量表达式。这是带有运行时可变元素的初始化程序的示例：</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">foo</span> <span class="pre">(float</span> <span class="pre">f,</span> <span class="pre">float</span> <span class="pre">g){</span> <span class="pre">float</span> <span class="pre">beat_freqs[2]</span> <span class="pre">=</span> <span class="pre">{</span> <span class="pre">f-g,</span> <span class="pre">f+g</span> <span class="pre">};</span>&#160;&#160;&#160;&#160; <span class="pre">/*</span> <span class="pre">.</span> <span class="pre">.</span> <span class="pre">.</span> <span class="pre">*/}</span>
 <span class="pre">`</span></code></p>
 <p>总结：</p>
 </div>
-<div class="section" id="id83">
-<h2>复合字面量<a class="headerlink" href="#id83" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id82">
+<h2>复合字面量<a class="headerlink" href="#id82" title="Permalink to this headline">¶</a></h2>
 <p>复合文字看起来像是用括号括起来的聚合初始化程序列表的强制转换。 它的值是强制类型转换中指定类型的对象，其中包含初始化程序中指定的元素。</p>
 <p>与强制转换的结果不同，复合文字是左值。 ISO C99和更高版本支持复合文字。 作为扩展，GCC在C90模式和C ++中也支持复合文字，尽管如下所述，C ++语义有所不同。</p>
 <p>通常，复合文字的指定类型是结构。 假设如下所示声明了struct foo和structure：</p>
@@ -8979,11 +8966,11 @@ OBJC_INCLUDE_PATH</p>
 <span class="pre">static</span> <span class="pre">struct</span> <span class="pre">foo</span> <span class="pre">x</span> <span class="pre">=</span> <span class="pre">{1,</span> <span class="pre">’a’,</span> <span class="pre">’b’};static</span> <span class="pre">int</span> <span class="pre">y[]</span> <span class="pre">=</span> <span class="pre">{1,</span> <span class="pre">2,</span> <span class="pre">3};static</span> <span class="pre">int</span> <span class="pre">z[]</span> <span class="pre">=</span> <span class="pre">{1,</span> <span class="pre">0,</span> <span class="pre">0};</span>
 <span class="pre">`</span></code></p>
 <p>在C中，复合文字表示具有静态或自动存储持续时间的未命名对象。 在C ++中，复合文字表示一个临时对象，该对象仅在其完整表达式结束之前一直存在。 结果，可以在C ++中未定义定义良好的C代码（采用复合文字的子对象的地址），因此G ++拒绝将临时数组转换为指针。 例如，如果上面的数组复合文字示例出现在函数内部，则C ++中对foo的任何后续使用都将具有未定义的行为，因为数组的生存期在声明foo之后结束。</p>
-<p>作为一种优化，G ++有时会给数组复合文字提供更长的生存期：当数组出现在函数外部或具有const限定类型时。 如果foo及其初始化程序的元素类型为char * const而不是char <a href="#id84"><span class="problematic" id="id85">*</span></a>，或者foo为全局变量，则该数组将具有静态存储持续时间。 但是，仅避免在C ++代码中使用数组复合文字可能是最安全的。</p>
+<p>作为一种优化，G ++有时会给数组复合文字提供更长的生存期：当数组出现在函数外部或具有const限定类型时。 如果foo及其初始化程序的元素类型为char * const而不是char <a href="#id83"><span class="problematic" id="id84">*</span></a>，或者foo为全局变量，则该数组将具有静态存储持续时间。 但是，仅避免在C ++代码中使用数组复合文字可能是最安全的。</p>
 <p>总结：</p>
 </div>
-<div class="section" id="id86">
-<h2>指定的初始化程序<a class="headerlink" href="#id86" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id85">
+<h2>指定的初始化程序<a class="headerlink" href="#id85" title="Permalink to this headline">¶</a></h2>
 <p>标准C90要求初始化程序的元素以固定的顺序出现，与要初始化的数组或结构中的元素的顺序相同。</p>
 <p>在ISO C99中，您可以按任何顺序指定元素，指定它们要应用的数组索引或结构字段名称，GNU C也允许它作为C90模式的扩展。此扩展在GNU C ++中未实现。</p>
 <p>要指定数组索引，请在元素值前写“ [index] =”。 例如，</p>
@@ -9064,8 +9051,8 @@ OBJC_INCLUDE_PATH</p>
 <span class="pre">`</span></code></p>
 <p>总结：需要回读一遍。</p>
 </div>
-<div class="section" id="id87">
-<h2>转换为联合类型<a class="headerlink" href="#id87" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id86">
+<h2>转换为联合类型<a class="headerlink" href="#id86" title="Permalink to this headline">¶</a></h2>
 <p>强制转换为联合类型是C扩展，在C ++中不可用。 看起来就像普通的强制类型转换一样，其约束条件是指定的类型是联合类型。 您可以使用union关键字或引用联合的typedef名称来指定类型。 强制转换为并集的结果是并集类型的临时右值，其成员的类型与初始化为操作数的值的操作数的类型匹配。 强制转换为并集的效果与复合文字相似，不同之处在于它会像标准强制转换一样产生右值。 请参见第6.28节“复合文字”，第517页。</p>
 <p>可以强制转换为联合类型的表达式是那些类型至少与联合成员之一匹配的表达式。 因此，给定以下联合和变量：</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
@@ -9090,8 +9077,8 @@ OBJC_INCLUDE_PATH</p>
 <span class="pre">`</span></code></p>
 <p>总结：这个需要回头捋一遍。</p>
 </div>
-<div class="section" id="id88">
-<h2>混合声明，标签和代码<a class="headerlink" href="#id88" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id87">
+<h2>混合声明，标签和代码<a class="headerlink" href="#id87" title="Permalink to this headline">¶</a></h2>
 <p>ISO C99和ISO C ++允许在复合语句中自由混合声明和代码。 ISO C2X允许将标签放置在声明之前和复合声明的末尾。 作为扩展，GNU C还允许在C90模式下进行所有这些操作。 例如，您可以执行以下操作：</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">int</span> <span class="pre">i;/*</span> <span class="pre">.</span> <span class="pre">.</span> <span class="pre">.</span> <span class="pre">*/i++;int</span> <span class="pre">j</span> <span class="pre">=</span> <span class="pre">i</span> <span class="pre">+</span> <span class="pre">2;</span>
@@ -9099,8 +9086,8 @@ OBJC_INCLUDE_PATH</p>
 <p>每个标识符从声明位置到封闭块的末尾都是可见的。</p>
 <p>总结：这种混合方式，需要捋清楚，回头理解我们看到的代码。</p>
 </div>
-<div class="section" id="id89">
-<h2>声明函数的属性<a class="headerlink" href="#id89" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id88">
+<h2>声明函数的属性<a class="headerlink" href="#id88" title="Permalink to this headline">¶</a></h2>
 <p>在GNU C，可以使用函数属性来指定函数特性，些属性可以帮助编译器优化调用或更仔细地检查代码的正确性。例如，可以使用属性来指定函数从不返回（noreturn），返回一个依赖于某个数值（const）的值，或具有printf样式参数（格式）的值。</p>
 <p>还可以使用属性来控制要注释的函数中的内存位置，代码生成选项或调用/返回约定。 其中许多属性都是特定于目标的。 例如，许多目标都支持用于定义中断处理程序功能的属性，这些属性通常必须遵循特殊的寄存器用法和返回约定。 小节中针对每个目标描述了此类属性。 但是，大多数（如果不是全部）目标都支持大量属性。</p>
 <p>函数属性由函数声明中的__attribute__关键字引入，后跟用双括号括起来的指定属性，可以在声明中指定多个属性，方法是在双括号内用逗号将它们隔开，或者紧跟在一个属性说明之后。有关属性语法和放置的确切规则后面会具体说明。 合并了同一函数的不同声明上的兼容属性规范。 与警告不兼容的属性规范与已经应用于同一函数的声明的属性不兼容。</p>
@@ -9109,8 +9096,8 @@ OBJC_INCLUDE_PATH</p>
 <p>属性的用途和用语之间有一些重叠（请参见第6.62节[GCC接受的杂语]，第862页）。 已经发现使用__attribute__可以方便地将属性自然地附加到其对应的声明中，而#pragma用于与其他自然不构成语法一部分的编译器或构造兼容。</p>
 <p>除了此处记录的属性外，GCC插件还可以提供自己的属性。</p>
 <p>总结：非常重要</p>
-<div class="section" id="id90">
-<h3>常用函数属性<a class="headerlink" href="#id90" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id89">
+<h3>常用函数属性<a class="headerlink" href="#id89" title="Permalink to this headline">¶</a></h3>
 <p>大多数目标都支持以下属性:</p>
 <p>access
 access (access-mode, ref-index)
@@ -9133,7 +9120,7 @@ __attribute__ ((access (write_only, 1, 2), access (read_write, 3))) int fgets (c
 <p>alias (“target”)</p>
 <blockquote>
 <div><p>的 alias 属性促使声明被发射以用于另一个符号的别名，它必须用相同类型的先前声明，和用于变量，也具有相同的尺寸和对齐。声明别名与目标类型不同的别名是未定义的，可能会被诊断。例如，以下声明：</p>
-<p>void __f () { /* 做一点事。<a href="#id91"><span class="problematic" id="id92">*</span></a>/; }
+<p>void __f () { /* 做一点事。<a href="#id90"><span class="problematic" id="id91">*</span></a>/; }
 void f () __attribute__ ((weak, alias (“__f”)));</p>
 <p>定义 ‘f’作为’的弱别名__f’。在C ++中，必须使用目标的错误名称。如果“__f不在同一翻译单元中定义。</p>
 <p>这个属性需要汇编器和对象文件的支持,并不是所有目标都能使用。</p>
@@ -9227,7 +9214,7 @@ deprecated (msg)</p>
 <div><p>如果在源文件中的任何位置使用该功能， deprecated 属性将产生警告。当识别预期在程序的将来版本中删除的功能时，此功能很有用。该警告还包括不赞成使用的函数的声明的位置，以使用户可以轻松找到有关不赞成使用该函数的原因或应采取的措施的进一步信息。请注意，警告仅针对以下用途：</p>
 <p>int old_fn () __attribute__ ((deprecated));
 int old_fn ();
-int (<a href="#id93"><span class="problematic" id="id94">*</span></a>fn_ptr)() = old_fn;</p>
+int (<a href="#id92"><span class="problematic" id="id93">*</span></a>fn_ptr)() = old_fn;</p>
 <p>在第3行而不是第2行上显示警告。如果存在，则可选的 msg 参数（必须为字符串）会显示在警告中。</p>
 <p>的 deprecated 属性还可以用于变量和类型（参见变量属性，参见类型属性）。</p>
 <p>附加在属性上的信息受属性的设置影响。-fmessage-lengthoption.</p>
@@ -9251,12 +9238,12 @@ warning (“message”)</p>
 <blockquote>
 <div><p>该 format 属性指定一个函数具有 printf 的， scanf 函数， strftime 的或 strfmon 风格的参数应该是类型检查与格式字符串。例如，声明：</p>
 <p>extern int
-my_printf (void <a href="#id95"><span class="problematic" id="id96">*</span></a>my_object, const char <a href="#id97"><span class="problematic" id="id98">*</span></a>my_format, …)</p>
+my_printf (void <a href="#id94"><span class="problematic" id="id95">*</span></a>my_object, const char <a href="#id96"><span class="problematic" id="id97">*</span></a>my_format, …)</p>
 <blockquote>
 <div><p>__attribute__ ((format (printf, 2, 3)));</p>
 </div></blockquote>
 <p>使编译器检查对 my_printf 的调用中的参数与 printf 样式格式字符串参数 my_format 的一致性。</p>
-<p>参数 archetype 决定如何解释格式字符串，并且应为 printf ， scanf ， strftime ， gnu_printf ， gnu_scanf ， gnu_strftime 或 strfmon 。（您也可以使用 __printf__ ， __scanf__ ， __strftime__ 或 __strfmon__ 。）在MinGW目标上，还存在 ms_printf ， ms_scanf 和 ms_strftime 。 archetype 值，例如 printf 指系统的C运行时库接受的格式，而以’<a href="#id402"><span class="problematic" id="id403">gnu_</span></a>’始终指GNU C库接受的格式。在Microsoft Windows目标上，前缀为’<a href="#id404"><span class="problematic" id="id405">ms_</span></a>’指的是msvcrt.dll图书馆。参数 string-index 指定哪个参数是格式字符串参数（从1开始），而 first-to-check 是要针对格式字符串检查的第一个参数的编号。对于无法检查参数的函数（例如 vprintf ），请将第三个参数指定为零。在这种情况下，编译器仅检查格式字符串的一致性。对于 strftime 格式，第三个参数必须为零。由于非静态C ++方法具有隐式 this 参数，因此在为 string-index 和 first-to-check 赋值时，此类方法的参数应从两个而不是一个计数。</p>
+<p>参数 archetype 决定如何解释格式字符串，并且应为 printf ， scanf ， strftime ， gnu_printf ， gnu_scanf ， gnu_strftime 或 strfmon 。（您也可以使用 __printf__ ， __scanf__ ， __strftime__ 或 __strfmon__ 。）在MinGW目标上，还存在 ms_printf ， ms_scanf 和 ms_strftime 。 archetype 值，例如 printf 指系统的C运行时库接受的格式，而以’<a href="#id404"><span class="problematic" id="id405">gnu_</span></a>’始终指GNU C库接受的格式。在Microsoft Windows目标上，前缀为’<a href="#id406"><span class="problematic" id="id407">ms_</span></a>’指的是msvcrt.dll图书馆。参数 string-index 指定哪个参数是格式字符串参数（从1开始），而 first-to-check 是要针对格式字符串检查的第一个参数的编号。对于无法检查参数的函数（例如 vprintf ），请将第三个参数指定为零。在这种情况下，编译器仅检查格式字符串的一致性。对于 strftime 格式，第三个参数必须为零。由于非静态C ++方法具有隐式 this 参数，因此在为 string-index 和 first-to-check 赋值时，此类方法的参数应从两个而不是一个计数。</p>
 <p>在上面的示例中，格式字符串（ my_format ）是函数 my_print 的第二个参数，要检查的参数从第三个参数开始，因此format属性的正确参数是2和3。</p>
 <p>该 format 属性可以让你找出自己的函数以格式字符串作为参数，使GCC可以检查这些功能的调用有无错误。编译器始终（除非-ffreestandingor-fno-builtin使用）在请求此类警告时使用标准库函数 printf ， fprintf ， sprintf ， scanf ， fscanf ， sscanf ， strftime ， vprintf ， vfprintf 和 vsprintf 的格式（使用此类警告时-Wformat），因此无需修改头文件stdio.h。在C99模式下，还将检查函数 snprintf ， vsnprintf ， vscanf ， vfscanf 和 vsscanf 。除了在严格符合C标准模式中，在X / Open功能 strfmon 还检查作为被 printf_unlocked 和 fprintf_unlocked 。请参阅控制C语言的选项。</p>
 <p>对于Objective-C方言，可以在同一上下文中识别 NSString （或 __NSString__ ）。解析包含这些格式属性的声明以获取正确的语法，但是尚未定义此类格式字符串的检查结果，并且此版本的编译器无法执行该检查。</p>
@@ -9266,7 +9253,7 @@ my_printf (void <a href="#id95"><span class="problematic" id="id96">*</span></a>
 <blockquote>
 <div><p>该 format_arg 属性指定一个函数使用一个或多个格式字符串 printf ， scanf 函数， strftime 的或 strfmon 风格的函数，并修改它（例如，把它翻译成另一种语言），这样的结果可以被传递到 printf ， scanf 函数， strftime 或 strfmon 样式函数（格式函数的其余参数与未修改的字符串相同）。可以将多个 format_arg 属性应用于同一函数，每个属性都将不同的参数指定为格式字符串。例如，声明：</p>
 <p>extern char *
-my_dgettext (char <a href="#id99"><span class="problematic" id="id100">*</span></a>my_domain, const char <a href="#id101"><span class="problematic" id="id102">*</span></a>my_format)</p>
+my_dgettext (char <a href="#id98"><span class="problematic" id="id99">*</span></a>my_domain, const char <a href="#id100"><span class="problematic" id="id101">*</span></a>my_format)</p>
 <blockquote>
 <div><p>__attribute__ ((format_arg (2)));</p>
 </div></blockquote>
@@ -9293,24 +9280,24 @@ my_dgettext (char <a href="#id99"><span class="problematic" id="id100">*</span><
 <p>ifunc (“resolver”)</p>
 <blockquote>
 <div><p>所述 ifunc 属性用于标记一个函数作为使用STT_GNU_IFUNC符号类型扩展，ELF标准的间接功能。这允许在加载时动态确定符号值的分辨率，并为特定处理器或随后确定的其他系统特性选择例程的优化版本。要使用此属性，首先定义可用的实现功能，以及一个解析器功能，该功能返回指向所选实现功能的指针。实现函数的声明必须与要实现的函数的API相匹配。应该将解析器声明为不带参数的函数，并返回指向与实现类型相同的函数的指针。例如：</p>
-<p>void <a href="#id103"><span class="problematic" id="id104">*</span></a>my_memcpy (void <a href="#id105"><span class="problematic" id="id106">*</span></a>dst, const void <a href="#id107"><span class="problematic" id="id108">*</span></a>src, size_t len)
+<p>void <a href="#id102"><span class="problematic" id="id103">*</span></a>my_memcpy (void <a href="#id104"><span class="problematic" id="id105">*</span></a>dst, const void <a href="#id106"><span class="problematic" id="id107">*</span></a>src, size_t len)
 {</p>
 <blockquote>
 <div><p>…
 return dst;</p>
 </div></blockquote>
 <p>}</p>
-<p>static void * (<a href="#id109"><span class="problematic" id="id110">*</span></a>resolve_memcpy (void))(void <a href="#id111"><span class="problematic" id="id112">*</span></a>, const void <a href="#id113"><span class="problematic" id="id114">*</span></a>, size_t)
+<p>static void * (<a href="#id108"><span class="problematic" id="id109">*</span></a>resolve_memcpy (void))(void <a href="#id110"><span class="problematic" id="id111">*</span></a>, const void <a href="#id112"><span class="problematic" id="id113">*</span></a>, size_t)
 {</p>
 <blockquote>
 <div><p>return my_memcpy; // 我们将始终选择此例程</p>
 </div></blockquote>
 <p>}</p>
 <p>输出的头文件声明用户调用的函数将包含。</p>
-<p>extern void <a href="#id115"><span class="problematic" id="id116">*</span></a>memcpy (void <a href="#id117"><span class="problematic" id="id118">*</span></a>, const void <a href="#id119"><span class="problematic" id="id120">*</span></a>, size_t);</p>
+<p>extern void <a href="#id114"><span class="problematic" id="id115">*</span></a>memcpy (void <a href="#id116"><span class="problematic" id="id117">*</span></a>, const void <a href="#id118"><span class="problematic" id="id119">*</span></a>, size_t);</p>
 <p>允许用户将 memcpy 作为常规函数调用，而没有意识到实际的实现。最后，需要在与解析器函数相同的转换单元中定义间接函数：</p>
 <dl class="simple">
-<dt>void <a href="#id121"><span class="problematic" id="id122">*</span></a>memcpy (void <a href="#id123"><span class="problematic" id="id124">*</span></a>, const void <a href="#id125"><span class="problematic" id="id126">*</span></a>, size_t)</dt><dd><p>__attribute__ ((ifunc (“resolve_memcpy”)));</p>
+<dt>void <a href="#id120"><span class="problematic" id="id121">*</span></a>memcpy (void <a href="#id122"><span class="problematic" id="id123">*</span></a>, const void <a href="#id124"><span class="problematic" id="id125">*</span></a>, size_t)</dt><dd><p>__attribute__ ((ifunc (“resolve_memcpy”)));</p>
 </dd>
 </dl>
 <p>在C ++中， ifunc 属性采用一个字符串，该字符串是解析器函数的错误名称。应该声明一个用于类 C 的非静态成员函数的C ++解析器，以返回指向非成员函数的指针，该指针以指向 C 的指针作为第一个参数，后跟与实现函数相同的参数。G ++检查两个函数的签名并发出-Wattribute-alias警告,因为不匹配。要抑制从指向实现成员函数的指针到对应的非成员函数类型的必要转换的警告,使用-Wno-pmf-conversions选项。例如:</p>
@@ -9329,12 +9316,12 @@ int optimized_impl (int);</p>
 </div></blockquote>
 <p>};</p>
 <p>int S::debug_impl (int) { /* … <em>/ }
-int S::optimized_impl (int) { /</em> … <a href="#id127"><span class="problematic" id="id128">*</span></a>/ }</p>
+int S::optimized_impl (int) { /</em> … <a href="#id126"><span class="problematic" id="id127">*</span></a>/ }</p>
 <p>S::Func* S::resolver ()
 {</p>
 <blockquote>
 <div><dl class="simple">
-<dt>int (S::<a href="#id129"><span class="problematic" id="id130">*</span></a>pimpl) (int)</dt><dd><p>= getenv (“DEBUG”) ? &amp;S::debug_impl : &amp;S::optimized_impl;</p>
+<dt>int (S::<a href="#id128"><span class="problematic" id="id129">*</span></a>pimpl) (int)</dt><dd><p>= getenv (“DEBUG”) ? &amp;S::debug_impl : &amp;S::optimized_impl;</p>
 </dd>
 </dl>
 <p>// 投射触发器 -Wno-pmf-conversions.
@@ -9372,7 +9359,7 @@ int pclose (FILE*);</p>
 </dd>
 <dt>__attribute__ ((malloc, malloc (fclose, 1)))</dt><dd><p>FILE* fopen (const char*, const char*);</p>
 </dd>
-<dt>__attribute__ ((malloc, malloc (fclose, 1)))</dt><dd><p>FILE* fmemopen(void <a href="#id131"><span class="problematic" id="id132">*</span></a>, size_t, const char <a href="#id133"><span class="problematic" id="id134">*</span></a>);</p>
+<dt>__attribute__ ((malloc, malloc (fclose, 1)))</dt><dd><p>FILE* fmemopen(void <a href="#id130"><span class="problematic" id="id131">*</span></a>, size_t, const char <a href="#id132"><span class="problematic" id="id133">*</span></a>);</p>
 </dd>
 <dt>__attribute__ ((malloc, malloc (pclose, 1)))</dt><dd><p>FILE* popen (const char*, const char*);</p>
 </dd>
@@ -9385,7 +9372,7 @@ int pclose (FILE*);</p>
 分析仪将发出一个-Wanalyzer-double-free诊断是否存在一个执行路径,其中一个值被多次传递给一个去分配调用。
 分析器将考虑一个分配函数可能失败并返回NULL的可能性。它将发出-Wanalyzer-possible-null-dereferenceand-Wanalyzer-possible-null-argument如果执行路径中分配调用的未检查结果被取消引用或传递给需要非空参数的函数，则诊断。如果分配器始终返回非空值，请使用 __attribute__ ((returns_nonnull)) 来抑制这些警告。例如：</p>
 <dl class="simple">
-<dt>char <a href="#id135"><span class="problematic" id="id136">*</span></a>xstrdup (const char <a href="#id137"><span class="problematic" id="id138">*</span></a>)</dt><dd><p>__attribute__((malloc (free), returns_nonnull));</p>
+<dt>char <a href="#id134"><span class="problematic" id="id135">*</span></a>xstrdup (const char <a href="#id136"><span class="problematic" id="id137">*</span></a>)</dt><dd><p>__attribute__((malloc (free), returns_nonnull));</p>
 </dd>
 </dl>
 <p>分析仪将发出一个-Wanalyzer-use-after-free诊断是否存在一个执行路径,在该路径中,由指针传递给去分配调用的内存在去分配后被使用。
@@ -9416,7 +9403,7 @@ int pclose (FILE*);</p>
 <p>void __attribute__ ((no_sanitize (“alignment”, “object-size”)))
 f () { /* 做一点事。<em>/; }
 void __attribute__ ((no_sanitize (“alignment,object-size”)))
-g () { /</em> 做一点事。<a href="#id139"><span class="problematic" id="id140">*</span></a>/; }</p>
+g () { /</em> 做一点事。<a href="#id138"><span class="problematic" id="id139">*</span></a>/; }</p>
 </div></blockquote>
 <p>no_sanitize_address
 no_address_safety_analysis</p>
@@ -9458,14 +9445,14 @@ nonnull (arg-index, …)</p>
 <blockquote>
 <div><p>可以将 nonnull 属性应用于采用至少一个指针类型参数的函数。它指示引用的参数必须是非空指针。例如，声明：</p>
 <p>extern void *
-my_memcpy (void <a href="#id141"><span class="problematic" id="id142">*</span></a>dest, const void <a href="#id143"><span class="problematic" id="id144">*</span></a>src, size_t len)</p>
+my_memcpy (void <a href="#id140"><span class="problematic" id="id141">*</span></a>dest, const void <a href="#id142"><span class="problematic" id="id143">*</span></a>src, size_t len)</p>
 <blockquote>
 <div><p>__attribute__((nonnull (1, 2)));</p>
 </div></blockquote>
 <p>使编译器在对 my_memcpy 的调用中检查 dest 和 src 参数是否为非null。如果编译器确定在标记为非空的参数插槽中传递了空指针，则-Wnonnull选项启用后，会发出警告。请参阅警告选项。除非被禁用-fno-delete-null-pointer-checks选项,编译器也可以基于某些函数参数不能为空的知识进行优化。此外,-fisolate-erroneous-paths-attribute可以指定option以使具有非空函数的空参数的GCC转换调用转换为陷阱。请参阅优化选项。</p>
 <p>如果未将 arg-index 赋予 nonnull 属性，则所有指针参数都标记为non-null。为了说明这一点，下面的声明与前面的示例等效：</p>
 <p>extern void *
-my_memcpy (void <a href="#id145"><span class="problematic" id="id146">*</span></a>dest, const void <a href="#id147"><span class="problematic" id="id148">*</span></a>src, size_t len)</p>
+my_memcpy (void <a href="#id144"><span class="problematic" id="id145">*</span></a>dest, const void <a href="#id146"><span class="problematic" id="id147">*</span></a>src, size_t len)</p>
 <blockquote>
 <div><p>__attribute__((nonnull));</p>
 </div></blockquote>
@@ -9473,15 +9460,15 @@ my_memcpy (void <a href="#id145"><span class="problematic" id="id146">*</span></
 <p>noplt</p>
 <blockquote>
 <div><p>该 noplt 属性是对口选项-fno-plt。在与位置无关的代码中调用标有该属性的函数时，请勿使用PLT。</p>
-<p>/* 外部定义的函数 foo. <a href="#id149"><span class="problematic" id="id150">*</span></a>/
+<p>/* 外部定义的函数 foo. <a href="#id148"><span class="problematic" id="id149">*</span></a>/
 int foo () __attribute__ ((noplt));</p>
 <p>int
-main (/* … <a href="#id151"><span class="problematic" id="id152">*</span></a>/)
+main (/* … <a href="#id150"><span class="problematic" id="id151">*</span></a>/)
 {</p>
 <blockquote>
 <div><p>/* … <em>/
 foo ();
-/</em> … <a href="#id153"><span class="problematic" id="id154">*</span></a>/</p>
+/</em> … <a href="#id152"><span class="problematic" id="id153">*</span></a>/</p>
 </div></blockquote>
 <p>}</p>
 <p>函数 foo 的 noplt 属性告诉编译器假定函数 foo 是在外部定义的，并且对 foo 的调用必须避免位置无关代码中的PLT。</p>
@@ -9492,10 +9479,10 @@ foo ();
 <div><p>一些标准库函数（例如 abort 和 exit ）无法返回。GCC会自动知道这一点。一些程序定义了自己的永不返回的函数。你可以声明他们 noreturn 告诉编译器这个事实。例如，</p>
 <p>void fatal () __attribute__ ((noreturn));</p>
 <p>void
-fatal (/* … <a href="#id155"><span class="problematic" id="id156">*</span></a>/)
+fatal (/* … <a href="#id154"><span class="problematic" id="id155">*</span></a>/)
 {</p>
 <blockquote>
-<div><p>/* … <em>/ /</em> 打印错误信息。<em>/ /</em> … <a href="#id157"><span class="problematic" id="id158">*</span></a>/
+<div><p>/* … <em>/ /</em> 打印错误信息。<em>/ /</em> … <a href="#id156"><span class="problematic" id="id157">*</span></a>/
 exit (1);</p>
 </div></blockquote>
 <p>}</p>
@@ -9528,7 +9515,7 @@ optimize (string, …)</p>
 <div><p>调用除返回值外对程序状态没有可观察的影响的函数可能有助于进行优化，例如消除公共子表达式。使用 pure 属性声明此类函数可以使GCC避免在重复调用具有相同参数值的函数时发出某些调用。</p>
 <p>所述 pure 属性从修改是由比检查函数的返回值其它手段观察到的所述程序的状态禁止的功能。但是，使用 pure 属性声明的函数可以安全地读取任何非易失性对象，并以不影响其返回值或程序可观察状态的方式修改对象的值。</p>
 <p>例如:</p>
-<p>int hash (char <a href="#id159"><span class="problematic" id="id160">*</span></a>) __attribute__ ((pure));</p>
+<p>int hash (char <a href="#id158"><span class="problematic" id="id159">*</span></a>) __attribute__ ((pure));</p>
 <p>告诉GCC后续的函数调用 hash 与相同的字符串可以通过第一呼叫的结果来代替所提供的程序通过可观察的状态 hash ，包括阵列本身的内容，在之间不改变。即使 hash 采用非常量指针参数，它也不得修改其指向的数组或程序其余部分可能依赖其值的任何其他对象。但是，调用者可以在连续调用该函数之间安全地更改数组的内容（这样做会禁用优化）。该限制还适用于C ++非静态成员函数中 this 指针引用的成员对象。</p>
 <p>纯函数的一些常见示例是 strlen 或 memcmp 。有趣的非纯函数是具有无限循环的函数或取决于易失性内存或其他系统资源的函数，这些函数可能会在连续调用之间改变（例如，多线程环境中的标准C feof 函数）。</p>
 <p>该 pure 属性规定了比一个函数的定义类似，但宽松的限制 const 属性： pure 允许函数读取任何非易失性存储器，即使在函数的连续调用之间变化。诊断使用 pure 和 const 属性声明相同的功能。由于纯函数不能具有任何可观察到的副作用，因此使此类函数返回 void 没有意义。诊断出声明了这样的功能。</p>
@@ -9641,7 +9628,7 @@ int symver_foo_v1 (void);</p>
 <div><p>此属性影响其所附声明的链接。它可以应用于变量（请参阅“ 通用变量属性”）和类型（请参见“ 通用类型属性”）以及函数。</p>
 <p>支持四个 visibility_type 值：默认，隐藏，受保护或内部可见性。</p>
 <p>void __attribute__ ((visibility (“protected”)))
-f () { /* 做一点事。<a href="#id161"><span class="problematic" id="id162">*</span></a>/; }
+f () { /* 做一点事。<a href="#id160"><span class="problematic" id="id161">*</span></a>/; }
 int i __attribute__ ((visibility (“hidden”)));</p>
 <p>的可能值 visibility_type 对应于ELF加比的可见性设置。</p>
 <p>default</p>
@@ -9669,7 +9656,7 @@ int i __attribute__ ((visibility (“hidden”)));</p>
 <p>在C++中,你可以用可见性属性标记一个类的成员函数和静态成员变量。如果你知道一个特定的方法或静态成员变量应该只从一个共享对象中使用,那么这很有用;然后你可以将它标记为隐藏,而类的其他部分具有默认可见性。必须注意避免破坏 “一个定义规则”;例如,在没有将整个类标记为隐藏的情况下,将一个内联方法标记为隐藏通常是没有用的。</p>
 <p>一个C++命名空间声明也可以有可见性属性。</p>
 <p>namespace nspace1 __attribute__ ((visibility (“protected”)))
-{ /* 做一点事。<a href="#id163"><span class="problematic" id="id164">*</span></a>/; }</p>
+{ /* 做一点事。<a href="#id162"><span class="problematic" id="id163">*</span></a>/; }</p>
 <p>此属性仅适用于特定的名称空间主体，不适用于同一名称空间的其他定义；等同于使用’#pragma GCC可见性在名称空间定义之前和之后（请参见可视性语法）。</p>
 <p>在C++中,如果一个模板参数具有有限的可见性,这个限制会隐式地传播给模板实例化。否则,模板实例化和特殊化会默认为其模板的可见性。</p>
 <p>如果模板和包围类都有显式可见性,则使用模板的可见性。</p>
@@ -9696,13 +9683,13 @@ return 0;</p>
 weakref (“target”)</p>
 <blockquote>
 <div><p>该 weakref 属性标记的声明视为弱引用。不带参数的情况下，应伴有命名目标符号的 alias 属性。或者，可以将 target 指定为 weakref 本身的参数，并命名别名的目标定义。该 target 必须具有相同类型的声明。另外，如果它指定一个变量，它还必须具有与声明相同的大小和对齐方式。无论采用哪种声明形式， weakref 都会将声明的符号隐式标记为 weak 。如果没有将 target 指定为 weakref 或 alias 的参数， weakref 相当于 weak （在这种情况下，声明可以 extern ）。</p>
-<p>/* 鉴于声明： <a href="#id165"><span class="problematic" id="id166">*</span></a>/
+<p>/* 鉴于声明： <a href="#id164"><span class="problematic" id="id165">*</span></a>/
 extern int y (void);</p>
-<p>/* 以下… <a href="#id167"><span class="problematic" id="id168">*</span></a>/
+<p>/* 以下… <a href="#id166"><span class="problematic" id="id167">*</span></a>/
 static int x (void) __attribute__ ((weakref (“y”)));</p>
-<p>/* 相当于… <a href="#id169"><span class="problematic" id="id170">*</span></a>/
+<p>/* 相当于… <a href="#id168"><span class="problematic" id="id169">*</span></a>/
 static int x (void) __attribute__ ((weakref, alias (“y”)));</p>
-<p>/* 或者，或者，到… <a href="#id171"><span class="problematic" id="id172">*</span></a>/
+<p>/* 或者，或者，到… <a href="#id170"><span class="problematic" id="id171">*</span></a>/
 static int x (void) __attribute__ ((weakref));
 static int x (void) __attribute__ ((alias (“y”)));</p>
 <p>弱引用是一种别名，它本身不需要为目标符号给出定义。如果仅通过弱引用来引用目标符号，则它将变为 weak 未定义符号。但是，如果直接引用，则以此类引用为准，并且需要对符号进行定义，而不必在同一翻译单元中进行定义。</p>
@@ -9775,13 +9762,13 @@ Adding ‘-arg’ 将归零限制为有时可用于传递函数参数的寄存�
 <blockquote>
 <div><p>使用这个属性来表示指定的函数声明是一个内核帮助器。辅助函数被作为参数传递给该属性。例子。</p>
 <dl class="simple">
-<dt>int bpf_probe_read (void <a href="#id173"><span class="problematic" id="id174">*</span></a>dst, int size, const void <a href="#id175"><span class="problematic" id="id176">*</span></a>unsafe_ptr)</dt><dd><p>__attribute__ ((kernel_helper (4)));</p>
+<dt>int bpf_probe_read (void <a href="#id172"><span class="problematic" id="id173">*</span></a>dst, int size, const void <a href="#id174"><span class="problematic" id="id175">*</span></a>unsafe_ptr)</dt><dd><p>__attribute__ ((kernel_helper (4)));</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
-<div class="section" id="id177">
-<h3>x86函数属性<a class="headerlink" href="#id177" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id176">
+<h3>x86函数属性<a class="headerlink" href="#id176" title="Permalink to this headline">¶</a></h3>
 <p>这些函数属性由x86后端支持。</p>
 <p>cdecl</p>
 <blockquote>
@@ -9843,7 +9830,7 @@ sysv_abi</p>
 <p>struct interrupt_frame;</p>
 <p>__attribute__ ((interrupt))
 void
-f (struct interrupt_frame <a href="#id178"><span class="problematic" id="id179">*</span></a>frame)
+f (struct interrupt_frame <a href="#id177"><span class="problematic" id="id178">*</span></a>frame)
 {
 }</p>
 <p>并且您必须按照处理器手册中的说明定义 struct interrupt_frame 。</p>
@@ -9856,7 +9843,7 @@ typedef unsigned int uword_t;
 <p>struct interrupt_frame;</p>
 <p>__attribute__ ((interrupt))
 void
-f (struct interrupt_frame <a href="#id180"><span class="problematic" id="id181">*</span></a>frame, uword_t error_code)
+f (struct interrupt_frame <a href="#id179"><span class="problematic" id="id180">*</span></a>frame, uword_t error_code)
 {</p>
 <blockquote>
 <div><p>…</p>
@@ -10386,24 +10373,24 @@ f (struct interrupt_frame <a href="#id180"><span class="problematic" id="id181">
 <p>所述 nocf_check 属性应用于一个对象的类型。如果将一个函数地址或一个函数指针分配给另一个指针，则该属性不会从右侧对象的类型继承。左侧对象的类型保持不变。编译器检查 nocf_check 属性是否不匹配，并在不匹配的情况下报告警告。</p>
 <p>{
 int foo (void) __attribute__(nocf_check);
-void (<a href="#id182"><span class="problematic" id="id183">*</span></a>foo1)(void) __attribute__(nocf_check);
-void (<a href="#id184"><span class="problematic" id="id185">*</span></a>foo2)(void);</p>
-<p>/* foo 的地址被认为是有效的。<a href="#id186"><span class="problematic" id="id187">*</span></a>/
+void (<a href="#id181"><span class="problematic" id="id182">*</span></a>foo1)(void) __attribute__(nocf_check);
+void (<a href="#id183"><span class="problematic" id="id184">*</span></a>foo2)(void);</p>
+<p>/* foo 的地址被认为是有效的。<a href="#id185"><span class="problematic" id="id186">*</span></a>/
 int
 foo (void)</p>
 <blockquote>
-<div><p>/* 不检查此调用站点的控制流有效性。<a href="#id188"><span class="problematic" id="id189">*</span></a>/
-(<a href="#id190"><span class="problematic" id="id191">*</span></a>foo1)();</p>
-<p>/* 发出关于属性不匹配的警告。<a href="#id192"><span class="problematic" id="id193">*</span></a>/
+<div><p>/* 不检查此调用站点的控制流有效性。<a href="#id187"><span class="problematic" id="id188">*</span></a>/
+(<a href="#id189"><span class="problematic" id="id190">*</span></a>foo1)();</p>
+<p>/* 发出关于属性不匹配的警告。<a href="#id191"><span class="problematic" id="id192">*</span></a>/
 foo1 = foo2;</p>
-<p>/* 此调用站点仍未检查。<a href="#id194"><span class="problematic" id="id195">*</span></a>/
-(<a href="#id196"><span class="problematic" id="id197">*</span></a>foo1)();</p>
-<p>/* 检查此调用站点。<a href="#id198"><span class="problematic" id="id199">*</span></a>/
-(<a href="#id200"><span class="problematic" id="id201">*</span></a>foo2)();</p>
-<p>/* 发出关于属性不匹配的警告。<a href="#id202"><span class="problematic" id="id203">*</span></a>/
+<p>/* 此调用站点仍未检查。<a href="#id193"><span class="problematic" id="id194">*</span></a>/
+(<a href="#id195"><span class="problematic" id="id196">*</span></a>foo1)();</p>
+<p>/* 检查此调用站点。<a href="#id197"><span class="problematic" id="id198">*</span></a>/
+(<a href="#id199"><span class="problematic" id="id200">*</span></a>foo2)();</p>
+<p>/* 发出关于属性不匹配的警告。<a href="#id201"><span class="problematic" id="id202">*</span></a>/
 foo2 = foo1;</p>
-<p>/* 这个调用站点仍然被检查。<a href="#id204"><span class="problematic" id="id205">*</span></a>/
-(<a href="#id206"><span class="problematic" id="id207">*</span></a>foo2)();</p>
+<p>/* 这个调用站点仍然被检查。<a href="#id203"><span class="problematic" id="id204">*</span></a>/
+(<a href="#id205"><span class="problematic" id="id206">*</span></a>foo2)();</p>
 <p>return 0;</p>
 </div></blockquote>
 <p>}</p>
@@ -10426,11 +10413,11 @@ foo2 = foo1;</p>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id208">
-<h2>指定变量的属性<a class="headerlink" href="#id208" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id207">
+<h2>指定变量的属性<a class="headerlink" href="#id207" title="Permalink to this headline">¶</a></h2>
 <p>关键字 __attribute__ 允许您指定变量，函数参数或结构，联合以及在C ++中的类成员的特殊属性。该 __attribute__ 关键字后跟一个用双括号括起来的属性规范。当前通常为变量定义一些属性。为特定目标系统上的变量定义了其他属性。其他属性可用于函数（请参见函数属性），标签（请参见Label Attributes），枚举器（请参见Enumerator Attributes），语句（请参见Statement Attributes）和类型（请参见Type Attributes）。其他前端可能会定义更多属性（请参阅C ++语言的扩展）。</p>
-<div class="section" id="id209">
-<h3>通用变量属性<a class="headerlink" href="#id209" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id208">
+<h3>通用变量属性<a class="headerlink" href="#id208" title="Permalink to this headline">¶</a></h3>
 <p>大多数目标都支持以下属性:</p>
 <p>alias (“target”)</p>
 <blockquote>
@@ -10489,9 +10476,9 @@ alloc_size (position-1, position-2)</p>
 <div><p>可以将 alloc_size 变量属性应用于指向函数的指针的声明，该函数返回一个指针并采用至少一个整数类型的参数。它指示返回的指针指向一个对象，该对象的大小由 position-1 处的函数自变量或 position-1 与 position-2 处的自变量的乘积给出。有意义的大小是小于 PTRDIFF_MAX 的正值。检测到其他尺寸时将被忽略。 GCC使用此信息来改善 __builtin_object_size 的结果。</p>
 <p>例如,以下声明</p>
 <dl class="simple">
-<dt>typedef __attribute__ ((alloc_size (1, 2))) void*</dt><dd><p>(<a href="#id210"><span class="problematic" id="id211">*</span></a>calloc_ptr) (size_t, size_t);</p>
+<dt>typedef __attribute__ ((alloc_size (1, 2))) void*</dt><dd><p>(<a href="#id209"><span class="problematic" id="id210">*</span></a>calloc_ptr) (size_t, size_t);</p>
 </dd>
-<dt>typedef __attribute__ ((alloc_size (1))) void*</dt><dd><p>(<a href="#id212"><span class="problematic" id="id213">*</span></a>malloc_ptr) (size_t);</p>
+<dt>typedef __attribute__ ((alloc_size (1))) void*</dt><dd><p>(<a href="#id211"><span class="problematic" id="id212">*</span></a>malloc_ptr) (size_t);</p>
 </dd>
 </dl>
 <p>指定 calloc_ptr 是一个函数的指针，该函数类似于标准C函数 calloc ，返回一个对象，其大小由参数1和2的乘积给出，并且类似地，该 malloc_ptr 类似于标准C函数 malloc ，返回一个对象其大小由函数的参数1给出。</p>
@@ -10537,7 +10524,7 @@ int new_fn () { return old_var; }</p>
 <div><p>char name [32] __attribute__ ((nonstring));</p>
 </div></blockquote>
 <p>};</p>
-<p>int f (struct Data <a href="#id214"><span class="problematic" id="id215">*</span></a>pd, const char <a href="#id216"><span class="problematic" id="id217">*</span></a>s)
+<p>int f (struct Data <a href="#id213"><span class="problematic" id="id214">*</span></a>pd, const char <a href="#id215"><span class="problematic" id="id216">*</span></a>s)
 {</p>
 <blockquote>
 <div><p>strncpy (pd-&gt;name, s, sizeof pd-&gt;name);
@@ -10569,11 +10556,11 @@ int init_data __attribute__ ((section (“INITDATA”)));</p>
 <p>main()
 {</p>
 <blockquote>
-<div><p>/* 初始化堆栈指针 <a href="#id218"><span class="problematic" id="id219">*</span></a>/
+<div><p>/* 初始化堆栈指针 <a href="#id217"><span class="problematic" id="id218">*</span></a>/
 init_sp (stack + sizeof (stack));</p>
-<p>/* 初始化初始化数据 <a href="#id220"><span class="problematic" id="id221">*</span></a>/
+<p>/* 初始化初始化数据 <a href="#id219"><span class="problematic" id="id220">*</span></a>/
 memcpy (&amp;init_data, &amp;data, &amp;edata - &amp;data);</p>
-<p>/* 打开串口 <a href="#id222"><span class="problematic" id="id223">*</span></a>/
+<p>/* 打开串口 <a href="#id221"><span class="problematic" id="id222">*</span></a>/
 init_duart (&amp;a);
 init_duart (&amp;b);</p>
 </div></blockquote>
@@ -10639,8 +10626,8 @@ struct S  __attribute__ ((vector_size (16))) foo;</p>
 <p>当可 nullability kind 为 “resettable” 或 3 （仅在属性属性列表的上下文中使用）时，这描述了属性设置器可能采用值 nil 的情况（这可能会导致属性以某种方式重置为默认值）但是属性 getter 永远不会有效地返回 nil 。</p>
 </div></blockquote>
 </div>
-<div class="section" id="id224">
-<h3>x86 变量属性<a class="headerlink" href="#id224" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id223">
+<h3>x86 变量属性<a class="headerlink" href="#id223" title="Permalink to this headline">¶</a></h3>
 <p>这些函数属性由x86后端支持。</p>
 <p>cdecl</p>
 <blockquote>
@@ -10702,7 +10689,7 @@ sysv_abi</p>
 <p>struct interrupt_frame;</p>
 <p>__attribute__ ((interrupt))
 void
-f (struct interrupt_frame <a href="#id225"><span class="problematic" id="id226">*</span></a>frame)
+f (struct interrupt_frame <a href="#id224"><span class="problematic" id="id225">*</span></a>frame)
 {
 }</p>
 <p>并且您必须按照处理器手册中的说明定义 struct interrupt_frame 。</p>
@@ -10715,7 +10702,7 @@ typedef unsigned int uword_t;
 <p>struct interrupt_frame;</p>
 <p>__attribute__ ((interrupt))
 void
-f (struct interrupt_frame <a href="#id227"><span class="problematic" id="id228">*</span></a>frame, uword_t error_code)
+f (struct interrupt_frame <a href="#id226"><span class="problematic" id="id227">*</span></a>frame, uword_t error_code)
 {</p>
 <blockquote>
 <div><p>…</p>
@@ -11245,24 +11232,24 @@ f (struct interrupt_frame <a href="#id227"><span class="problematic" id="id228">
 <p>所述 nocf_check 属性应用于一个对象的类型。如果将一个函数地址或一个函数指针分配给另一个指针，则该属性不会从右侧对象的类型继承。左侧对象的类型保持不变。编译器检查 nocf_check 属性是否不匹配，并在不匹配的情况下报告警告。</p>
 <p>{
 int foo (void) __attribute__(nocf_check);
-void (<a href="#id229"><span class="problematic" id="id230">*</span></a>foo1)(void) __attribute__(nocf_check);
-void (<a href="#id231"><span class="problematic" id="id232">*</span></a>foo2)(void);</p>
-<p>/* foo 的地址被认为是有效的。<a href="#id233"><span class="problematic" id="id234">*</span></a>/
+void (<a href="#id228"><span class="problematic" id="id229">*</span></a>foo1)(void) __attribute__(nocf_check);
+void (<a href="#id230"><span class="problematic" id="id231">*</span></a>foo2)(void);</p>
+<p>/* foo 的地址被认为是有效的。<a href="#id232"><span class="problematic" id="id233">*</span></a>/
 int
 foo (void)</p>
 <blockquote>
-<div><p>/* 不检查此调用站点的控制流有效性。<a href="#id235"><span class="problematic" id="id236">*</span></a>/
-(<a href="#id237"><span class="problematic" id="id238">*</span></a>foo1)();</p>
-<p>/* 发出关于属性不匹配的警告。<a href="#id239"><span class="problematic" id="id240">*</span></a>/
+<div><p>/* 不检查此调用站点的控制流有效性。<a href="#id234"><span class="problematic" id="id235">*</span></a>/
+(<a href="#id236"><span class="problematic" id="id237">*</span></a>foo1)();</p>
+<p>/* 发出关于属性不匹配的警告。<a href="#id238"><span class="problematic" id="id239">*</span></a>/
 foo1 = foo2;</p>
-<p>/* 此调用站点仍未检查。<a href="#id241"><span class="problematic" id="id242">*</span></a>/
-(<a href="#id243"><span class="problematic" id="id244">*</span></a>foo1)();</p>
-<p>/* 检查此调用站点。<a href="#id245"><span class="problematic" id="id246">*</span></a>/
-(<a href="#id247"><span class="problematic" id="id248">*</span></a>foo2)();</p>
-<p>/* 发出关于属性不匹配的警告。<a href="#id249"><span class="problematic" id="id250">*</span></a>/
+<p>/* 此调用站点仍未检查。<a href="#id240"><span class="problematic" id="id241">*</span></a>/
+(<a href="#id242"><span class="problematic" id="id243">*</span></a>foo1)();</p>
+<p>/* 检查此调用站点。<a href="#id244"><span class="problematic" id="id245">*</span></a>/
+(<a href="#id246"><span class="problematic" id="id247">*</span></a>foo2)();</p>
+<p>/* 发出关于属性不匹配的警告。<a href="#id248"><span class="problematic" id="id249">*</span></a>/
 foo2 = foo1;</p>
-<p>/* 这个调用站点仍然被检查。<a href="#id251"><span class="problematic" id="id252">*</span></a>/
-(<a href="#id253"><span class="problematic" id="id254">*</span></a>foo2)();</p>
+<p>/* 这个调用站点仍然被检查。<a href="#id250"><span class="problematic" id="id251">*</span></a>/
+(<a href="#id252"><span class="problematic" id="id253">*</span></a>foo2)();</p>
 <p>return 0;</p>
 </div></blockquote>
 <p>}</p>
@@ -11285,15 +11272,15 @@ foo2 = foo1;</p>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id255">
-<h2>指定类型的属性<a class="headerlink" href="#id255" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id254">
+<h2>指定类型的属性<a class="headerlink" href="#id254" title="Permalink to this headline">¶</a></h2>
 <p>关键字 __attribute__ 允许您指定类型的各种特殊属性。一些类型属性仅适用于结构和联合类型，在C ++中也适用于类类型，而其他一些属性则适用于通过 typedef 声明定义的任何类型。除非另有说明，否则无论类型是琐碎的结构还是带有用户定义的构造函数，析构函数或副本分配的C ++类，相同的限制和效果都将应用于属性。</p>
 <p>还为函数（请参见函数属性），标签（请参见Label Attributes），枚举器（请参见Enumerator Attributes），语句（请参见Statement Attributes）和变量（请参见Variable Attributes）定义其他属性。</p>
 <p>该 __attribute__ 关键字后面括在双括号的属性规范。</p>
 <p>您可以通过将它们放置在 struct ， union 或 enum 关键字之后，来在枚举，结构或联合类型声明或定义中指定类型属性。您也可以将它们放置在定义的右花括号之后，但这不是首选，因为从逻辑上说，应在右花括号处完全定义类型。</p>
 <p>您还可以在 typedef 声明中包括类型属性。有关使用属性的确切语法的详细信息，请参见“ 属性语法”。</p>
-<div class="section" id="id256">
-<h3>通用类型属性<a class="headerlink" href="#id256" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id255">
+<h3>通用类型属性<a class="headerlink" href="#id255" title="Permalink to this headline">¶</a></h3>
 <p>大多数目标都支持以下类型属性:</p>
 <p>aligned
 aligned (alignment)</p>
@@ -11367,7 +11354,7 @@ copy (expression)</p>
 <p>例如，假设下面的 struct A 在某个第三方库标头中定义为具有对齐要求 N ,并在由于属性 packed 而导致类型变量未如此对齐时强制发出警告。在不相关的 struct B 的定义上指定 copy 属性具有将所有相关属性从指针表达式引用的类型复制到 struct B 的作用。</p>
 <p>struct __attribute__ ((aligned (N), warn_if_not_aligned (N)))
 A { /* … <em>/ };
-struct __attribute__ ((copy ( (struct A *)0)) B { /</em> … <a href="#id257"><span class="problematic" id="id258">*</span></a>/ };</p>
+struct __attribute__ ((copy ( (struct A *)0)) B { /</em> … <a href="#id256"><span class="problematic" id="id257">*</span></a>/ };</p>
 </div></blockquote>
 <p>deprecated
 deprecated (msg)</p>
@@ -11399,7 +11386,7 @@ main (void)
 {</p>
 <blockquote>
 <div><p>int a = 0x12345678;
-short_a <a href="#id259"><span class="problematic" id="id260">*</span></a>b = (short_a <a href="#id261"><span class="problematic" id="id262">*</span></a>) &amp;a;</p>
+short_a <a href="#id258"><span class="problematic" id="id259">*</span></a>b = (short_a <a href="#id260"><span class="problematic" id="id261">*</span></a>) &amp;a;</p>
 <p>b[1] = 0;</p>
 <dl class="simple">
 <dt>if (a == 0x12345678)</dt><dd><p>abort();</p>
@@ -11460,8 +11447,8 @@ struct my_unpacked_struct s;</p>
 <p>由于兼容性原因，透明联合是为具有多个接口的库函数设计的。例如，假设 wait 函数必须接受 int * 类型的值以符合POSIX，或者必须接受 union wait * 类型的值以符合4.1BSD接口。如果 wait 的参数为 void * ，则 wait 可以接受两种参数，但是也可以接受其他任何指针类型，这将使​​参数类型检查的用处不大。而是， &lt;sys/wait.h&gt; 可以如下定义接口：</p>
 <dl>
 <dt>typedef union __attribute__ ((__transparent_union__))</dt><dd><dl class="simple">
-<dt>{</dt><dd><p>int <a href="#id263"><span class="problematic" id="id264">*</span></a>__ip;
-union wait <a href="#id265"><span class="problematic" id="id266">*</span></a>__up;</p>
+<dt>{</dt><dd><p>int <a href="#id262"><span class="problematic" id="id263">*</span></a>__ip;
+union wait <a href="#id264"><span class="problematic" id="id265">*</span></a>__up;</p>
 </dd>
 </dl>
 <p>} wait_status_ptr_t;</p>
@@ -11506,8 +11493,8 @@ typedef __attribute__ ((vector_size (32))) int int_vec32_arr3_t[3];</p>
 </div></blockquote>
 <p>要指定多个属性，请在双括号内用逗号分隔它们：例如，“__attribute__（（对齐（16），包装好的））’.</p>
 </div>
-<div class="section" id="id267">
-<h3>x86类型属性<a class="headerlink" href="#id267" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id266">
+<h3>x86类型属性<a class="headerlink" href="#id266" title="Permalink to this headline">¶</a></h3>
 <p>当前为x86配置定义了两个属性：ms_struct和gcc_struct。</p>
 <ul>
 <li><p>ms_struct/gcc_struct:如果在结构上使用压缩或使用位字段，则可能是Microsoft ABI打包它们的方式与GCC正常打包的方式不同。 特别是在通过GCC编译的函数和本机Microsoft编译器之间（通过函数调用或作为文件中的数据）在移动打包数据时，可能有必要访问任何一种格式。</p>
@@ -11517,15 +11504,15 @@ typedef __attribute__ ((vector_size (32))) int int_vec32_arr3_t[3];</p>
 </ul>
 </div>
 </div>
-<div class="section" id="id268">
-<h2>标签属性<a class="headerlink" href="#id268" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id267">
+<h2>标签属性<a class="headerlink" href="#id267" title="Permalink to this headline">¶</a></h2>
 <p>GCC 允许在 C 标签上设置属性。有关使用属性的确切语法的详细信息，请参阅属性语法。其他属性可用于函数（参见函数属性）、变量（参见变量属性）、枚举器（参见枚举器属性）、语句（参见语句属性）和类型（参见类型属性）。后跟声明的标签属性属于标签而不是声明。</p>
 <p>本示例使用 cold Label属性指示不太可能采用 ErrorHandling 分支，并且 ErrorHandling 标签未使用：</p>
 <p>asm goto (“some asm” : : : : NoError);</p>
 <p>/* 这个分支（asm 的fall-through）不太常用*/
 ErrorHandling:</p>
 <blockquote>
-<div><p>__attribute__((cold, unused)); /* 这里需要分号 <a href="#id269"><span class="problematic" id="id270">*</span></a>/
+<div><p>__attribute__((cold, unused)); /* 这里需要分号 <a href="#id268"><span class="problematic" id="id269">*</span></a>/
 printf(“errorn”);
 return 0;</p>
 </div></blockquote>
@@ -11547,8 +11534,8 @@ return 1;</p>
 <div><p>标签上的 cold 属性用于通知编译器该标签后面的路径不太可能被执行。在无法使用 __builtin_expect 的情况下（例如，对于计算出的goto或 asm goto )，可以使用此属性。</p>
 </div></blockquote>
 </div>
-<div class="section" id="id271">
-<h2>枚举器属性<a class="headerlink" href="#id271" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id270">
+<h2>枚举器属性<a class="headerlink" href="#id270" title="Permalink to this headline">¶</a></h2>
 <p>GCC允许在枚举数上设置属性。有关使用属性的确切语法的详细信息，请参见“ 属性语法”。其他属性可用于函数（请参阅函数属性），变量（请参见变量属性），标签（请参见Label Attributes），语句（请参见Statement Attributes）和类型（请参见Type Attributes）。</p>
 <p>本示例使用 deprecated 枚举数属性来指示不推荐使用 oldval 枚举数：</p>
 <dl class="simple">
@@ -11569,8 +11556,8 @@ fn (void)
 <div><p>如果在源文件中的任何位置使用了枚举数， deprecated 属性将产生警告。当确定预期在程序的将来版本中删除的枚举器时，此功能很有用。该警告还包括不赞成使用的枚举器的声明的位置，以使用户可以轻松找到有关为什么不赞成使用该枚举器或应该做什么的更多信息。请注意，警告仅在使用时出现。</p>
 </div></blockquote>
 </div>
-<div class="section" id="id272">
-<h2>语句属性<a class="headerlink" href="#id272" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id271">
+<h2>语句属性<a class="headerlink" href="#id271" title="Permalink to this headline">¶</a></h2>
 <p>GCC允许在null语句上设置属性。有关使用属性的确切语法的详细信息，请参见“ 属性语法”。其他属性可用于函数（请参见函数属性），变量（请参见变量属性），标签（请参见Label Attributes），枚举器（请参见Enumerator Attributes）和类型（请参见Type Attributes）。</p>
 <p>本示例使用 fallthrough 语句属性来指示-Wimplicit-fallthrough不应发出警告。</p>
 <dl>
@@ -11592,8 +11579,8 @@ __attribute__((fallthrough));</p>
 <div><p>具有空语句的 fallthrough 属性用作fallthrough语句。它向编译器暗示一个语句落入另一个case标签或switch语句中的用户定义标签是故意的，因此-Wimplicit-fallthrough警告不得触发。跌穿属性在每个属性列表中最多只能出现一次,而且不能与其他属性混合使用。它只能用在switch语句中(否则编译器会出错),用在前面的语句之后,用在逻辑上相继出现的case标签或用户定义的标签之前。</p>
 </div></blockquote>
 </div>
-<div class="section" id="id273">
-<h2>属性语法<a class="headerlink" href="#id273" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id272">
+<h2>属性语法<a class="headerlink" href="#id272" title="Permalink to this headline">¶</a></h2>
 <p>本节描述了C语言可以使用 __attribute__ 的语法以及属性说明符所绑定的构造。对于C ++和Objective-C，某些细节可能有所不同。由于语法上的属性不够准确，因此此处描述的某些形式可能无法在所有情况下都成功解析。</p>
 <p>C ++中的属性语义存在一些问题。例如，尽管属性可能会影响代码生成，但没有进行任何操作，因此当将属性类型与模板或重载一起使用时，可能会出现问题。同样， typeid 不能区分具有不同属性的类型。C ++中对属性的支持将来可能会仅限于声明中的属性，而不是嵌套声明符中的属性。</p>
 <p>有关适用于函数的属性的语义的详细信息，请参见函数属性。有关应用于变量的属性的语义的详细信息，请参见变量属性。有关适用于结构，联合和枚举类型的属性的语义的详细信息，请参见类型属性。有关应用于标签的属性的语义的详细信息，请参见标签属性。有关应用于枚举器的属性的语义的详细信息，请参见Enumerator Attributes。有关应用于语句的属性的语义的详细信息，请参见语句属性。</p>
@@ -11625,7 +11612,7 @@ __attribute__((fallthrough));</p>
 <p>在使用一个单一的指定符和限定符列表的多个标识符的声明中,属性指定符列表可以紧接出现在一个以逗号分隔的声明符列表中的声明符(第一个声明符除外)之前。这种属性规定符只适用于它们出现在其声明符之前的标识符。例如,在</p>
 <dl class="simple">
 <dt>__attribute__((noreturn)) void d0 (void),</dt><dd><dl class="simple">
-<dt>__attribute__((format(printf, 1, 2))) d1 (const char <a href="#id274"><span class="problematic" id="id275">*</span></a>, …),</dt><dd><p>d2 (void);</p>
+<dt>__attribute__((format(printf, 1, 2))) d1 (const char <a href="#id273"><span class="problematic" id="id274">*</span></a>, …),</dt><dd><p>d2 (void);</p>
 </dd>
 </dl>
 </dd>
@@ -11639,26 +11626,26 @@ __attribute__((fallthrough));</p>
 <p>如果 D1 的格式为 ( attribute-specifier-list D ) ，并且声明 T D 为 ident 指定类型“ derived-declarator-type-list Type ” ，则 T D1 指定类型为“ derived-declarator-type-list attribute-specifier-list ident 的 “ 说明符列表 Type ” 。</p>
 <p>如果 D1 的形式为 * type-qualifier-and-attribute-specifier-list D ，并且声明 T D 为 ident 指定类型“ derived-declarator-type-list Type ” ，则 T D1 指定类型为“ derived-declarator-type-list - d ” 类型列表 type-qualifier-and-attribute-specifier-list 指向 ident 的 “ Type ”的指针。</p>
 <p>例如:</p>
-<p>void (__attribute__((noreturn)) <a href="#id276"><span class="problematic" id="id277">**</span></a><a href="#id278"><span class="problematic" id="id279">**</span></a>f) (void);</p>
+<p>void (__attribute__((noreturn)) <a href="#id275"><span class="problematic" id="id276">**</span></a><a href="#id277"><span class="problematic" id="id278">**</span></a>f) (void);</p>
 <p>指定类型“指向指向返回 void 的非返回函数的指针的指针的指针”。再举一个例子</p>
-<p>char <a href="#id280"><span class="problematic" id="id281">*</span></a>__attribute__((aligned(8))) <a href="#id282"><span class="problematic" id="id283">*</span></a>f;</p>
+<p>char <a href="#id279"><span class="problematic" id="id280">*</span></a>__attribute__((aligned(8))) <a href="#id281"><span class="problematic" id="id282">*</span></a>f;</p>
 <p>指定类型“指向8字节对齐的 char 指针”。再次注意，这不适用于大多数属性。例如，“aligned’和’noreturn尚不支持上面提供的’属性。</p>
 <p>为了兼容为编译器版本编写的现有代码,这些编译器没有在嵌套的声明器上实现属性,在属性的放置上允许有一些宽松。如果一个只适用于类型的属性被应用于一个声明,那么它将被视为应用于该声明的类型。如果一个只适用于声明的属性被应用于声明的类型,那么它被视为应用于该声明;而且,为了与紧接在声明的标识符之前放置属性的代码相兼容,这样一个应用于函数返回类型的属性被视为应用于函数类型,这样一个应用于数组元素类型的属性被视为应用于数组类型。如果一个只适用于函数类型的属性被应用于指针到函数类型,则被视为应用于指针目标类型;如果这样的属性被应用于不是指针到函数类型的函数返回类型,则被视为应用于函数类型。</p>
 </div>
-<div class="section" id="id284">
-<h2>原型和旧式函数定义<a class="headerlink" href="#id284" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id283">
+<h2>原型和旧式函数定义<a class="headerlink" href="#id283" title="Permalink to this headline">¶</a></h2>
 <p>GNU C扩展了ISO C,允许一个函数原型覆盖一个后来的旧式非原型定义。请看下面的例子。</p>
-<p>/* 使用原型除非编译器是老式的。<a href="#id285"><span class="problematic" id="id286">*</span></a>/
+<p>/* 使用原型除非编译器是老式的。<a href="#id284"><span class="problematic" id="id285">*</span></a>/
 #ifdef __STDC__
 #define P(x) x
 #else
 #define P(x) ()
 #endif</p>
-<p>/* 原型函数声明。<a href="#id287"><span class="problematic" id="id288">*</span></a>/
+<p>/* 原型函数声明。<a href="#id286"><span class="problematic" id="id287">*</span></a>/
 int isroot P((uid_t));</p>
 <p>/* 旧式函数定义。<em>/
 int
-isroot (x)   /</em> ??? 损失在这里？？？<a href="#id289"><span class="problematic" id="id290">*</span></a>/</p>
+isroot (x)   /</em> ??? 损失在这里？？？<a href="#id288"><span class="problematic" id="id289">*</span></a>/</p>
 <blockquote>
 <div><p>uid_t x;</p>
 </div></blockquote>
@@ -11679,8 +11666,8 @@ isroot (uid_t x)
 <p>}</p>
 <p>GNU C++不支持旧式函数定义,所以这个扩展是不相关的。</p>
 </div>
-<div class="section" id="id291">
-<h2>标识符名称中的美元符号<a class="headerlink" href="#id291" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id290">
+<h2>标识符名称中的美元符号<a class="headerlink" href="#id290" title="Permalink to this headline">¶</a></h2>
 <p>在GNU C中，通常可以在标识符名称中使用美元符号。 这是因为许多传统的C实现都允许使用此类标识符。 但是，少数目标机器不支持标识符中的美元符号，通常是因为目标汇编器不允许使用美元符号。</p>
 <p>总结：</p>
 </div>
@@ -11689,8 +11676,8 @@ isroot (uid_t x)
 <p>您可以在字符串或字符常量中使用序列“ e”代表ASCII字符ESC。</p>
 <p>总结：</p>
 </div>
-<div class="section" id="id292">
-<h2>确定函数，类型或变量的对齐方式<a class="headerlink" href="#id292" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id291">
+<h2>确定函数，类型或变量的对齐方式<a class="headerlink" href="#id291" title="Permalink to this headline">¶</a></h2>
 <p>关键字 __alignof__ 确定函数，对象或类型的对齐要求，或类型通常所需的最小对齐。它的语法就像 sizeof 和C11 _Alignof 一样。</p>
 <p>例如，如果目标机器需要一个 double 值到8字节的边界上对齐，然后 __alignof__ (double) 为8。这是许多RISC机器真。在更传统的机器设计中， __alignof__ (double) 为4甚至2。</p>
 <p>有些机器实际上从来不需要对齐；它们甚至允许在奇数地址处引用任何数据类型。对于这些机器， __alignof__ 报告通常由目标ABI要求的GCC给出数据类型的最小对齐方式。</p>
@@ -11699,26 +11686,26 @@ isroot (uid_t x)
 <p>__alignof__ (foo1.y) 的值是1，即使其实际对齐方式可能是2或4，也与 __alignof__ (int) 相同。要求对齐除 void 以外的不完整类型是错误的。</p>
 <p>如果 __alignof__ 表达式的操作数是一个函数，则该表达式将求值该函数的对齐方式，该对齐方式可以由属性 aligned 指定（请参见Common Function Attributes）。</p>
 </div>
-<div class="section" id="id293">
-<h2>内联函数的速度与宏一样快<a class="headerlink" href="#id293" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id292">
+<h2>内联函数的速度与宏一样快<a class="headerlink" href="#id292" title="Permalink to this headline">¶</a></h2>
 <p>通过声明一个函数内联，您可以指示GCC更快地调用该函数。 GCC可以做到这一点的一种方法是将该函数的代码集成到其调用者的代码中。通过消除函数调用开销，这使执行速度更快。另外，如果任何实际参数值是恒定的，则它们的已知值可能会在编译时进行简化，因此不必包括所有内联函数的代码。对代码大小的影响难以预测。根据具体情况，使用函数内联可以使目标代码更大或更小。您还可以指示GCC尝试使用选项将所有“足够简单”的功能集成到其调用方中-finline-functions.</p>
 <p>GCC实现了三种不同语义的内联函数声明。一种是通过-std=gnu89or-fgnu89-inline或当所有内联声明中都包含 gnu_inline 属性时，或另一个-std=c99,-std=gnu99或使用了以后的C版本的选项(不含-fgnu89-inline），第三个用于编译C ++。</p>
 <p>要声明内联函数，请在其声明中使用 inline 关键字，如下所示：</p>
 <p>static inline int
-inc (int <a href="#id294"><span class="problematic" id="id295">*</span></a>a)
+inc (int <a href="#id293"><span class="problematic" id="id294">*</span></a>a)
 {</p>
 <blockquote>
-<div><p>return (<a href="#id296"><span class="problematic" id="id297">*</span></a>a)++;</p>
+<div><p>return (<a href="#id295"><span class="problematic" id="id296">*</span></a>a)++;</p>
 </div></blockquote>
 <p>}</p>
 <p>如果要编写要包含在ISO C90程序中的头文件，请编写 __inline__ 而不是 inline 。请参阅备用关键字。</p>
 <p>三种类型的内联的行为类似地在两个重要的情况：当 inline 关键字用于在 static 功能，如上面的例子，当一个函数被首先声明不使用 inline 的关键字，然后用所定义 inline ，如下所示：</p>
-<p>extern int inc (int <a href="#id298"><span class="problematic" id="id299">*</span></a>a);
+<p>extern int inc (int <a href="#id297"><span class="problematic" id="id298">*</span></a>a);
 inline int
-inc (int <a href="#id300"><span class="problematic" id="id301">*</span></a>a)
+inc (int <a href="#id299"><span class="problematic" id="id300">*</span></a>a)
 {</p>
 <blockquote>
-<div><p>return (<a href="#id302"><span class="problematic" id="id303">*</span></a>a)++;</p>
+<div><p>return (<a href="#id301"><span class="problematic" id="id302">*</span></a>a)++;</p>
 </div></blockquote>
 <p>}</p>
 <p>在这两种常见情况下，该程序的行为与您未使用 inline 关键字的行为相同，只是其速度不同。</p>
@@ -11726,30 +11713,30 @@ inc (int <a href="#id300"><span class="problematic" id="id301">*</span></a>a)
 <p>请注意，函数定义中的某些用法可能使其不适用于内联替换。这些用法包​​括：可变函数，使用 alloca ，使用计算的goto（请参见标签为值），使用非本地goto，使用嵌套函数，使用 setjmp ，使用 __builtin_longjmp 以及使用 __builtin_return 或 __builtin_apply_args 。使用-Winline当不能替换标记为 inline 的函数时发出警告，并给出失败的原因。</p>
 <p>根据ISO C ++的要求，即使未使用 inline 关键字明确声明，GCC仍将在类主体内定义的成员函数标记为内联。您可以使用-fno-default-inline; 请参阅控制C ++语言的选项。</p>
 <p>如果未进行优化，则GCC不会内联任何功能，除非您指定“always_inline’函数的属性，如下所示：</p>
-<p>/* 原型。 <a href="#id304"><span class="problematic" id="id305">*</span></a>/
+<p>/* 原型。 <a href="#id303"><span class="problematic" id="id304">*</span></a>/
 inline void foo (const char) __attribute__((always_inline));</p>
 <p>本节剩下的部分是针对GNU C90的内联。</p>
 <p>当内联函数不是 static 时，则编译器必须假定可能存在其他源文件的调用；由于全局符号只能在任何程序中定义一次，因此该函数不得在其他源文件中定义，因此无法集成其中的调用。因此，非 static 内联函数总是以通常的方式自行编译。</p>
 <p>如果在函数定义中同时指定 inline 和 extern ，则该定义仅用于内联。在任何情况下，即使您显式引用其地址，该函数也不会自行编译。这样的地址将成为一个外部引用，就好像您仅声明了该函数而未定义它一样。</p>
 <p>inline 和 extern 这种组合几乎具有宏的作用。使用它的方法是使用这些关键字将函数定义放入头文件中，并将定义的另一个副本（缺少 inline 和 extern ）放入库文件中。头文件中的定义导致对函数的大多数调用被内联。如果仍然使用该功能，则它们引用库中的单个副本。</p>
 </div>
-<div class="section" id="id306">
-<h2>什么时候访问易失对象？<a class="headerlink" href="#id306" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id305">
+<h2>什么时候访问易失对象？<a class="headerlink" href="#id305" title="Permalink to this headline">¶</a></h2>
 <p>C语言有易失性对象的概念。这些对象通常由指针访问,用于访问硬件或线程间通信。标准鼓励编译器避免对易失性对象的访问进行优化,但对于什么是易失性访问,则让编译器在实施时加以定义。最低要求是在一个序列点上,之前对易失性对象的所有访问都已经稳定下来,并且没有后续的访问发生。因此,实现可以自由地对序列点之间发生的volatile访问进行重新排序和组合,但不能对跨序列点的访问进行排序和组合。使用volatile不允许违反两个序列点之间多次更新对象的限制。</p>
 <p>对非易失性对象的访问与易失性访问相比并不排序。你不能使用易失性对象作为内存屏障来排序对非易失性内存的写入序列。比如说,你不能使用易失性对象作为内存屏障来排列对非易失性内存的写入顺序。</p>
-<p>int <a href="#id307"><span class="problematic" id="id308">*</span></a>ptr = something;
+<p>int <a href="#id306"><span class="problematic" id="id307">*</span></a>ptr = something;
 volatile int vobj;
-<a href="#id309"><span class="problematic" id="id310">*</span></a>ptr = something;
+<a href="#id308"><span class="problematic" id="id309">*</span></a>ptr = something;
 vobj = 1;</p>
-<p>除非可以为 <a href="#id311"><span class="problematic" id="id312">*</span></a>ptr 和 vobj 加上别名，否则不能保证在更新 vobj 时对 <a href="#id313"><span class="problematic" id="id314">*</span></a>ptr 进行写操作。如果需要此保证，则必须使用更强的内存屏障，例如：</p>
-<p>int <a href="#id315"><span class="problematic" id="id316">*</span></a>ptr = something;
+<p>除非可以为 <a href="#id310"><span class="problematic" id="id311">*</span></a>ptr 和 vobj 加上别名，否则不能保证在更新 vobj 时对 <a href="#id312"><span class="problematic" id="id313">*</span></a>ptr 进行写操作。如果需要此保证，则必须使用更强的内存屏障，例如：</p>
+<p>int <a href="#id314"><span class="problematic" id="id315">*</span></a>ptr = something;
 volatile int vobj;
-<a href="#id317"><span class="problematic" id="id318">*</span></a>ptr = something;
+<a href="#id316"><span class="problematic" id="id317">*</span></a>ptr = something;
 asm volatile (“” : : : “memory”);
 vobj = 1;</p>
 <p>当在void上下文中访问一个标量volatile对象时,就会被读取。</p>
-<p>volatile int <a href="#id319"><span class="problematic" id="id320">*</span></a>src = somevalue;
-<a href="#id321"><span class="problematic" id="id322">*</span></a>src;</p>
+<p>volatile int <a href="#id318"><span class="problematic" id="id319">*</span></a>src = somevalue;
+<a href="#id320"><span class="problematic" id="id321">*</span></a>src;</p>
 <p>这样的表达式是rvalues,GCC将其实现为对被指向的volatile对象的读取。</p>
 <p>赋值也是表达式，具有右值。但是，在分配给标量volatile时，无论是否使用赋值表达式的rvalue，都不会重新读取volatile对象。如果使用分配的右值，则该值为分配给易失对象的值。例如，在以下所有情况下，都不会读取 vobj ：</p>
 <p>int obj;
@@ -11761,8 +11748,8 @@ obj = (something, vobj = anotherthing);</p>
 <p>如果需要在赋值发生后读取易失性对象,必须使用一个单独的表达式,中间有一个序列点。</p>
 <p>由于位字段不是单独可寻址的,所以当写入或访问相邻位字段时,易失性位字段可能被隐式读取。比特字段的操作可能会被优化,如果相邻的比特字段跨越了存储单元的边界,那么它们只能被部分访问。由于这些原因,使用易失性位场来访问硬件是不明智的。</p>
 </div>
-<div class="section" id="id323">
-<h2>如何在C代码中使用内联汇编语言<a class="headerlink" href="#id323" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="c">
+<h2>如何在C代码中使用内联汇编语言<a class="headerlink" href="#c" title="Permalink to this headline">¶</a></h2>
 <p>使用asm关键字可以将汇编程序指令嵌入C代码中。 GCC提供了两种形式的内联asm语句。 基本的asm语句是没有操作数的语句（请参见第6.47.1节[基本asm]，第617页），而扩展的asm语句（请参见第6.47.2节[扩展的asm]，请参见第619页）包括一个或多个操作数。 扩展形式是在函数中混合使用C和汇编语言的首选，但是要在顶层包含汇编语言，则必须使用基本的asm。</p>
 <p>您还可以使用asm关键字覆盖C符号的汇编器名称，或将C变量放置在特定的寄存器中。</p>
 <p>总结：</p>
@@ -11873,7 +11860,7 @@ obj = (something, vobj = anotherthing);</p>
 <ul class="simple">
 <li><p>‘%%’:将单个“％”输出到汇编代码中。</p></li>
 <li><p>‘%=’:输出整个编译过程中asm语句的每个实例唯一的数字。 当创建本地标签并在生成多个汇编指令的单个模板中多次引用它们时，此选项很有用。</p></li>
-<li><p>‘%{’/‘%|’/‘%}’:将“ {”，“ <a href="#id324"><span class="problematic" id="id325">|</span></a>”和“}”字符分别输出到汇编代码中。 不转义时，这些字符具有特殊的含义，以指示多种汇编方言，如下所述。</p></li>
+<li><p>‘%{’/‘%|’/‘%}’:将“ {”，“ <a href="#id322"><span class="problematic" id="id323">|</span></a>”和“}”字符分别输出到汇编代码中。 不转义时，这些字符具有特殊的含义，以指示多种汇编方言，如下所述。</p></li>
 </ul>
 <p>#### asm模板中的多个汇编方言</p>
 <p>在诸如x86的目标上，GCC支持多种汇编方言。 “ -masm”选项控制GCC将哪一种方言用作内联汇编程序的默认语言。 “ -masm”选项的特定于目标的文档包含受支持的方言列表，以及未指定选项的默认方言。 理解这些信息可能很重要，因为使用一种方言进行编译时可以正常工作的汇编代码如果使用另一种方言进行编译可能会失败。 请参阅第3.19.59节[x86选项]，第439页。</p>
@@ -12275,8 +12262,8 @@ obj = (something, vobj = anotherthing);</p>
 <p>此大小也用于内联决策。 如果您使用asm inline而不是asm，则出于内联目的，将asm的大小作为最小大小，而忽略了GCC认为有多少条指令。</p>
 <p>总结：</p>
 </div>
-<div class="section" id="id326">
-<h2>备用关键字<a class="headerlink" href="#id326" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id324">
+<h2>备用关键字<a class="headerlink" href="#id324" title="Permalink to this headline">¶</a></h2>
 <p>“ -ansi”和各种“ -std”选项会禁用某些关键字。 当您要使用GNU C扩展名或应由所有程序（包括ISO C程序）使用的通用头文件时，这会引起麻烦。 关键字asm，typeof和inline在使用“ -ansi”或“ -std”编译的程序中不可用（尽管inline可以在使用“ -std = c99”或更高版本的编译程序中使用）。 仅当’-std = gnu99’（最终将是默认值）或’-std = c99’（或等效的’-std = iso9899：1999’）或更高版本的选项时，ISO C99关键字限制才可用 使用标准版本。</p>
 <p>解决这些问题的方法是在每个问题关键字的开头和结尾都加上“ __”。 例如，使用__asm__代替asm，并使用__inline__代替inline。</p>
 <p>其他C编译器将不接受这些替代关键字。 如果要使用其他编译器进行编译，则可以将备用关键字定义为宏，以将它们替换为常规关键字。 看起来像这样：</p>
@@ -12288,8 +12275,8 @@ obj = (something, vobj = anotherthing);</p>
 <div><p>总结：</p>
 </div></blockquote>
 </div>
-<div class="section" id="id327">
-<h2>不完整的枚举类型<a class="headerlink" href="#id327" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id325">
+<h2>不完整的枚举类型<a class="headerlink" href="#id325" title="Permalink to this headline">¶</a></h2>
 <p>您可以定义枚举标签，而无需指定其可能的值。 这将导致不完整的类型，就像您在不描述元素的情况下编写struct foo时所得到的那样。</p>
 <p>稍后的声明确实指定了可能的值，从而完成了该类型。</p>
 <p>当类型不完整时，您不能使用该类型分配变量或存储。 但是，您可以使用指向该类型的指针。</p>
@@ -12297,8 +12284,8 @@ obj = (something, vobj = anotherthing);</p>
 <p>GNU C ++不支持此扩展。</p>
 <p>总结：</p>
 </div>
-<div class="section" id="id328">
-<h2>函数名称为字符串<a class="headerlink" href="#id328" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id326">
+<h2>函数名称为字符串<a class="headerlink" href="#id326" title="Permalink to this headline">¶</a></h2>
 <p>GCC提供了三个魔术常量，它们将当前函数的名称保存为字符串。在C ++ 11和更高版本的模式中，这三个常量都被视为常量表达式，并且可以在constexpr上下文中使用。 这些常量中的第一个是__func__，它是C99标准的一部分：</p>
 <p>标识符__func__由翻译器隐式声明，就像在紧随每个函数定义的大括号之后进行声明一样</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
@@ -12317,8 +12304,8 @@ obj = (something, vobj = anotherthing);</p>
 <p>这些标识符是变量，不是预处理器宏，并且不能用于初始化char数组或与字符串文字串联。</p>
 <p>总结：</p>
 </div>
-<div class="section" id="id329">
-<h2>获取函数的返回地址或帧地址<a class="headerlink" href="#id329" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id327">
+<h2>获取函数的返回地址或帧地址<a class="headerlink" href="#id327" title="Permalink to this headline">¶</a></h2>
 <p>这些函数可用于获取有关函数调用者的信息。</p>
 <ul>
 <li><p>void * __builtin_return_address (unsigned int level )   [Built-in Function]:此函数返回当前函数或其调用者之一的返回地址。level参数是要向上扫描调用堆栈的帧数。 值为0产生当前函数的返回地址，值为1产生当前函数的调用者的返回地址，依此类推。 内联预期行为时 是该函数返回返回到的函数的地址。 要变通解决此问题，请使用noinline函数属性。</p>
@@ -12327,7 +12314,7 @@ obj = (something, vobj = anotherthing);</p>
 <p>可能需要对返回值进行其他后期处理，请参见__builtin_extract_return_addr。</p>
 <p>返回地址在内存中存储的表示形式可能与__builtin_return_address返回的地址不同。 例如，在AArch64上，存储的地址可能会用返回地址签名进行修饰，而__builtin_return_address返回的地址则不会。</p>
 <p>使用非零参数调用此函数可能会产生不可预知的后果，包括使调用程序崩溃。 结果，当“ -Wframe-address”选项生效时，将诊断出认为不安全的呼叫。 此类调用仅应在调试情况下进行。</p>
-<p>在代码地址可表示为void <a href="#id330"><span class="problematic" id="id331">*</span></a>的目标上，</p>
+<p>在代码地址可表示为void <a href="#id328"><span class="problematic" id="id329">*</span></a>的目标上，</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">void</span> <span class="pre">*addr</span> <span class="pre">=</span> <span class="pre">__builtin_extract_return_addr</span> <span class="pre">(__builtin_return_address</span> <span class="pre">(0));</span>
 <span class="pre">`</span></code></p>
@@ -12343,8 +12330,8 @@ obj = (something, vobj = anotherthing);</p>
 </li>
 </ul>
 </div>
-<div class="section" id="id332">
-<h2>通过内置函数使用矢量指令<a class="headerlink" href="#id332" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id330">
+<h2>通过内置函数使用矢量指令<a class="headerlink" href="#id330" title="Permalink to this headline">¶</a></h2>
 <p>（没有整理)</p>
 <p>总结：</p>
 </div>
@@ -12407,8 +12394,8 @@ obj = (something, vobj = anotherthing);</p>
 </ul>
 <p>总结：</p>
 </div>
-<div class="section" id="id333">
-<h2>内存模型感知原子操作的内置函数<a class="headerlink" href="#id333" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id331">
+<h2>内存模型感知原子操作的内置函数<a class="headerlink" href="#id331" title="Permalink to this headline">¶</a></h2>
 <p>以下内置函数大致符合C ++ 11内存模型的要求。 它们都以“ __atomic”为前缀进行标识，并且大多数都已重载，因此它们可以使用多种类型。</p>
 <p>这些功能旨在替代旧版“ __sync”内置函数。 主要区别在于请求的存储顺序是功能的参数。 新代码应始终使用“ __atomic”内置插件，而不是“ __sync”内置插件。</p>
 <p>请注意，“ __ atomic”内置函数假定程序将符合C ++ 11内存模型。 特别是，他们假定程序没有数据争用。 有关详细要求，请参见C ++ 11标准。</p>
@@ -12444,7 +12431,7 @@ failure memorder)  [Built-in Function]:此内置函数实现了原子比较和�
 <p>如果需要将其写入* ptr，则返回true，并且根据成功内存顺序指定的内存顺序来影响内存。 在这里可以使用什么存储顺序没有限制。</p>
 <p>否则，将根据失败的内存顺序返回false并影响内存。此内存顺序不能为__ATOMIC_RELEASE或__ATOMIC_ACQ_REL。 它也不能比成功内存顺序所指定的顺序更强。</p>
 </li>
-<li><p>bool __atomic_compare_exchange ( type <a href="#id334"><span class="problematic" id="id335">*</span></a>ptr, type <a href="#id336"><span class="problematic" id="id337">*</span></a>expected, type <a href="#id338"><span class="problematic" id="id339">*</span></a>desired, bool weak, int success memorder, int
+<li><p>bool __atomic_compare_exchange ( type <a href="#id332"><span class="problematic" id="id333">*</span></a>ptr, type <a href="#id334"><span class="problematic" id="id335">*</span></a>expected, type <a href="#id336"><span class="problematic" id="id337">*</span></a>desired, bool weak, int success memorder, int
 failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exchange的通用版本。 该函数实际上与__atomic_compare_exchange_n相同，只是所需的值也是一个指针。</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">type</span> <span class="pre">__atomic_add_fetch</span> <span class="pre">(</span> <span class="pre">type</span> <span class="pre">*ptr,</span> <span class="pre">type</span> <span class="pre">val,</span> <span class="pre">int</span> <span class="pre">memorder)</span> <span class="pre">[Built-in</span> <span class="pre">Function]type</span> <span class="pre">__atomic_sub_fetch</span> <span class="pre">(</span> <span class="pre">type</span> <span class="pre">*ptr,</span> <span class="pre">type</span> <span class="pre">val,</span> <span class="pre">int</span> <span class="pre">memorder)</span> <span class="pre">[Built-in</span> <span class="pre">Function]type</span> <span class="pre">__atomic_and_fetch</span> <span class="pre">(</span> <span class="pre">type</span> <span class="pre">*ptr,</span> <span class="pre">type</span> <span class="pre">val,</span> <span class="pre">int</span> <span class="pre">memorder)</span> <span class="pre">[Built-in</span> <span class="pre">Function]type</span> <span class="pre">__atomic_xor_fetch</span> <span class="pre">(</span> <span class="pre">type</span> <span class="pre">*ptr,</span> <span class="pre">type</span> <span class="pre">val,</span> <span class="pre">int</span> <span class="pre">memorder)</span> <span class="pre">[Built-in</span> <span class="pre">Function]type</span> <span class="pre">__atomic_or_fetch</span> <span class="pre">(</span> <span class="pre">type</span> <span class="pre">*ptr,</span> <span class="pre">type</span> <span class="pre">val,</span> <span class="pre">int</span> <span class="pre">memorder)</span> <span class="pre">[Built-in</span> <span class="pre">Function]type</span> <span class="pre">__atomic_nand_fetch</span> <span class="pre">(</span> <span class="pre">type</span> <span class="pre">*ptr,</span> <span class="pre">type</span> <span class="pre">val,</span> <span class="pre">int</span> <span class="pre">memorder)</span> <span class="pre">[Built-in</span> <span class="pre">Function]</span>
@@ -12468,19 +12455,19 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 <li><p>void __atomic_clear (bool <em>ptr, int memorder) [Built-in Function]:此内置函数在</em> ptr上执行原子清除操作。 运算后，* ptr包含0。它仅应用于bool或char类型的操作数，并应与__atomic_test_and_set结合使用。 对于其他类型，可能仅部分清除。 如果类型不是布尔型，则首选使用__atomic_store。 有效的内存顺序变量是__ATOMIC_RELAXED，__ATOMIC_SEQ_CST和__ATOMIC_RELEASE。</p></li>
 <li><p>void __atomic_thread_fence (int memorder) [Built-in Function]:此内置函数根据指定的内存顺序充当线程之间的同步防护。 所有内存顺序均有效。</p></li>
 <li><p>void __atomic_signal_fence (int memorder) [Built-in Function]:此内置函数充当线程和基于同一线程的信号处理程序之间的同步防护。 所有内存顺序均有效。</p></li>
-<li><p>bool __atomic_always_lock_free (size t size, void <a href="#id340"><span class="problematic" id="id341">*</span></a>ptr) [Built-in Function]:如果大小字节的对象始终为目标体系结构生成无锁原子指令，则此内置函数将返回true。 size必须解析为编译时常量，并且结果也解析为编译时常量。 ptr是指向对象的可选指针，可用于确定对齐方式。 值0表示应使用典型的对齐方式。 编译器也可以忽略此参数。</p>
+<li><p>bool __atomic_always_lock_free (size t size, void <a href="#id338"><span class="problematic" id="id339">*</span></a>ptr) [Built-in Function]:如果大小字节的对象始终为目标体系结构生成无锁原子指令，则此内置函数将返回true。 size必须解析为编译时常量，并且结果也解析为编译时常量。 ptr是指向对象的可选指针，可用于确定对齐方式。 值0表示应使用典型的对齐方式。 编译器也可以忽略此参数。</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
 <span class="pre">if</span> <span class="pre">(__atomic_always_lock_free</span> <span class="pre">(sizeof</span> <span class="pre">(long</span> <span class="pre">long),</span> <span class="pre">0))</span>
 <span class="pre">`</span></code></p>
 </li>
-<li><p>bool __atomic_is_lock_free (size t size, void <a href="#id342"><span class="problematic" id="id343">*</span></a>ptr) [Built-in Function]: 如果大小字节的对象始终为目标体系结构生成无锁原子指令，则此内置函数将返回true。 如果未知内置函数是无锁的，则调用名为__atomic_is_lock_free的运行时例程。</p>
+<li><p>bool __atomic_is_lock_free (size t size, void <a href="#id340"><span class="problematic" id="id341">*</span></a>ptr) [Built-in Function]: 如果大小字节的对象始终为目标体系结构生成无锁原子指令，则此内置函数将返回true。 如果未知内置函数是无锁的，则调用名为__atomic_is_lock_free的运行时例程。</p>
 <p>ptr是指向对象的可选指针，可用于确定对齐方式。 值0表示应使用典型的对齐方式。 编译器也可以忽略此参数。</p>
 <p>总结：</p>
 </li>
 </ul>
 </div>
-<div class="section" id="id344">
-<h2>内置函数，可通过溢出检查执行算术运算<a class="headerlink" href="#id344" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id342">
+<h2>内置函数，可通过溢出检查执行算术运算<a class="headerlink" href="#id342" title="Permalink to this headline">¶</a></h2>
 <p>以下内置函数允许执行简单的算术运算以及检查运算是否溢出。</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">`</span>
@@ -12515,8 +12502,8 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 </li>
 </ul>
 </div>
-<div class="section" id="id345">
-<h2>x86特定于事务性内存的内存模型扩展<a class="headerlink" href="#id345" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id343">
+<h2>x86特定于事务性内存的内存模型扩展<a class="headerlink" href="#id343" title="Permalink to this headline">¶</a></h2>
 <p>x86体系结构支持附加的内存排序标志，以标记用于硬件锁定清除的关键部分。 除了原子内在函数的现有存储顺序之外，还必须指定这些参数。</p>
 <ul class="simple">
 <li><p>__ATOMIC_HLE_ACQUIRE:在锁定变量上启动锁定省略。 内存顺序必须为__ATOMIC_ACQUIRE或更强。</p></li>
@@ -12528,8 +12515,8 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 <span class="pre">`</span></code></p>
 <p>总结：</p>
 </div>
-<div class="section" id="id346">
-<h2>对象大小检查内置函数<a class="headerlink" href="#id346" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id344">
+<h2>对象大小检查内置函数<a class="headerlink" href="#id344" title="Permalink to this headline">¶</a></h2>
 <p>GCC实施了有限的缓冲区溢出保护机制，可以通过确定要写入数据的对象的大小并在大小不足时阻止写入来防止某些缓冲区溢出攻击。 下文所述的内置函数在一起使用和启用优化时会产生最佳结果。例如，要检测跨函数边界的对象大小或通过非平凡的控制流跟踪指针分配，它们依赖于通过’ -O2’。 但是，在一定程度上，它们也可以在不进行优化的情况下使用。</p>
 <ul>
 <li><p>size_t __builtin_object_size (const void * ptr , int type ) [Built-in Function]:是一个内置结构，该结构从ptr到对象ptr指针所指向的末尾返回恒定数量的字节（如果在编译时已知）。 为了确定动态分配的对象的大小，该函数依赖于分配函数，这些分配函数被调用来获取要使用alloc_size属性声明的存储（请参见第6.33.1节[公共函数属性]，第522页）。__builtin_object_size永远不会评估其参数是否有副作用。 如果其中有任何副作用，则对于类型0或1返回（size_t）-1，对于类型2或3返回（size_t）0。如果ptr可以指向多个对象，并且在编译时都知道它们 ，返回的数字是类型＆2为0时这些对象中剩余字节数的最大值，如果非零则为最小值。 如果无法确定编译时ptr指向的对象，则__builtin_object_size对于类型0或1应该返回（size_t）-1，对于类型2或3应该返回（size_t）0。</p></li>
@@ -12557,8 +12544,8 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 <p>除此之外，还检查内置函数__builtin___printf_chk，__builtin___vprintf_chk，__builtin___fprintf_chk和__builtin___vfprintf_chk，它们仅在格式字符串fmt之前有一个附加参数flag 如果编译器能够将其优化为fputc等函数，则可以，否则，将调用checking函数并将flag参数传递给该函数。</p>
 <p>总结：</p>
 </div>
-<div class="section" id="id347">
-<h2>GCC提供的其他内置函数<a class="headerlink" href="#id347" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id345">
+<h2>GCC提供的其他内置函数<a class="headerlink" href="#id345" title="Permalink to this headline">¶</a></h2>
 <p>除了上述功能外，GCC还提供了许多内置函数。其中一些函数供内部使用，用于处理异常或变长参数列表，此处未作记录，因为它们可能会不时更改。 我们不建议您一般使用这些功能。</p>
 <p>提供其余功能是出于优化目的。</p>
 <p>除了具有库等效项（例如下面讨论的标准C库函数）或扩展为库调用的内置插件外，GCC内置函数始终始终内联扩展，因此没有相应的入口点，因此它们的地址不能为 获得。 尝试在函数调用以外的表达式中使用它们会导致编译时错误。</p>
@@ -12574,7 +12561,7 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 <p>ISO C90功能中止，abs，acos，asin，atan2，atan，calloc，ceil，cosh，cos，exit，exp，fabs，floor，fprintf，fputs，free，frexp，fscanf，isalnum，isalpha，iscntrl， isdigit，isgraph，islower，isprint，ispunct，isspace，isupper，isxdigit，tolower，toupper，实验室，ldexp，log10，log，malloc，memchr，memcmp，memcpy，memset，modf，pow，print，printf，putchar，puts，realloc， scanf，sinh，sin，snprintf，sprintf，sqrt，sscanf，strcat，strchr，strcmp，strcpy，strcspn，strlen，strncat，strncmp，strncpy，strpbrk，strrchr，strspn，strncpn，strstrmp，tanh，tan，vfprintf，vprintf和vsprintf是 除非指定了“ -fno-builtin”（或为单个功能指定了“ -fno-builtin-function”），否则所有公认的内置函数。 所有这些功能都有对应的版本，其前缀为__builtin_。</p>
 <p>GCC提供了ISO C99浮点比较宏的内置版本，可避免引发无序操作数的异常。 它们具有与标准宏相同的名称（isgreater,isgreaterequal，isless，islessequal，islessgreater和isunordered），并带有__builtin_前缀。 我们希望库实现者能够简单地#define每个标准宏为其内置等效项。 GCC以相同的方式提供fpclassify，isfinite，isinf_sign，isnormal和signbit内置插件（以__builtin_为前缀）。 带有和不带有__builtin_前缀的isinf和isnan内置函数都会出现。</p>
 <ul>
-<li><p>void <a href="#id348"><span class="problematic" id="id349">*</span></a>__builtin_alloca (size t size)  [Built-in Function]:__builtin_alloca函数必须在块范围内调用。 该函数在调用函数的堆栈上分配较大的对象大小字节。 对象在由__BIGGEST_ALIGNMENT__宏确定的目标的默认堆栈对齐边界上对齐。 __builtin_alloca函数返回一个指向已分配对象的第一个字节的指针。 分配的对象的生存期刚好在调用函数返回其调用者之前结束。 即使在嵌套块中调用__builtin_alloca时也是如此。</p>
+<li><p>void <a href="#id346"><span class="problematic" id="id347">*</span></a>__builtin_alloca (size t size)  [Built-in Function]:__builtin_alloca函数必须在块范围内调用。 该函数在调用函数的堆栈上分配较大的对象大小字节。 对象在由__BIGGEST_ALIGNMENT__宏确定的目标的默认堆栈对齐边界上对齐。 __builtin_alloca函数返回一个指向已分配对象的第一个字节的指针。 分配的对象的生存期刚好在调用函数返回其调用者之前结束。 即使在嵌套块中调用__builtin_alloca时也是如此。</p>
 <p>例如，以下函数在堆栈上分配八个n个字节的对象，并在数组a的连续元素中存储指向每个对象的指针。 然后，它将数组传递给函数g，该函数可以安全地使用每个数组元素所指向的存储。</p>
 </li>
 </ul>
@@ -12583,7 +12570,7 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 <span class="pre">`</span></code></p>
 <p>由于__builtin_alloca函数不会验证其参数，因此调用方有责任确保该参数不会导致其超出堆栈大小限制。 提供__builtin_alloca函数可以在堆栈上分配字节数组，并可以在运行时计算其上限。 由于C99可变长度数组在可移植，更方便和更安全的界面下提供了类似的功能，因此建议在GCC将其作为扩展的C99和C ++程序中使用它们。 有关详细信息，请参见第6.20节“变量长度”，第514页。</p>
 <ul class="simple">
-<li><p>void <a href="#id350"><span class="problematic" id="id351">*</span></a>__builtin_alloca_with_align (size t size, size t alignment)  [Built-in Function] :__builtin_alloca_with_align函数必须在块作用域内调用。 该函数在调用函数的堆栈上分配较大的对象大小字节。</p></li>
+<li><p>void <a href="#id348"><span class="problematic" id="id349">*</span></a>__builtin_alloca_with_align (size t size, size t alignment)  [Built-in Function] :__builtin_alloca_with_align函数必须在块作用域内调用。 该函数在调用函数的堆栈上分配较大的对象大小字节。</p></li>
 </ul>
 <p>分配的对象在参数对齐方式指定的边界上对齐，参数对齐方式以位（而非字节）为单位。 size参数必须为正，且不能超过堆栈大小限制。 对齐参数必须是一个恒定的整数表达式，其求值为2的幂，大于或等于CHAR_BIT并且小于一些未指定的最大值。 使用其他值的调用将被拒绝，并显示一个指示有效范围的错误。 该函数返回一个指向所分配对象的第一个字节的指针。 分配的对象的生存期在调用该函数的块的末尾结束。 所分配的存储至少要在调用函数返回其调用者之前释放，但是可以在调用该函数的块的末尾释放。</p>
 <p>例如，在以下函数中，对g的调用是不安全的，因为当overalign不为零时，由__builtin_alloca_with_align分配的空间可能已在其被调用的if语句的末尾释放。</p>
@@ -12594,7 +12581,7 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 <div><p>由于__builtin_alloca_with_align函数不会验证其size参数，因此调用方有责任确保该参数不会导致其超出堆栈大小限制。 提供了__builtin_alloca_with_align函数，以便可以在堆栈上分配字节数超出上限的数组，并在运行时计算出上限。 由于C99可变长数组在可移植，更方便和更安全的界面下提供了相同的功能，因此建议在GCC将其作为扩展的C99和C ++程序中使用它们。 有关详细信息，请参见第6.20节“变量长度”，第514页。</p>
 </div></blockquote>
 <ul>
-<li><p>void <a href="#id352"><span class="problematic" id="id353">*</span></a>__builtin_alloca_with_align_and_max (size t size,size t alignment, size t max size)  [Built-in Function]:与__builtin_alloca_with_align相似，但是采用一个额外的参数来指定大小上限，以防在编译时无法计算其值，以供’-fstack-usage’，’-Wstack-usage’和’-Walloca-larger-than’使用 。 max size必须是一个常数整数表达式，它对代码生成没有影响，也没有尝试检查其与size的兼容性。</p></li>
+<li><p>void <a href="#id350"><span class="problematic" id="id351">*</span></a>__builtin_alloca_with_align_and_max (size t size,size t alignment, size t max size)  [Built-in Function]:与__builtin_alloca_with_align相似，但是采用一个额外的参数来指定大小上限，以防在编译时无法计算其值，以供’-fstack-usage’，’-Wstack-usage’和’-Walloca-larger-than’使用 。 max size必须是一个常数整数表达式，它对代码生成没有影响，也没有尝试检查其与size的兼容性。</p></li>
 <li><p>bool __builtin_has_attribute ( type-or-expression , attribute ) [Built-in Function]:如果已经使用第二个参数所引用的属性声明了type-or-expression参数所引用的符号或类型，则__builtin_has_attribute函数将得出等于true的整数常量表达式。对于不引用符号的类型或表达式自变量，由于属性不适用于内置表达式，因此内置函数会考虑自变量的类型。这两个参数均未评估。 type-or-expression自变量与typeof自变量具有相同的限制（请参见第6.7节[Typeof]，第503页）。属性参数是一个属性名称，可以选择在其后跟随用括号括起来的逗号分隔的参数列表。可以识别两种形式的属性名称（带或不带双下划线和下划线）。有关详细信息，请参见第6.39节[属性语法]，第609页。如果没有为需要一个或多个参数的属性指定属性参数，则无论是否使用属性声明了类型或表达式，该函数均会返回true。</p></li>
 <li><p>为期望某些属性的参数提供的参数经过验证，并与提供的数字匹配。 如果所有提供的参数都匹配，则该函数返回true。 例如，对以下函数的第一次调用的结果为true，因为x是用aligned属性声明的，而第二次调用的结果是false，因为x被声明为aligned（8）而不是aligned（4）。</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">`</span>
@@ -12630,7 +12617,7 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 <p>这将导致将NULL指针用于不安全的情况。</p>
 <ul>
 <li><p>int __builtin_types_compatible_p ( type1 , type2 ) [Built-in Function]:您可以使用内置函数__builtin_types_compatible_p来确定两种类型是否相同。如果类型1和类型2的非限定版本（它们是类型，而不是表达式）兼容，则此内置函数返回1，否则返回0。 此内置函数的结果可用于整数常量表达式。 此内置函数会忽略顶级限定符（例如const，volatile）。 例如，int等同于const int。</p>
-<p>类型int []和int [5]是兼容的。 另一方面，int和char <a href="#id354"><span class="problematic" id="id355">*</span></a>不兼容，即使它们的类型大小在特定体系结构上相同。 同样，在确定相似性时要考虑指针间接的数量。 因此，short <a href="#id356"><span class="problematic" id="id357">*</span></a>与short <a href="#id358"><span class="problematic" id="id359">**</span></a>不相似。 此外，如果两个类型定义的类型的基础类型兼容，则认为它们是兼容的。</p>
+<p>类型int []和int [5]是兼容的。 另一方面，int和char <a href="#id352"><span class="problematic" id="id353">*</span></a>不兼容，即使它们的类型大小在特定体系结构上相同。 同样，在确定相似性时要考虑指针间接的数量。 因此，short <a href="#id354"><span class="problematic" id="id355">*</span></a>与short <a href="#id356"><span class="problematic" id="id357">**</span></a>不相似。 此外，如果两个类型定义的类型的基础类型兼容，则认为它们是兼容的。</p>
 <p>一个枚举类型不被认为与另一个枚举类型兼容，即使它们都与同一个整数类型兼容； 这就是C标准指定的内容。 例如，枚举{foo，bar}与枚举{hot，dog}不相似。</p>
 <p>您通常在代码中使用此函数，其执行会根据参数的类型而有所不同。 例如：</p>
 <p><code class="docutils literal notranslate"><span class="pre">`</span>
@@ -12699,7 +12686,7 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 <p>_Floatn __builtin_inffn (void) [Built-in Function]</p>
 <p>_Floatn __builtin_inffnx (void) [Built-in Function]</p>
 <p>int __builtin_isinf_sign (…) [Built-in Function]</p>
-<p>double __builtin_nan (const char <a href="#id360"><span class="problematic" id="id361">*</span></a>str) [Built-in Function]</p>
+<p>double __builtin_nan (const char <a href="#id358"><span class="problematic" id="id359">*</span></a>str) [Built-in Function]</p>
 <p>（没有完成）</p>
 </li>
 </ul>
@@ -12709,11 +12696,11 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 </ul>
 <p>总结：</p>
 </div>
-<div class="section" id="id362">
-<h2>特定于目标机器的内置函数<a class="headerlink" href="#id362" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id360">
+<h2>特定于目标机器的内置函数<a class="headerlink" href="#id360" title="Permalink to this headline">¶</a></h2>
 <p>在某些目标机器上，GCC支持许多特定于这些机器的内置函数，通常这些函数会生成对特定机器指令的调用，但允许编译器调度这些调用。</p>
-<div class="section" id="id363">
-<h3>BPF内置功能<a class="headerlink" href="#id363" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id361">
+<h3>BPF内置功能<a class="headerlink" href="#id361" title="Permalink to this headline">¶</a></h3>
 <p>以下内置功能可用于eBPF目标。</p>
 <ul class="simple">
 <li><p>unsigned long long __builtin bpf_load_byte (unsigned long long offset )  [Built-in Function]</p></li>
@@ -12722,37 +12709,35 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 </ul>
 <p>总结：</p>
 </div>
+<div class="section" id="id362">
+<h3>x86内置函数<a class="headerlink" href="#id362" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id363">
+<h3>x86事务性内存固有<a class="headerlink" href="#id363" title="Permalink to this headline">¶</a></h3>
+</div>
 <div class="section" id="id364">
-<h3>x86内置函数<a class="headerlink" href="#id364" title="Permalink to this headline">¶</a></h3>
+<h3>x86控制流保护本质<a class="headerlink" href="#id364" title="Permalink to this headline">¶</a></h3>
+</div>
 </div>
 <div class="section" id="id365">
-<h3>x86事务性内存固有<a class="headerlink" href="#id365" title="Permalink to this headline">¶</a></h3>
+<h2>特定于特定目标计算机的格式检查<a class="headerlink" href="#id365" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="id366">
-<h3>x86控制流保护本质<a class="headerlink" href="#id366" title="Permalink to this headline">¶</a></h3>
-</div>
+<h2>接受的用语说明<a class="headerlink" href="#id366" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="id367">
-<h2>特定于特定目标计算机的格式检查<a class="headerlink" href="#id367" title="Permalink to this headline">¶</a></h2>
+<h2>未命名的结构和联合字段<a class="headerlink" href="#id367" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="id368">
-<h2>接受的用语说明<a class="headerlink" href="#id368" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="id369">
-<h2>未命名的结构和联合字段<a class="headerlink" href="#id369" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="id370">
-<h2>线程本地存储<a class="headerlink" href="#id370" title="Permalink to this headline">¶</a></h2>
+<h2>线程本地存储<a class="headerlink" href="#id368" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="b">
 <h2>使用“ 0b”前缀的二进制常量<a class="headerlink" href="#b" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="c-linux">
 <h2>C 扩展部分在linux 内核中的应用<a class="headerlink" href="#c-linux" title="Permalink to this headline">¶</a></h2>
-</div>
-</div>
-<div class="section" id="gcov">
-<h1>gcov<a class="headerlink" href="#gcov" title="Permalink to this headline">¶</a></h1>
+<p>二进制兼容性</p>
+<p>gcov</p>
 <p>gcov是一个测试覆盖程序。 与GCC配合使用，可以分析您的程序，以帮助创建更高效，更快速的代码，并发现未经测试的程序部分。 您可以将gcov用作性能分析工具，以帮助您发现优化工作将最有效地影响代码的位置。 您还可以将gcov与其他性能分析工具gprof一起使用，以评估代码的哪些部分使用了最多的计算时间。</p>
 <p>分析工具可帮助您分析代码的性能。 使用诸如gcov或gprof之类的探查器，您可以找到一些基本的性能统计信息，例如：</p>
 <ul class="simple">
@@ -12765,6 +12750,8 @@ failure memorder) [Built-in Function]:此内置函数实现__atomic_compare_exch
 <p>如果您打算使用gcov，则应在不进行优化的情况下编译代码，因为通过将一些代码行合并到一个函数中，优化可能不会为您提供所需的信息，而这些信息可能需要查找使用代码的“热点”。 大量的计算机时间。 同样，由于gcov会按行（以最低分辨率）累积统计信息，因此它最适合于在每行仅放置一条语句的编程风格。 如果使用扩展到循环或其他控制结构的复杂宏，则统计信息的用处较小-它们仅在出现宏调用的行上报告。 如果复杂宏的行为类似于函数，则可以用内联函数替换它们以解决此问题。</p>
 <p>gcov创建一个名为“ sourcefile.gcov”的日志文件，该文件指示源文件“ sourcefile.c”的每一行执行了多少次。 您可以将这些日志文件与gprof一起使用，以帮助微调程序的性能。 gprof提供了您可以使用的计时信息以及从gcov获得的信息。</p>
 <p>gcov仅适用于使用GCC编译的代码。 它与任何其他配置文件或测试覆盖率机制不兼容。</p>
+<div class="section" id="gcov">
+<h3>10.2调用gcov<a class="headerlink" href="#gcov" title="Permalink to this headline">¶</a></h3>
 <p>gcov [options] files</p>
 <p>gcov 接受以下选项：</p>
 <p>-a
@@ -13006,6 +12993,8 @@ Creating ‘tmp.cpp.gcov’</p>
 <p>1*:    7:  Foo(): b (1000) {}</p>
 </dd>
 </dl>
+<div class="section" id="void-inc-b">
+<h4>2*:    8:  void inc () { b++; }<a class="headerlink" href="#void-inc-b" title="Permalink to this headline">¶</a></h4>
 <dl class="simple">
 <dt>Foo&lt;char&gt;::inc():</dt><dd><p>#####:    8:  void inc () { b++; }</p>
 </dd>
@@ -13068,6 +13057,9 @@ Creating ‘tmp.cpp.gcov’</p>
 <p>1*:    7:  Foo(): b (1000) {}</p>
 </dd>
 </dl>
+</div>
+<div class="section" id="id369">
+<h4>2*:    8:  void inc () { b++; }<a class="headerlink" href="#id369" title="Permalink to this headline">¶</a></h4>
 <dl class="simple">
 <dt>Foo&lt;char&gt;::inc():</dt><dd><p>#####:    8:  void inc () { b++; }</p>
 </dd>
@@ -13154,6 +13146,9 @@ Creating ‘tmp.cpp.gcov’</p>
 <blockquote>
 <div><p>1:    7:  Foo(): b (1000) {}</p>
 </div></blockquote>
+</div>
+<div class="section" id="id370">
+<h4>2*:    8:  void inc () { b++; }<a class="headerlink" href="#id370" title="Permalink to this headline">¶</a></h4>
 <p>Foo&lt;char&gt;::inc():
 function Foo&lt;char&gt;::inc() called 0 returned 0% blocks executed 0%</p>
 <blockquote>
@@ -13241,6 +13236,10 @@ branch  2 taken 0% (throw)</p>
 <p>对于一个呼叫，如果它至少执行了一次，则将打印一个百分比，该百分比表示该呼叫返回的次数除以该呼叫执行的次数。通常为100％，但对于调用 exit 或 longjmp 的函数而言可能会更少，因此可能不会在每次调用它们时都返回。</p>
 <p>执行次数是累计的。如果示例程序再次执行时没有删除.gcda文件,源文件中每行的执行次数将被添加到之前的运行结果中。这在几个方面都有潜在的用处。例如,它可以用来积累一些程序运行的数据,作为测试验证套件的一部分,或者提供大量程序运行的更精确的长期信息。</p>
 <p>的数据。.gcda文件会在程序退出前立即保存。对于每个用-fprofile-arcs，分析代码首先尝试读取现有的.gcda文件; 如果文件与可执行文件不匹配（基本块计数不同），它将忽略文件的内容。然后，它添加新的执行计数，最后将数据写入文件。</p>
+</div>
+</div>
+<div class="section" id="gcovgcc">
+<h3>将gcov与GCC优化配合使用<a class="headerlink" href="#gcovgcc" title="Permalink to this headline">¶</a></h3>
 <p>如果您打算使用 gcov 来帮助优化代码，则必须首先使用特殊的GCC选项“–coverage’。除此之外，您还可以使用其他任何GCC选项；但是，如果您想证明程序中的每一行都已执行，则不应同时进行优化编译。在某些机器上，优化器可以通过将一些简单的代码行与其他代码行结合来消除它们。例如，如下代码：</p>
 <dl class="simple">
 <dt>if (a != b)</dt><dd><p>c = 1;</p>
@@ -13259,10 +13258,16 @@ branch  2 taken 0% (throw)</p>
 <p>如果函数在多个地方内联,每个地方的块结构可能不一样。例如,在某些情况下,一个条件现在可能在编译时可以计算。因为内联函数的所有使用的覆盖范围将显示为相同的源行,所以行数本身可能看起来不一致。</p>
 <p>长时间运行的应用程序可以使用 __gcov_reset 和 __gcov_dump 工具将概要文件收集限制为感兴趣的程序区域。调用 __gcov_reset(void) 将清除所有配置文件计数器为零，而调用 __gcov_dump(void) 将导致在该点收集的配置文件信息被转储到.gcda输出文件。检测的应用程序使用优先级为99的静态析构函数来调用 __gcov_dump 函数。因此，在所有用户定义的静态析构函数以及向 atexit 注册的处理程序之后，将执行 __gcov_dump 。如果可执行文件通过dlopen功能加载动态共享对象，-Wl,–dynamic-list-data需要转储所有配置文件数据。</p>
 <p>概要分析运行时库报告与概要文件处理和概要文件保存相关的各种错误。错误会打印到标准错误输出或’GCOV_ERROR_FILE’文件（如果使用环境变量）。为了在发生错误后立即终止，请设置’GCOV_EXIT_AT_ERROR’环境变量。这可以帮助用户查找配置文件冲突，从而导致配置文件产生误导。</p>
+</div>
+<div class="section" id="id371">
+<h3>10.4 gcov数据文件的简要说明<a class="headerlink" href="#id371" title="Permalink to this headline">¶</a></h3>
 <p>gcov 使用两个文件进行概要分析。这些文件的名称从原始目标文件派生而来，方法是将文件后缀替换为.gcno， 或者.gcda。这些文件包含以独立于平台的格式存储的coverage和配置文件数据。的.gcno文件被放置在与对象文件相同的目录中。默认情况下,.gcda文件也存储在与对象文件相同的目录中,但GCC的-fprofile-dir选项可以用来存储.gcda文件在一个单独的目录中。</p>
 <p>The.gcno当用GCC编译源文件时,会产生注释文件。-ftest-coverage选项,它包含了重建基本块图和为块分配源线号的信息。它包含了重建基本块图和为块分配源线号的信息。</p>
 <p>The.gcda当一个程序包含用GCC构建的对象文件时,就会生成count数据文件。-fprofile-arcs选项被执行。一个单独的.gcda文件是为每个用这个选项编译的对象文件创建的。它包含了圆弧转换计数、数值轮廓计数和一些摘要信息。</p>
 <p>不建议直接访问coverage文件。消费者应使用 gcov 工具通过以下方式提供的中间格式–json-formatoption.</p>
+</div>
+<div class="section" id="id372">
+<h3>10.5数据文件重定位以支持交叉分析<a class="headerlink" href="#id372" title="Permalink to this headline">¶</a></h3>
 <p>运行该程序将导致生成配置文件输出。对于每个用-fprofile-arcs，伴随.gcda文件将被放置在对象文件目录中。这就隐含着要求在与程序建立时相同的系统上运行程序,或者在目标系统上拥有相同的绝对目录结构。程序将尝试创建所需的目录结构,如果它还不存在的话。</p>
 <p>为了支持交叉剖析,编制了一个程序,其中包括-fprofile-arcs可以根据两个环境变量来重新定位数据文件。</p>
 <blockquote>
@@ -13272,11 +13277,13 @@ GCOV_PREFIX_STRIP 表示要从硬线绝对路径上剥离多少个初始目录�
 </div></blockquote>
 <p>例如,如果对象文件/user/build/foo.o建有-fprofile-arcs，最终的可执行文件将尝试创建数据文件/user/build/foo.gcda在目标系统上运行时。如果相应的目录不存在并且无法创建它，它将失败。例如，可以通过将环境设置为“GCOV_PREFIX=/target/run’和’GCOV_PREFIX_STRIP=1’。这样的设置将命名数据文件/target/run/build/foo.gcda.</p>
 <p>您必须将数据文件移动到预期的目录树中,以便将它们用于配置文件定向优化(-fprofile-use），或使用 gcov 工具。</p>
+</div>
+</div>
 <div class="section" id="gcov-tool">
 <h2>gcov-tool<a class="headerlink" href="#gcov-tool" title="Permalink to this headline">¶</a></h2>
 <p>gcov-tool 是可以与GCC结合使用的工具，可以离线操作或处理gcda配置文件。</p>
-<div class="section" id="id371">
-<h3>gcov-tool简介<a class="headerlink" href="#id371" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id373">
+<h3>gcov-tool简介<a class="headerlink" href="#id373" title="Permalink to this headline">¶</a></h3>
 <p>gcov-tool 是一个离线工具，用于处理gcc的gcda配置文件。</p>
 <p>当前的gcov-tool支持以下功能。</p>
 <blockquote>
@@ -13296,8 +13303,8 @@ GCOV_PREFIX_STRIP 表示要从硬线绝对路径上剥离多少个初始目录�
 值配置文件计数器值的差异：值配置文件的某些计数器值与运行时有关，例如堆地址。看到这些计数器有些不同是正常的。</p>
 </div></blockquote>
 </div>
-<div class="section" id="id372">
-<h3>调用 gcov-tool<a class="headerlink" href="#id372" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id374">
+<h3>调用 gcov-tool<a class="headerlink" href="#id374" title="Permalink to this headline">¶</a></h3>
 <p>gcov-tool [global-options] SUB_COMMAND [sub_command-options] profile_dir</p>
 <p>gcov-tool 接受以下选项：</p>
 <p>-h
@@ -13392,8 +13399,8 @@ GCOV_PREFIX_STRIP 表示要从硬线绝对路径上剥离多少个初始目录�
 <div class="section" id="gcov-dump">
 <h2>gcov-dump<a class="headerlink" href="#gcov-dump" title="Permalink to this headline">¶</a></h2>
 <p>gcov-dump 是可以与GCC结合使用的工具，可以离线转储gcda和gcno配置文件的内容。</p>
-<div class="section" id="id373">
-<h3>调用<a class="headerlink" href="#id373" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id375">
+<h3>调用<a class="headerlink" href="#id375" title="Permalink to this headline">¶</a></h3>
 <p>Usage: gcov-dump [OPTION] … gcovfiles</p>
 <p>gcov-dump 接受以下选项：</p>
 <p>-h
@@ -13426,8 +13433,8 @@ GCOV_PREFIX_STRIP 表示要从硬线绝对路径上剥离多少个初始目录�
 <div class="section" id="lto-dump">
 <h2>lto-dump<a class="headerlink" href="#lto-dump" title="Permalink to this headline">¶</a></h2>
 <p>lto-dump 是可以与GCC结合使用以转储链接时间优化目标文件的工具。</p>
-<div class="section" id="id374">
-<h3>调用方法<a class="headerlink" href="#id374" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id376">
+<h3>调用方法<a class="headerlink" href="#id376" title="Permalink to this headline">¶</a></h3>
 <p>Usage: lto-dump [OPTION] … objfiles</p>
 <p>lto-dump 接受以下选项：</p>
 <dl class="option-list">
@@ -13487,11 +13494,9 @@ GCOV_PREFIX_STRIP 表示要从硬线绝对路径上剥离多少个初始目录�
 <dd><p>显示转储工具帮助。</p>
 </dd>
 </dl>
+<p>linux 内核编程中GCC的高级应用</p>
 </div>
 </div>
-</div>
-<div class="section" id="linux-gcc">
-<h1>linux 内核编程中GCC的高级应用<a class="headerlink" href="#linux-gcc" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
@@ -13499,7 +13504,7 @@ GCOV_PREFIX_STRIP 表示要从硬线绝对路径上剥离多少个初始目录�
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="comp_ld.html" class="btn btn-neutral float-left" title="ld 在linux中的应用" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="comp_elf.html" class="btn btn-neutral float-right" title="内核与ELF" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="comp_elf.html" class="btn btn-neutral float-right" title="ELF基础" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

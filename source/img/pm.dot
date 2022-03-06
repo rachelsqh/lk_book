@@ -1,0 +1,274 @@
+digraph g {
+label = "linux 电源管理"
+graph [
+rankdir = "LR"
+];
+node [
+fontsize = "16"
+shape = "ellipse"
+
+];
+edge [
+];
+
+
+"kset" [
+label = "<f0> struct kset \{ | <f1> list| <f2> kobj| <f3> uevent_ops | <f4> \}"
+shape = "record"
+
+];
+
+"kset_f1_plain" [
+label = "kset.list:"
+shape = "plaintext"
+];
+"kset_f2_plain" [
+label = "kset.kobj:"
+shape = "plaintext"
+];
+
+"kset_f3_plain" [
+label = "kset.uevent_ops:"
+shape = "plaintext"
+];
+
+"kset_f1_plain" -> "kset":f1  [
+dir = "none"
+color = "blue"
+id = 10
+];
+"kset_f2_plain" -> "kset":f2 [
+dir = "none"
+color = "blue"
+id = 11
+];
+"kset_f3_plain" -> "kset":f3 [
+dir = "none"
+color = "blue"
+id = 12
+];
+
+
+"kobject" [
+label = "<f0> struct kobject \{ | <f1> const char name| <f2> struct list_head entry| <f3> struct kobject  *parent| <f4> struct kset  *kset | <f5> struct kobj_type  *ktype | <f6> struct kernfs_node *sd | <f7> struct kref		kref | <f8> ... | <f9> \}"
+shape = "record"
+];
+"kobject_f1_plain" [
+label = "kobject.name:"
+shape = "plaintext"
+];
+"kobject_f2_plain" [
+label = "kobject.entry:"
+shape = "plaintext"
+];
+
+
+"kobject_f3_plain" [
+label = "kobject.parent:"
+shape = "plaintext"
+];
+
+"kobject_f4_plain" [
+label = "kobject.kset:"
+shape = "plaintext"
+];
+
+"kobject_f5_plain" [
+label = "kobject.ktype:"
+shape = "plaintext"
+];
+
+"kobject_f6_plain" [
+label = "kobject.sd:"
+shape = "plaintext"
+];
+
+"kobject_f7_plain" [
+label = "kobject.kref:"
+shape = "plaintext"
+];
+
+
+
+"kobject":f1 -> "kobject_f1_plain"[
+dir = "none"
+color = "blue"
+id = 13
+];
+
+
+"kobject":f2 -> "kobject_f2_plain"[
+dir = "none"
+color = "blue"
+id = 14
+];
+"kobject":f3 -> "kobject_f3_plain"[
+dir = "none"
+color = "blue"
+id = 15
+];
+"kobject":f4 -> "kobject_f4_plain"[
+dir = "none"
+color = "blue"
+id = 16
+];
+"kobject":f5 -> "kobject_f5_plain"[
+dir = "none"
+color = "blue"
+id = 17
+];
+"kobject":f6 -> "kobject_f6_plain"[
+dir = "none"
+color = "blue"
+id = 18
+];
+"kobject":f7 -> "kobject_f7_plain"[
+dir = "none"
+color = "blue"
+id = 19
+];
+
+
+"kobj_type" [
+label = "<f0> struct kobj_type \{ | <f1> void (*release)(struct kobject *kobj) | <f2> const struct sysfs_ops *sysfs_ops | <f3> struct attribute **default_attrs | <f4> const struct attribute_group **default_groups  | <f5> const struct kobj_ns_type_operations *(*child_ns_type)(struct kobject *kobj) | <f6> const void *(*namespace)(struct kobject *kobj) | <f7> void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid)  | <f8> \}"
+shape = "record"
+];
+
+"kobj_type_f1_plain" [
+label = "kobj_type.release:"
+shape = "plaintext"
+];
+
+"kobj_type_f2_plain" [
+label = "kobj_type.sysfs_ops:"
+shape = "plaintext"
+];
+
+
+
+"kobj_type_f3_plain" [
+label = "kobj_type.default_attrs:"
+shape = "plaintext"
+];
+
+"kobj_type_f4_plain" [
+label = "kobj_type.default_groups:"
+shape = "plaintext"
+];
+
+
+"kobj_type_f5_plain" [
+label = "kobj_type.child_ns_type:"
+shape = "plaintext"
+];
+
+"kobj_type_f6_plain" [
+label = "kobj_type.namespace:"
+shape = "plaintext"
+];
+
+"kobj_type_f7_plain" [
+label = "kobj_type.get_ownership:"
+shape = "plaintext"
+];
+
+"kobj_type":f1 -> "kobj_type_f1_plain" [
+dir = "none"
+color = "blue"
+id = 20
+];
+
+"kobj_type":f2 -> "kobj_type_f2_plain" [
+dir = "none"
+color = "blue"
+id = 20
+];
+"kobj_type":f3 -> "kobj_type_f3_plain" [
+dir = "none"
+color = "blue"
+id = 20
+];
+"kobj_type":f4 -> "kobj_type_f4_plain" [
+dir = "none"
+color = "blue"
+id = 20
+];
+
+"kobj_type":f5 -> "kobj_type_f5_plain" [
+dir = "none"
+color = "blue"
+id = 20
+];
+"kobj_type":f6 -> "kobj_type_f6_plain" [
+dir = "none"
+color = "blue"
+id = 20
+];
+"kobj_type":f7 -> "kobj_type_f7_plain" [
+dir = "none"
+color = "blue"
+id = 20
+];
+
+"kset_uevent_ops" [
+label = "<f0> struct kset_uevent_ops \{ | <f1> int (* const filter)(struct kset *kset, struct kobject *kobj) | <f2> const char *(* const name)(struct kset *kset, struct kobject *kobj) | <f3> int (* const uevent)(struct kset *kset, struct kobject *kobj,struct kobj_uevent_env *env);| <f4> \}"
+shape = "record"
+];
+
+
+"kset_uevent_ops_f1_plain" [
+label = "kset_uevent_ops.filter:"
+shape = "plaintext"
+];
+
+
+
+"kset_uevent_ops_f2_plain" [
+label = "kset_uevent_ops.name:"
+shape = "plaintext"
+];
+"kset_uevent_ops_f3_plain" [
+label = "kset_uevent_ops.uevent:"
+shape = "plaintext"
+];
+
+"kset_uevent_ops_f1_plain" -> "kset_uevent_ops":f1  [
+dir = "none"
+color = "blue"
+id = 30
+];
+
+"kset_uevent_ops_f2_plain" -> "kset_uevent_ops":f2 [
+dir = "none"
+color = "blue"
+id = 30
+];
+
+"kset_uevent_ops_f3_plain" -> "kset_uevent_ops":f3 [
+dir = "none"
+color = "blue"
+id = 30
+];
+
+
+"kset":f2 -> "kobject":f0 [
+id = 1
+];
+
+"kset":f3 -> "kset_uevent_ops":f0 [
+id = 2
+];
+
+"kobject":f5 -> "kobj_type":f0 [
+id = 3
+];
+
+
+
+
+
+
+
+
+
+}

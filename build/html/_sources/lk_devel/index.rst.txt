@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-linux 内核开发
------------------
+linux 内核开发基础
+--------------------
 内核构建系统，变成基础，开发工具及测试方法描述
 
 .. toctree::
@@ -13,6 +13,6 @@ linux 内核开发
    k_doc
    lk_build/index
    lk_comp/index
-   lk_debug/index
-   dot
+   kernel_st
    kernel_debug_ig
+   gnuplot

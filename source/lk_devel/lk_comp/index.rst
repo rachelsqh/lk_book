@@ -9,12 +9,11 @@ linux 内核编程
    :maxdepth: 2
    
    comp_api
-   comp_base
    comp_as
    comp_ld
    comp_gcc
    comp_elf
    comp_uwind
-   dev-tool/index
-   k_prog/index
+   comp_objtool
+   comp_bin_tool
 

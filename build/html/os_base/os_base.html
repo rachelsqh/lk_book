@@ -14,9 +14,7 @@
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="linux 内核概述" href="lk_base/index.html" />
-    <link rel="prev" title="linux 操作系统架构分析" href="index.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -34,45 +32,18 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">linux 操作系统架构分析</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">操作系统框架</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#systemd">systemd(管理程序）</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">命令</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#systemctl">systemctl</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#systemd-analyze">systemd-analyze</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#hostnamectl">hostnamectl</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#localectl">localectl</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#timedatectl">timedatectl</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#loginctl">loginctl</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#id3">系统资源组织</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id4">分类</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id5">依赖关系</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#id6">Unit 的配置文件</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id7">配置文件的状态</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id8">配置文件格式</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id9">配置文件的区块</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#target">Target</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id10">日志管理：</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id11">systemd 启动设置</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="lk_base/index.html">linux 内核概述</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../lk_code/index.html">linux 内核代码分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../os_sec/index.html">linux 操作系统安全</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../my_os/index.html">从零开始写一个系统（KVM）</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../csxj/index.html">处世悬镜</a></li>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dot.html">dot画图</a></li>
 </ul>
 
         </div>
@@ -89,7 +60,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="index.html">linux 操作系统架构分析</a> &raquo;</li>
       <li>操作系统框架</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/os_base/os_base.rst.txt" rel="nofollow"> View page source</a>
@@ -350,10 +320,7 @@ $ sudo journalctl –vacuum-time=1years</p>
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="linux 操作系统架构分析" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="lk_base/index.html" class="btn btn-neutral float-right" title="linux 内核概述" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

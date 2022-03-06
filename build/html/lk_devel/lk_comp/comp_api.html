@@ -15,7 +15,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="内核编程概述" href="comp_base.html" />
+    <link rel="next" title="AS:内核汇编" href="comp_as.html" />
     <link rel="prev" title="linux 内核编程" href="index.html" /> 
 </head>
 
@@ -35,8 +35,8 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发基础</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lk_build/index.html">linux 内核构建</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核编程</a><ul class="current">
@@ -62,52 +62,42 @@
 <li class="toctree-l4"><a class="reference internal" href="#id38">节</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id43">符号表</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id44">重定位</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#id47">程序加载和动态链接</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id48">程序加载</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id50">动态链接</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#id53">库</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id47">程序加载</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id49">动态链接</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#c">C库</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#unwind">Unwind库接口</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id63">汇编代码中的展开</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#id64">开发环境</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id65">约定</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id61">汇编代码中的展开</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gotip">GOT指针和IP相对寻址</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#id66">linux 约定</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id67">32位程序执行</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id62">32位程序执行</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#amd64-linux">AMD64 linux 内核约定</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="comp_base.html">内核编程概述</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_as.html">内核汇编</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_as.html">AS:内核汇编</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_gcc.html">GCC 在linux 内核中的应用</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#id3">重要选项</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#c">C实现定义的行为</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#gcov">gcov</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#linux-gcc">linux 内核编程中GCC的高级应用</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">内核与ELF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">ELF基础</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_uwind.html">UWIND</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dev-tool/index.html">内核开发工具</a></li>
-<li class="toctree-l3"><a class="reference internal" href="k_prog/index.html">内核编程示例</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_objtool.html">objtool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_bin_tool.html">二进制工具</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../dot.html">dot画图</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_st.html">内核测试</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_debug_ig.html">kernel debug 实验记录</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gnuplot.html">曲线图-gnuplot</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cpu.html">cpu管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../uboot.html">uboot理解</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
 </ul>
 
         </div>
@@ -124,7 +114,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发基础</a> &raquo;</li>
           <li><a href="index.html">linux 内核编程</a> &raquo;</li>
       <li>linux 二进制接口</li>
       <li class="wy-breadcrumbs-aside">
@@ -141,8 +131,9 @@
 <p>跟踪信息的实现原理</p>
 <p><a class="reference external" href="https://www.kernel.org/doc/html/latest/x86/orc-unwinder.html">https://www.kernel.org/doc/html/latest/x86/orc-unwinder.html</a></p>
 <p>linux kernel unwinder选择：</p>
-<dl class="simple">
-<dt>kernel hacking</dt><dd><dl class="simple">
+<dl>
+<dt>kernel hacking</dt><dd><blockquote>
+<div><dl class="simple">
 <dt>–&gt; x86 Debugging</dt><dd><dl class="simple">
 <dt>–&gt;Choose kernel unwinder:  UNWINDER_ORC:               ORC unwinder</dt><dd><p>UNWINDER_FRAME_POINTER:     Frame pointer unwinder
 UNWINDER_GUESS:             Guess unwinder</p>
@@ -150,6 +141,8 @@ UNWINDER_GUESS:             Guess unwinder</p>
 </dl>
 </dd>
 </dl>
+</div></blockquote>
+<p>这一段与gcc,elf,ld搅和在一起。</p>
 </dd>
 </dl>
 <p>参考：</p>
@@ -224,6 +217,7 @@ pushl％ebp
 </div>
 <div class="section" id="id2">
 <h2>6. 用户态常见取栈方法<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>这个规范解决了大部分疑惑。</p>
 <p>参照x86_64-abi进行综述性说明</p>
 </div>
 <div class="section" id="id3">
@@ -404,37 +398,33 @@ extern int main ( int argc , char <em>argv[ ] , char</em> envp[ ] );</p>
 </div>
 <div class="section" id="id46">
 <h3>大模式<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
-</div>
+<p>程序加载和动态链接</p>
 </div>
 </div>
 <div class="section" id="id47">
-<h1>程序加载和动态链接<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h1>
+<h2>程序加载<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id48">
-<h2>程序加载<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h2>
+<h3>程序头<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
 <div class="section" id="id49">
-<h3>程序头<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
+<h2>动态链接<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id50">
-<h2>动态链接<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h2>
+<h3>程序加载器<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h3>
+</div>
 <div class="section" id="id51">
-<h3>程序加载器<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id52">
-<h3>初始化和结束函数<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-</div>
-<div class="section" id="id53">
-<h1>库<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h1>
+<h3>初始化和结束函数<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
+<p>库</p>
 <p>进一步理解需要参考Intel386 ABI</p>
+</div>
+</div>
 <div class="section" id="c">
 <h2>C库<a class="headerlink" href="#c" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id54">
-<h3>全局数据符号<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id52">
+<h3>全局数据符号<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
 </div>
-<div class="section" id="id55">
-<h3>浮点环境函数<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id53">
+<h3>浮点环境函数<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 <div class="section" id="unwind">
@@ -457,8 +447,8 @@ _Unwind_GetCFA</p>
 </div></blockquote>
 <p>此外，定义了两种数据类型（_Unwind_Context 和 _Unwind_Exception）来接口调用运行时（例如 C++ 运行时）和上述例程。所有例程和接口的行为都如同定义了 extern “C”。特别是，名称没有被破坏。作为该接口的一部分定义的所有名称都有一个“_Unwind_”前缀。</p>
 <p>最后，编译器会将语言和供应商特定的个性例程存储在需要异常处理的堆栈帧的展开描述符中。 展开程序调用个性例程来处理特定于语言的任务，例如识别处理特定异常的帧。</p>
-<div class="section" id="id56">
-<h3>异常句柄架构<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id54">
+<h3>异常句柄架构<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="unwinding">
 <h4>unwinding的原因，两个：<a class="headerlink" href="#unwinding" title="Permalink to this headline">¶</a></h4>
 <ol class="arabic simple">
@@ -471,8 +461,8 @@ _Unwind_GetCFA</p>
 <p>为了适应这些差异，提出了两种不同的例程。 _Unwind_RaiseExceptio 在个性例程的控制下执行异常风格的展开。 另一方面，_Unwind_ForcedUnwind 执行展开，但让外部代理有机会拦截对个性例程的调用。 这是使用代理个性例程完成的，该例程拦截对个性例程的调用，让外部代理覆盖堆栈帧的个性例程的默认值。</p>
 <p>因此，每个人格例程都没有必要知道任何可能导致放松的外部因素。 例如，C++ 个性例程只需要处理 C++ 异常（并且可能伪装外部异常），但它不需要知道代表 longjmp 或 pthreads 取消完成的任何具体的展开。</p>
 </div>
-<div class="section" id="id57">
-<h4>unwind过程<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id55">
+<h4>unwind过程<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h4>
 <p>标准 ABI 异常处理/展开过程以上述形式之一引发异常开始。 这个调用指定了一个异常对象和一个异常类。
 然后运行时框架开始一个两阶段的过程：</p>
 <ol class="arabic simple">
@@ -486,44 +476,38 @@ _Unwind_GetCFA</p>
 <p>AMD64 psABI 指定的用于实现此框架的 API 在以下部分中描述。</p>
 </div>
 </div>
+<div class="section" id="id56">
+<h3>数据结构<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id57">
+<h3>丢出异常<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h3>
+</div>
 <div class="section" id="id58">
-<h3>数据结构<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h3>
+<h3>异常对象管理<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="id59">
-<h3>丢出异常<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h3>
+<h3>上下文管理<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="id60">
-<h3>异常对象管理<a class="headerlink" href="#id60" title="Permalink to this headline">¶</a></h3>
+<h3>私有例程<a class="headerlink" href="#id60" title="Permalink to this headline">¶</a></h3>
+</div>
 </div>
 <div class="section" id="id61">
-<h3>上下文管理<a class="headerlink" href="#id61" title="Permalink to this headline">¶</a></h3>
+<h2>汇编代码中的展开<a class="headerlink" href="#id61" title="Permalink to this headline">¶</a></h2>
+<p>开发环境</p>
+<p>约定</p>
 </div>
-<div class="section" id="id62">
-<h3>私有例程<a class="headerlink" href="#id62" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="id63">
-<h2>汇编代码中的展开<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h2>
-</div>
-</div>
-<div class="section" id="id64">
-<h1>开发环境<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h1>
-</div>
-<div class="section" id="id65">
-<h1>约定<a class="headerlink" href="#id65" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="gotip">
 <h2>GOT指针和IP相对寻址<a class="headerlink" href="#gotip" title="Permalink to this headline">¶</a></h2>
+<p>linux 约定</p>
 </div>
-</div>
-<div class="section" id="id66">
-<h1>linux 约定<a class="headerlink" href="#id66" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id67">
-<h2>32位程序执行<a class="headerlink" href="#id67" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id62">
+<h2>32位程序执行<a class="headerlink" href="#id62" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="amd64-linux">
 <h2>AMD64 linux 内核约定<a class="headerlink" href="#amd64-linux" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id68">
-<h3>调用约定<a class="headerlink" href="#id68" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id63">
+<h3>调用约定<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h3>
 <p>Linux AMD64 内核在内部使用与用户级应用程序相同的调用约定,喜欢调用系统调用的用户级应用程序应该使用 C 库中的函数。C 库和 Linux 内核之间的接口与用户级应用程序的接口相同，但有以下区别：</p>
 <ol class="arabic simple">
 <li><p>用户级应用程序中通过整数寄存器进行参数传递的顺序，%rdi, %rsi, %rdx, %rcx, %r8 和 %r9；内核接口采用如下顺序：%rdi,%rsi, %rdx, %r10, %r8 和 %r9。</p></li>
@@ -534,17 +518,17 @@ _Unwind_GetCFA</p>
 <li><p>只能向内核中传递INTEGER或MEMORY类型参数。</p></li>
 </ol>
 </div>
-<div class="section" id="id69">
-<h3>栈布局<a class="headerlink" href="#id69" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id64">
+<h3>栈布局<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h3>
 <p>Linux 内核不遵守红色区域</p>
 </div>
-<div class="section" id="id70">
-<h3>请求处理器特性<a class="headerlink" href="#id70" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id65">
+<h3>请求处理器特性<a class="headerlink" href="#id65" title="Permalink to this headline">¶</a></h3>
 <p>Required Processor Features</p>
-<img alt="../../_images/rpf.png" class="align-center" id="id71" src="../../_images/rpf.png" />
+<img alt="../../_images/rpf.png" class="align-center" id="id66" src="../../_images/rpf.png" />
 </div>
-<div class="section" id="id72">
-<h3>其他问题<a class="headerlink" href="#id72" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id67">
+<h3>其他问题<a class="headerlink" href="#id67" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 </div>
@@ -554,7 +538,7 @@ _Unwind_GetCFA</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="linux 内核编程" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="comp_base.html" class="btn btn-neutral float-right" title="内核编程概述" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="comp_as.html" class="btn btn-neutral float-right" title="AS:内核汇编" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -1,0 +1,177 @@
+digraph G {
+  	concentrate=True;
+  	rankdir="TB";
+  	node [shape=record];
+
+	node [
+	fontsize = "16"
+	shape = "ellipse"
+	];
+	label = "module loade"
+	
+	subgraph cluster_0 {
+		label = "load_module:分配和加载模块";
+		
+		a0[label = "module_sig_check",shape = rect];
+		a0_notes[label = "module_sig_check:\l
+				  以MODULE_SIG_STRING开始的节：如\"~Module signature appended ~\"\l",shape = note];
+		a1[label = "elf_validity_check(info)",shape = rect];
+		a1_notes[label = "elf_validity_check(info):\l
+				  模块ELF格式有效性检查;\l",shape = note];
+		
+		a2[label = "setup_load_info",shape = rect];
+		a2_notes[label = "setup_load_info(info,flags):\l
+				  解析内核模块文件，根据节信息初始化info结构;\l",shape = note];	
+		a3[label = "blacklisted(info->name))",shape = rect];
+		a3_notes[label = "blacklisted:\l
+				  模块是否在黑名单中:module_blacklist结构;\l",shape = note];
+	
+		a4[label = "rewrite_section_headers(info,flags)",shape = rect];
+		a4_notes[label = "rewrite_section_headers(info,flags):\l
+				  info->sechdrs[i].sh_addr = info->hdr + info->sechdrs[i].->sh_offset:将文件内便宜修改为hdr内偏移，并获取内存地址\l
+				  跟踪但不保留：\l
+			          info->sechdrs[info->index.vers].sh_flags &= ~(unsigned long)SHF_ALLOC\l
+		                  info->sechdrs[info->index.info].sh_flags &= ~(unsigned long)SHF_ALLOC\l",shape = rect];
+		
+		a5[label = "check_modstruct_vesion(info,info->mod)\l",shape = rect];
+		a5_notes[label = "check_modstruct_version(info,info->mod)\l
+				   查询符号:module_layout版本;\l
+				   ",shape = note];
+		
+		a6[label = "layout_and_allocate(info,flags)",shape = rect];
+		a6_notes[label = "layout_and_allocate(info,flags):\l
+				  计算模块布局，并分配所有内存,放置到最终位置:\l
+				   check_modinfo(info->mod,info,flags):\l
+				   -vermagic\l
+				   -intree\l
+				   -staging ：会警告\l
+                                   -livepatch\l
+                                   -license\l
+				   module_frob_arch_sections:\l
+				   module_enforce_rwx_sections:\l
+				   index.pcu:其分配采用不同方法：\l
+			           .data..ro_after_init节：sh_flags |= SHF_RO_AFTER_INIT\l
+				   __jump_table节：sh_flags |= SHF_RO_AFTER_INIT\l
+				   通用处理：\l
+				   layout_sections(info-mod,info):\l
+                                   layout_symtab(info->mod,info):\l
+                                   move_module(info->mod,info):放入最终位置\l
+                                   mod = info->sehdrs[info->index.mod].sh_addr:这是模块的最终状态\l
+                                   kmemleak_load_module(mod,info):内核模块泄漏检查？\l",shape = note];
+
+		a7[label = "audit_log_kern_module(mod->name)",shape = rect];
+		a7_note[label = "audit：这个原理该处理了",shape = note];
+		
+		a8[label = "add_unformed_module(mode)\l",shape = rect];
+		a8_note[label = "add_unformed_module:\l",shape = note];
+
+		
+		a9[label = "percpu_modalloc(mod,info)\l",shape = rect];
+		a9_note[label = "percpu_modalloc:\l",shape = note];
+		
+		a10[label = "module_unload_init(mod)\l",shape = rect];
+		a10_note[label = "module_unload_init(mod):初始化模块中卸载的节,增加引用计数\l",shape = note];			
+	  		
+		a11[label = "find_module_sections(modinfo)\l",shape = rect];
+		a11_note[label = "find_module_sections(modinfo):\l
+				   初始化各个节的基地址mod->:\l
+				   --kp = __param;\l--syms = __ksymtab;\l--crcs = __kcrctab;\l--gpl_syms = __ksymtab_gpl;\l--gpl_crcs = ++kcrctab_gpl;\l
+				   --ctors = .ctors/.init_array/:只能有二选一的节，不能同时有;\l--noinstr_text_start = .noinstr.text;\l
+				   --tracepoints_ptrs = __tracepoints_ptrs;\l --srcu_struct_ptrs = ___srcu_struct_ptrs;\l--bpf_raw_events = __bpf_raw_tp_map;\l
+				   --btf_data = .BTF;\l--jump_entries = __jump_table;\l--trace_events = _ftrace_events;\l--trace_evals = _ftrace_eval_map;\l
+				   --ftrace_callsites = section_objs(...);\l--ei_funcs = _error_injection_whitelist;\l--kprobes_text_start = .kprobes.text;\l
+				   --kprobe_blacklist = _kprobe_blacklist;\l--static_call_sites = .static_call_sites;\l--extable = __ex_table;\l--debug = __dyndbg;\l",shape = note];
+		
+		a12[label = "check_module_license_and_versions(mod)\l",shape = rect];
+		a12_note[label = "check_module_license_and_versions(mod):\l",shape = note];	
+		
+		a13[label = "setup_modinfo(mod,info)\l",shape = rect];
+		a13_note[label = "setup_modinfo(mod,info)\l",shape = note];
+		   
+
+		a1[label = "",shape = rect];
+		a1_note[label = "",shape = note];
+
+
+		a14[label = "simplify_symbols\l",shape = rect];
+		a14_note[label = "simplify_symbols:\l",shape = note];
+
+
+		a15[label = "apply_relocations\l",shape = rect];
+		a15_note[label = "apply_relocations:\l",shape = note];
+		
+		
+		a16[label = "post_relocation\l",shape = rect];
+		a16_note[label = "post_relocation:\l",shape = note];
+
+
+		a17[label = "flush_module_icache\l",shape = rect];
+		a17_note[label = "flush_module_icache:\l",shape = note];
+
+		a18[label = "mod->args初始化",shape = rect];
+		a18_note[label = "",shape = note];
+
+		a19[label = "",shape = rect];
+		a19_note[label = "",shape = note];
+
+
+		a20[label = "init_build_id\l",shape = rect];
+		a20_note[label = "init_build_id:\l",shape = note];
+	
+
+		a21[label = "dynamic_debug_setup",shape = rect];
+		a21_note[label = "dynamic_debug_setup",shape = note];
+		
+		a22[label = "ftrace_module_init(mod)",shape = rect];
+		a22_note[label = "ftrace_module_init(mod)",shape = note];
+
+		a23[label = "complete_formation(mod,info)",shape = rect];
+	
+		a24[label = "prepare_coming_module(mod)",shape = rect];
+		a24_note[label = "prepare_coming_module(mod)",shape = note];
+
+		a25[label = "参数处理:parse_args",shape = rect];
+		a25_note[label = "",shape = note];
+
+		a26[label = "mod_sysfs_setup(mod,info,mod->kp,mod->num_kp)",shape = rect];
+		a26_note[label = "mod_sysfs_setup:\l",shape = note];
+	
+		a27[label = "is_livepatch_module(mod):copy_module_elf(mod,info)",shape = rect];
+		a27_note[label = "livepatch_module:\l",shape = note];
+		
+		a28[label = "free_copy",shape = rect];
+		a29[label = "trace_module_load(mod)",shape = rect];
+		a30[label = "do_init_module(mod)",shape = rect];
+		
+		
+		subgraph cluster_0 {
+			label = "do_init_module";
+			
+			b0[label = "freeinit->module_init = mod->init_layout.base",shape = rect];
+			b1[label = "do_mod_ctors(mod)",shape = rect];
+			b2[label = "do_one_initcall(mod->init)",shape = rect];
+			b3[label = "mod->state = MODULE_STATE_LIVE\l",shape = rect];
+			b4[label = "blocking_notifier_call_chain:module_notify_list:MODULE_STATE_LIVE\l",shape = rect];
+			b5[label = "kobject_uevent(&mod->mkobj.kobj,KOBJ_ADD)",shape = rect];
+			b6[label = "async_synchronize_full()\l",shape = rect];
+			b7[label = "ftrace_free_mem(mod,mod->init_layout.base,mod->init_layout.base + mod->init_layout.size)",shape = rect];
+			b8[label = "module_put(mod)\l",shape = rect];
+			b9[label = "trim_init_extable(mod)\l",shape = rect];
+			b10[label="rcu_assign_pointer(mod->kallsyms,&mod->core_kallsyms)",shape = rect];
+			b11[label="module_enable_ro(mod,true);\l",shape = rect];
+			b12[label="mod_tree_remove_init(mod);\l",shape = rect];
+			b13[label ="module_arch_freeing_init(mod);\l",shape = rect];
+			b14[label ="schedule_work(&init_free_wq);\l",shape = rect];
+			b15[label ="wake_up_all(&module_wq);\l",shape = rect];
+			
+			
+			
+			
+			
+		}
+
+	}
+	
+
+	
+}

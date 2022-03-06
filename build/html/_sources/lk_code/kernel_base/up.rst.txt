@@ -1,3 +1,0 @@
-uniprocessor-only support functions
-------------------------------------
-

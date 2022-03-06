@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>内核与ELF &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>ELF基础 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -35,26 +35,16 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发基础</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lk_build/index.html">linux 内核构建</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核编程</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="comp_api.html">linux 二进制接口</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id47">程序加载和动态链接</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id53">库</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id64">开发环境</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id65">约定</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id66">linux 约定</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_base.html">内核编程概述</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_as.html">内核汇编</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_as.html">AS:内核汇编</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_gcc.html">GCC 在linux 内核中的应用</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#id3">重要选项</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#c">C实现定义的行为</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#gcov">gcov</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#linux-gcc">linux 内核编程中GCC的高级应用</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">内核与ELF</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ELF基础</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id1">ELF文件格式理解</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id2">ELF文件类型</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#elfvmlinux">ELF在vmlinux中的应用</a></li>
@@ -65,17 +55,24 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="comp_uwind.html">UWIND</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dev-tool/index.html">内核开发工具</a></li>
-<li class="toctree-l3"><a class="reference internal" href="k_prog/index.html">内核编程示例</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_objtool.html">objtool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_bin_tool.html">二进制工具</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_st.html">内核测试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_debug_ig.html">kernel debug 实验记录</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gnuplot.html">曲线图-gnuplot</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
 </ul>
 
         </div>
@@ -92,9 +89,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发基础</a> &raquo;</li>
           <li><a href="index.html">linux 内核编程</a> &raquo;</li>
-      <li>内核与ELF</li>
+      <li>ELF基础</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/lk_devel/lk_comp/comp_elf.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -105,7 +102,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="elf">
-<h1>内核与ELF<a class="headerlink" href="#elf" title="Permalink to this headline">¶</a></h1>
+<h1>ELF基础<a class="headerlink" href="#elf" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id1">
 <h2>ELF文件格式理解<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>不对规范进行说明，

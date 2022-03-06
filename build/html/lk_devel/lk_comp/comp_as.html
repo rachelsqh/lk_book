@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>内核汇编 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>AS:内核汇编 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
@@ -16,7 +16,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="ld 在linux中的应用" href="comp_ld.html" />
-    <link rel="prev" title="内核编程概述" href="comp_base.html" /> 
+    <link rel="prev" title="linux 二进制接口" href="comp_api.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -35,38 +35,39 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统架构分析</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">linux 内核开发基础</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../k_doc.html">内核文档综述</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../lk_build/index.html">linux 内核构建</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核编程</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="comp_api.html">linux 二进制接口</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id47">程序加载和动态链接</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id53">库</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id64">开发环境</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id65">约定</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id66">linux 约定</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_base.html">内核编程概述</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">内核汇编</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">AS:内核汇编</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id15">对象属性</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id16">机器相关</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_gcc.html">GCC 在linux 内核中的应用</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#id3">重要选项</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#c">C实现定义的行为</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#gcov">gcov</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_gcc.html#linux-gcc">linux 内核编程中GCC的高级应用</a></li>
-<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">内核与ELF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_elf.html">ELF基础</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_uwind.html">UWIND</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dev-tool/index.html">内核开发工具</a></li>
-<li class="toctree-l3"><a class="reference internal" href="k_prog/index.html">内核编程示例</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_objtool.html">objtool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_bin_tool.html">二进制工具</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../lk_debug/index.html">linux 内核调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_st.html">内核测试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kernel_debug_ig.html">kernel debug 实验记录</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gnuplot.html">曲线图-gnuplot</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核代码分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../os_sec/index.html">linux 操作系统安全</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../my_os/index.html">从零开始写一个系统（KVM）</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../csxj/index.html">处世悬镜</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
 </ul>
 
         </div>
@@ -83,9 +84,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">linux 内核开发</a> &raquo;</li>
+          <li><a href="../index.html">linux 内核开发基础</a> &raquo;</li>
           <li><a href="index.html">linux 内核编程</a> &raquo;</li>
-      <li>内核汇编</li>
+      <li>AS:内核汇编</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/lk_devel/lk_comp/comp_as.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -95,8 +96,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="id1">
-<h1>内核汇编<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="as">
+<h1>AS:内核汇编<a class="headerlink" href="#as" title="Permalink to this headline">¶</a></h1>
 <p>汇编器注解
 版权所有 (c) 2017-2019 Jiri Slaby</p>
 <p>本文档描述了用于在汇编中注释数据和代码的新宏。特别是，它包含有关SYM_FUNC_START、 SYM_FUNC_END、SYM_CODE_START和类似的信息。</p>
@@ -160,10 +161,10 @@ SYM_FUNC_END_ALIAS(__memset)
 <p>在某种程度上，这个类别对应于 deprecatedENTRY和 END. 除了END还有其他几个含义。</p>
 <p>SYM_INNER_LABEL*用于表示 some SYM_{CODE,FUNC}_START和中的标签SYM_{CODE,FUNC}_END。它们与 C 标签非常相似，只是它们可以是全局的。使用示例：</p>
 <dl class="simple">
-<dt>SYM_CODE_START(ftrace_caller)</dt><dd><p>/* save_mcount_regs fills in first two parameters <a href="#id2"><span class="problematic" id="id3">*</span></a>/
+<dt>SYM_CODE_START(ftrace_caller)</dt><dd><p>/* save_mcount_regs fills in first two parameters <a href="#id1"><span class="problematic" id="id2">*</span></a>/
 …</p>
 </dd>
-<dt>SYM_INNER_LABEL(ftrace_caller_op_ptr, SYM_L_GLOBAL)</dt><dd><p>/* Load the ftrace_ops into the 3rd parameter <a href="#id4"><span class="problematic" id="id5">*</span></a>/
+<dt>SYM_INNER_LABEL(ftrace_caller_op_ptr, SYM_L_GLOBAL)</dt><dd><p>/* Load the ftrace_ops into the 3rd parameter <a href="#id3"><span class="problematic" id="id4">*</span></a>/
 …</p>
 </dd>
 <dt>SYM_INNER_LABEL(ftrace_call, SYM_L_GLOBAL)</dt><dd><p>call ftrace_stub
@@ -189,13 +190,778 @@ SYM_START以上所有内容都归结为对, SYM_END或SYM_ENTRY最后的某种�
 <p>此外，在上述示例中，可以看到SYM_L_LOCAL。还有 SYM_L_GLOBAL和SYM_L_WEAK。所有这些都旨在表示由它们标记的符号的链接。它们要么用于_LABEL早期宏的变体，要么用于SYM_START.</p>
 <p>覆盖宏
 体系结构还可以覆盖它们自己的任何宏 asm/linkage.h，包括指定符号类型（SYM_T_FUNC、、SYM_T_OBJECT和SYM_T_NONE）的宏。#ifdef由于此文件中描述的每个宏都由+包围#endif，因此在上述依赖于体系结构的标头中以不同方式定义宏就足够了。</p>
+<hr class="docutils" />
+<p>c demo:</p>
+<p>#include &lt;linux/kernel.h&gt;
+#include &lt;linux/module.h&gt;
+static int __init k_mod_sample_init(void)
+{</p>
+<blockquote>
+<div><p>pr_info(“%s:%dn”,__func__,__LINE__);
+return 0;</p>
+</div></blockquote>
+<p>}</p>
+<p>static void __exit k_mod_sample_exit(void)
+{</p>
+<blockquote>
+<div><p>pr_info(“%s:%dn”,__func__,__LINE__);</p>
+</div></blockquote>
+<p>}</p>
+<p>module_init(k_mod_sample_init)
+module_exit(k_mod_sample_exit)
+MODULE_LICENSE(“GPL”);</p>
+<p>汇编：as demo:</p>
+<blockquote>
+<div><p>.file   “k_mod_sample.c”</p>
+</div></blockquote>
+<p># GNU C89 (Debian 11.2.0-12) version 11.2.0 (x86_64-linux-gnu)
+#       compiled by GNU C version 11.2.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP</p>
+<p># GGC heuristics: –param ggc-min-expand=100 –param ggc-min-heapsize=131072
+# options passed: -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -mindirect-branch=thunk-extern -mindirect-branch-register -mrecord-mcount -mfentry -march=x86-64 -O2 -std=gnu90 -p -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE -fcf-protection=none -falign-jumps=1 -falign-loops=1 -fno-asynchronous-unwind-tables -fno-jump-tables -fno-delete-null-pointer-checks -fno-allow-store-data-races -fstack-protector-strong -fno-stack-clash-protection -fno-strict-overflow -fstack-check=no -fconserve-stack</p>
+<blockquote>
+<div><p>.text
+.section        .rodata.str1.1,”aMS”,&#64;progbits,1</p>
+</div></blockquote>
+<dl class="simple">
+<dt>.LC0:</dt><dd><p>.string “0016%s:%dn”
+.section        .init.text,”ax”,&#64;progbits
+.type   k_mod_sample_init, &#64;function</p>
+</dd>
+</dl>
+<p>k_mod_sample_init:
+1:      call    __fentry__</p>
+<blockquote>
+<div><p>.section __mcount_loc, “a”,&#64;progbits
+.quad 1b
+.previous</p>
+</div></blockquote>
+<dl class="simple">
+<dt># drivers/char/k_mod_sample.c:5:        pr_info(“%s:%dn”,__func__,__LINE__);</dt><dd><p>movl    $5, %edx        #,
+movq    $__func__.2, %rsi       #,
+movq    $.LC0, %rdi     #,
+call    printk  #</p>
+</dd>
+<dt># drivers/char/k_mod_sample.c:7: }</dt><dd><p>xorl    %eax, %eax      #
+ret
+.size   k_mod_sample_init, .-k_mod_sample_init
+.globl  init_module
+.set    init_module,k_mod_sample_init
+.section        .exit.text,”ax”,&#64;progbits
+.type   k_mod_sample_exit, &#64;function</p>
+</dd>
+</dl>
+<p>k_mod_sample_exit:
+# drivers/char/k_mod_sample.c:11:       pr_info(“%s:%dn”,__func__,__LINE__);</p>
+<blockquote>
+<div><p>movl    $11, %edx       #,
+movq    $__func__.3, %rsi       #,
+movq    $.LC0, %rdi     #,
+jmp     printk  #
+.size   k_mod_sample_exit, .-k_mod_sample_exit
+.globl  cleanup_module
+.set    cleanup_module,k_mod_sample_exit
+.section        .rodata
+.align 16
+.type   __func__.3, &#64;object
+.size   __func__.3, 18</p>
+</div></blockquote>
+<dl class="simple">
+<dt>__func__.3:</dt><dd><p>.string “k_mod_sample_exit”
+.align 16
+.type   __func__.2, &#64;object
+.size   __func__.2, 18</p>
+</dd>
+<dt>__func__.2:</dt><dd><p>.string “k_mod_sample_init”
+.section        .modinfo,”a”
+.type   __UNIQUE_ID_license176, &#64;object
+.size   __UNIQUE_ID_license176, 12</p>
+</dd>
+<dt>__UNIQUE_ID_license176:</dt><dd><p>.string “license=GPL”
+.ident  “GCC: (Debian 11.2.0-12) 11.2.0”
+.section        .note.GNU-stack,””,&#64;progbits</p>
+</dd>
+</dl>
+<p>调用方法：</p>
+<dl class="simple">
+<dt>as [-a[cdghlns][=file]] [–alternate] [-D]</dt><dd><p>[–compress-debug-sections]  [–nocompress-debug-sections]
+[–debug-prefix-map old=new]
+[–defsym sym=val] [-f] [-g] [–gstabs]
+[–gstabs+] [–gdwarf-&lt;N&gt;] [–gdwarf-sections]
+[–gdwarf-cie-version=VERSION]
+[–help] [-I dir] [-J]
+[-K] [-L] [–listing-lhs-width=NUM]
+[–listing-lhs-width2=NUM] [–listing-rhs-width=NUM]
+[–listing-cont-lines=NUM] [–keep-locals]
+[–no-pad-sections]
+[-o objfile] [-R]
+[–statistics]
+[-v] [-version] [–version]
+[-W] [–warn] [–fatal-warnings] [-w] [-x]
+[-Z] [&#64;FILE]
+[–sectname-subst] [–size-check=[error|warning]]
+[–elf-stt-common=[no|yes]]
+[–generate-missing-build-notes=[no|yes]]
+[–multibyte-handling=[allow|warn|warn-sym-only]]
+[–target-help] [target-options]
+[–<a href="#id5"><span class="problematic" id="id6">|</span></a>files …]</p>
+</dd>
+<dt>Target BPF options:</dt><dd><p>[-EL] [-EB]</p>
+</dd>
+<dt>Target i386 options:</dt><dd><p>[–32|–x32|–64] [-n]
+[-march=CPU[+EXTENSION…]] [-mtune=CPU]</p>
+</dd>
+</dl>
+<p>&#64;file：从文件中读取命令行选项。读取的选项被插入以代替原始的&#64;file选项。如果文件 不存在或无法读取，则该选项将按字面意思处理，而不是删除。文件中的选项由空格分隔。通过将整个选项括在单引号或双引号中，可以在选项中包含空格字符。通过在要包含的字符前加上反斜杠，可以包含任何字符（包括反斜杠）。该文件本身可能包含额外的&#64;file选项；任何此类选项都将被递归处理。</p>
+<p>-a[cdghlmns]
+以多种方式打开列表：</p>
+<p>-ac
+省略假条件</p>
+<p>-ad
+省略调试指令</p>
+<p>-ag
+包括一般信息，例如通过的版本和选项</p>
+<p>-ah
+包括高级源</p>
+<p>-al
+包括组装</p>
+<p>-am
+包括宏扩展</p>
+<p>-an
+省略表格处理</p>
+<p>-as
+包括符号</p>
+<p>=file
+设置列表文件的名称</p>
+<p>您可以组合这些选项；例如，使用’-aln’ 用于没有表单处理的装配列表。这 ‘=文件’ 选项，如果使用，必须是最后一个。通过它自己， ‘-一种’ 默认为 ‘-ahls’。</p>
+<p>–alternate
+从备用宏模式开始。见.altmacro。</p>
+<p>–compress-debug-sections
+使用来自 ELF ABI 的带有 SHF_COMPRESSED 的 zlib 压缩 DWARF 调试部分。生成的目标文件可能与旧的链接器和目标文件实用程序不兼容。请注意，如果压缩会使给定部分变大，那么它不会被压缩。</p>
+<p>–compress-debug-sections=none
+–compress-debug-sections=zlib
+–compress-debug-sections=zlib-gnu
+–compress-debug-sections=zlib-gabi
+这些选项控制 DWARF 调试部分的压缩方式。 –compress-debug-sections=none相当于 –nocompress-debug-sections. –compress-debug-sections=zlib和 –compress-debug-sections=zlib-gabi相当于 –compress-debug-sections. –compress-debug-sections=zlib-gnu使用 zlib 压缩 DWARF 调试部分。调试部分被重命名为以’开头.zdebug’。请注意，如果压缩会使给定部分 变大，则它不会被压缩或重命名。</p>
+<p>–nocompress-debug-sections
+不要压缩 DWARF 调试部分。这通常是除 x86/x86_64 之外的所有目标的默认值，但可以使用配置时间选项来覆盖它。</p>
+<p>-D
+忽略。接受此选项是为了与调用其他汇编程序的脚本兼容。</p>
+<p>–debug-prefix-map old=new
+在目录中组装文件时老的, 记录描述它们的调试信息，如新的反而。</p>
+<p>–defsym sym=value
+在组装输入文件之前 将符号sym定义为值。value必须是整数常量。与 C 中一样，前导 ‘0x’ 表示十六进制值，前导 ‘0’ 表示八进制值。可以通过使用.set伪操作在源文件中覆盖符号的值。</p>
+<p>-f
+“快速”——跳过空格和注释预处理（假设源是编译器输出）。</p>
+<p>-g
+–gen-debug
+使用目标首选的调试格式为每个汇编源代码行生成调试信息。这目前意味着 STABS、ECOFF 或 DWARF2。当调试格式为 DWARF时，只有在程序集文件本身不生成时才会发出 .debug_infoand 部分。.debug_line</p>
+<p>–gstabs
+为每个汇编行生成 stabs 调试信息。如果调试器可以处理它，这可能有助于调试汇编代码。</p>
+<p>–gstabs+
+为每个汇编程序行生成 stabs 调试信息，带有可能只有 gdb 可以处理的 GNU 扩展，这可能会使其他调试器崩溃或拒绝读取您的程序。这可能有助于调试汇编代码。目前唯一的 GNU 扩展是在汇编时当前工作目录的位置。</p>
+<p>–gdwarf-2
+为每个汇编行生成 DWARF2 调试信息。如果调试器可以处理它，这可能有助于调试汇编代码。注意—此选项仅受某些目标支持，而不是全部目标。</p>
+<p>–gdwarf-3
+此选项与–gdwarf-2选项，除了它允许根据 DWARF 规范的版本 3 生成额外的调试信息的可能性。注意 - 启用此选项并不能保证生成任何额外的信息，这样做的选择是基于每个目标。</p>
+<p>–gdwarf-4
+此选项与–gdwarf-2选项，除了它允许根据 DWARF 规范的版本 4 生成额外的调试信息的可能性。注意 - 启用此选项并不能保证生成任何额外的信息，这样做的选择是基于每个目标。</p>
+<p>–gdwarf-5
+此选项与–gdwarf-2选项，除了它允许根据 DWARF 规范的第 5 版生成额外的调试信息的可能性。注意 - 启用此选项并不能保证生成任何额外的信息，这样做的选择是基于每个目标。</p>
+<p>–gdwarf-sections
+与其创建 .debug_line 部分，不如创建一系列 .debug_line。foo部分，其中foo是相应代码部分的名称。例如，名为.text.func的代码段 将其矮小的行号信息放置在名为 .debug_line.text.func的段中。如果代码部分仅称为.text ，则调试行部分仍将仅称为.debug_line，不带任何后缀。</p>
+<p>–gdwarf-cie-version=version
+控制生成哪个版本的 DWARF 通用信息条目 (CIE)。如果未指定此标志，则默认值为版本 1，尽管某些目标可以修改此默认值。版本的其他可能值是 3 或 4。</p>
+<p>–size-check=error
+–size-check=warning
+针对无效的 ELF .size 指令发出错误或警告。</p>
+<p>–elf-stt-common=no
+–elf-stt-common=yes
+这些选项控制 ELF 汇编器是否应生成具有该STT_COMMON类型的通用符号。默认值可以通过配置选项控制–enable-elf-stt-common.</p>
+<p>–generate-missing-build-notes=yes
+–generate-missing-build-notes=no
+这些选项控制 ELF 汇编器是否应该在输入源中不存在 GNU Build 属性注释时生成。默认值可以由–enable-generate-build-notes 配置选项。</p>
+<p>–help
+打印命令行选项的摘要并退出。</p>
+<p>–target-help
+打印所有目标特定选项的摘要并退出。</p>
+<p>-I dir
+将目录dir.include添加到指令 的搜索列表中。</p>
+<p>-J
+不要警告签名溢出。</p>
+<p>-K
+当差异表因长位移而改变时发出警告。</p>
+<p>-L
+–keep-locals
+保留（在符号表中）局部符号。这些符号以系统特定的本地标签前缀开头，通常是 ‘.L’ 对于 ELF 系统或 ‘大号’ 对于传统的 a.out 系统。请参阅符号名称。</p>
+<p>–listing-lhs-width=number
+将汇编程序列表的输出数据列的最大宽度（以字为单位）设置为number。</p>
+<p>–listing-lhs-width2=number
+将汇编程序列表中连续行的输出数据列的最大宽度（以字为单位）设置为number。</p>
+<p>–listing-rhs-width=number
+将列表中显示的输入源行的最大宽度设置为 字节 数。</p>
+<p>–listing-cont-lines=number
+将单行输入的列表中打印的最大行数设置为number + 1。</p>
+<p>–multibyte-handling=allow
+–multibyte-handling=warn
+–multibyte-handling=warn-sym-only
+控制汇编器如何处理输入中的多字节字符。默认值（可以通过使用允许论点）是允许这样的字符无怨无悔。使用警告参数将使汇编程序在遇到任何多字节字符时生成警告消息。使用仅警告符号仅当使用包含多字节字符的名称定义符号时，参数才会导致生成警告。（对未定义符号的引用不会产生警告）。</p>
+<p>–no-pad-sections
+停止汇编程序以将输出部分的末端填充到该部分的对齐位置。默认设置是填充这些部分，但这会浪费内存限制较紧的目标可能需要的空间。</p>
+<p>-o objfile
+as 命名来自objfile的目标文件输出。</p>
+<p>-R
+将数据部分折叠到文本部分。</p>
+<p>–sectname-subst
+尊重节名称中的替换序列。见。 .section name</p>
+<p>–statistics
+打印程序集使用的最大空间（以字节为单位）和总时间（以秒为单位）。</p>
+<p>–strip-local-absolute
+从传出符号表中删除局部绝对符号。</p>
+<p>-v
+-version
+打印as版本。</p>
+<p>–version
+打印as版本并退出。</p>
+<p>-W
+–no-warn
+禁止警告消息。</p>
+<p>–fatal-warnings
+将警告视为错误。</p>
+<p>–warn
+不要隐藏警告消息或将其视为错误。</p>
+<p>-w
+忽略。</p>
+<p>-x
+忽略。</p>
+<p>-Z
+即使在出错后也生成目标文件。</p>
+<p>– | files …
+标准输入，或要组装的源文件。</p>
+<p>一些选项期望只有一个文件名跟随它们。文件名可以紧跟选项的字母（与旧的汇编程序兼容），也可以是下一个命令参数（GNU 标准）。这两个命令行是等价的：</p>
+<p>以下两种方式是等价的：</p>
+<p>as -o my-object-file.o mumble.s
+as -omy-object-file.o mumble.s</p>
+<p>警告信息：
+格式：</p>
+<p>file_name:NNN:Warning Message Text</p>
+<dl>
+<dt>demo:</dt><dd><dl class="simple">
+<dt>.file 2 “bar.c”</dt><dd><p>error_assembler_source</p>
+</dd>
+</dl>
+<p>.file “foo.c”
+.line 30</p>
+<blockquote>
+<div><p>error_c_source</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>输出：</p>
+<blockquote>
+<div><p>Assembler messages:
+asm.s:2: Error: no such instruction: <a href="#id7"><span class="problematic" id="id8">`</span></a>error_assembler_source’
+foo.c:31: Error: no such instruction: <a href="#id9"><span class="problematic" id="id10">`</span></a>error_c_source’</p>
+</div></blockquote>
+<p>错误信息的格式：
+file_name:NNN:FATAL:Error Message Text</p>
+<p>gcc -c -g -O -Wa,-alh,-L file.c</p>
+<p>通常你不需要使用这个’-Wa’ 机制，因为许多编译器命令行选项由编译器自动传递给汇编器。（您可以使用 ‘ 调用GNU编译器驱动程序-v’ 选项以准确查看它传递给每个编译过程的选项，包括汇编程序。）</p>
+<ul class="simple">
+<li><p>a             -a[cdghlns] enable listings</p></li>
+<li><p>alternate             –alternate enable alternate macro syntax</p></li>
+<li><p>D             -D for compatibility</p></li>
+<li><p>f             -f to work faster</p></li>
+<li><p>I             -I for .include search path</p></li>
+<li><p>K             -K for difference tables</p></li>
+<li><p>L             -L to retain local symbols</p></li>
+<li><p>listing               –listing-XXX to configure listing output</p></li>
+<li><p>M             -M or –mri to assemble in MRI compatibility mode</p></li>
+<li><p>MD            –MD for dependency tracking</p></li>
+<li><p>no-pad-sections               –no-pad-sections to stop section padding</p></li>
+<li><p>o             -o to name the object file</p></li>
+<li><p>R             -R to join data and text sections</p></li>
+<li><p>statistics            –statistics to see statistics about assembly</p></li>
+<li><p>traditional-format            –traditional-format for compatible output</p></li>
+<li><p>v             -v to announce version</p></li>
+<li><p>W             -W, –no-warn, –warn, –fatal-warnings to control warnings</p></li>
+<li><p>Z             -Z to make object file even after errors</p></li>
+</ul>
+<hr class="docutils" />
+<p>预处理：
+- 调整并删除多余的空格。它在一行的关键字之前留下一个空格或制表符，并将该行上的任何其他空格转换为一个空格。
+- 删除所有注释，用一个空格或适当数量的换行符替换它们。
+- 将字符常量转换为适当的数值。</p>
+<p>它不进行宏处理、包含文件处理或您可能从 C 编译器的预处理器获得的任何其他内容。.include您可以使用该指令进行包含文件处理（请参阅 参考资料.include）。您可以使用GNU C 编译器驱动程序来获得其他“CPP”风格的预处理，方法是给输入文件一个 ‘.S’ 后缀。 有关详细信息，请参阅 GCC 手册的“控制输出类型的选项”部分</p>
+<p>多余的空格、注释和字符常量不能用于未预处理的输入文本部分。</p>
+<p>如果输入文件的第一行是#NO_APP或者如果您使用 ‘-F’ 选项，空格和注释不会从输入文件中删除。在输入文件中，您可以通过在#APP可能包含空格或注释的文本之前放置一行，并 #NO_APP在该文本之后放置一行来要求删除特定部分中的空格和注释。此功能主要用于支持 asm编译器中的语句，否则其输出没有注释和空格。</p>
+<ul class="simple">
+<li><p>Whitespace</p></li>
+</ul>
+<p>空格是一个或多个空格或制表符，以任何顺序排列。空格用于分隔符号，并使程序更整洁以供人们阅读。除非在字符常量内（请参阅字符常量），否则任何空格都与一个空格相同。</p>
+<ul class="simple">
+<li><p>Comments</p></li>
+</ul>
+<p>有两种方法可以将评论呈现到as. 在这两种情况下，注释都相当于一个空格。任何来自 ‘/<em>’通过下一个’</em>/’ 是评论。这意味着您不能嵌套这些注释。</p>
+<blockquote>
+<div><p>在评论中包含换行符 (‘n’) 的唯一方法
+是使用这种评论。</p>
+</div></blockquote>
+<p><a href="#id11"><span class="problematic" id="id12">*</span></a>/</p>
+<p>/* 这种注释不嵌套。<a href="#id13"><span class="problematic" id="id14">*</span></a>/</p>
+<ul class="simple">
+<li><p>Symbols:符号是从所有字母（大写和小写）、数字和三个字符的集合中选择的一个或多个字符’_.$’。在大多数机器上，您还可以$在符号名称中使用；机器依赖项中记录了例外情况。任何符号都不能以数字开头。案例意义重大。没有长度限制；所有字符都很重要。支持多字节字符，但请注意 –多字节处理选项可能会阻止它们的使用。符号由不在该集合中的字符或文件的开头分隔（由于源程序必须以换行符结尾，文件的结尾不是可能的符号分隔符）。请参阅符号。符号名称也可以用双引号”字符括起来。在这种情况下，允许使用任何字符，但 NUL 字符除外。如果要在符号名称中包含双引号字符，则必须在其前面加上反斜杠字符。</p></li>
+<li><p>Statements:语句以换行符结束 (‘n’) 或 行分隔符。行分隔符是特定于目标的，并在每个目标文档的语法部分中进行了描述。并非所有目标都支持行分隔符。换行符或行分隔符被认为是前面语句的一部分。字符常量中的换行符和分隔符是一个例外：它们不会结束语句。以文件结尾结束任何语句是错误的：任何输入文件的最后一个字符都应该是换行符。允许使用空语句，并且可能包含空格。它被忽略。一个语句以零个或多个标签开始，可选地后跟一个确定语句类型的键符号。键符号确定语句其余部分的语法。如果符号以点开头 ‘.’ 那么该语句是一个汇编指令：通常对任何计算机都有效。如果符号以字母开头，则语句是汇编语言指令：它汇编成机器语言指令。不同版本的as不同计算机识别不同的指令。事实上，相同的符号可能代表不同计算机汇编语言中的不同指令。标签是紧跟冒号 ( :) 的符号。标签之前或冒号之后的空格是允许的，但标签的符号和冒号之间不能有空格。请参阅标签。对于 HPPA 目标，标签不必紧跟冒号，但标签的定义必须从第 0 列开始。这也意味着每行只能定义一个标签。</p></li>
+</ul>
+<p>label:     .directive    followed by something
+another_label:           # This is an empty statement.</p>
+<blockquote>
+<div><p>instruction   operand_1, operand_2, …</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>Constants:常量是一个数字，其值可以通过检查得知，无需了解任何上下文。像这样：</p></li>
+</ul>
+<p>.byte  74, 0112, 092, 0x4A, 0X4a, ‘J, ‘J # All the same value.
+.ascii “Ring the bell7”                  # A string constant.
+.octa  0x123456789abcdef0123456789ABCDEF0 # A bignum.
+.float 0f-31415926535897932384626433832795028841971.693993751E-40                 # - pi, a flonum.</p>
+<p>。。。。。。</p>
+<ul class="simple">
+<li><p>section:是一个地址范围，没有间隔；出于某些特定目的，这些地址“中”的所有数据都被视为相同。例如，可能有一个“只读”部分。</p></li>
+<li><p>链接器ld:读取许多目标文件（部分程序）并将它们的内容组合成一个可运行的程序。当as 发出一个目标文件时，假设部分程序从地址 0 开始。 ld为部分程序分配最终地址，以便不同的部分程序不重叠。这实际上是一种过度简化，但足以解释如何as使用部分。ld将程序的字节块移动到它们的运行时地址。这些块作为刚性单元滑动到它们的运行时地址；它们的长度不会改变，它们中的字节顺序也不会改变。这种刚性单元称为截面。将运行时地址分配给节称为重定位。它包括调整提及的目标文件地址的任务，以便它们引用正确的运行时地址。对于 H8/300 和 Renesas / SuperH SH， as如果需要，填充部分以确保它们以字（16 位）边界结束。</p></li>
+</ul>
+<p>text section
+data section:这些部分包含您的程序。 as并将ld它们视为独立但相等的部分。你可以对一个部分说的任何话都适用于另一个部分。然而，当程序运行时，文本部分通常是不可更改的。文本部分通常在进程之间共享：它包含指令、常量等。正在运行的程序的数据部分通常是可更改的：例如，C 变量将存储在数据部分中。</p>
+<p>bss section:当您的程序开始运行时，此部分包含零字节。它用于保存未初始化的变量或公共存储。每个部分程序的 bss 部分的长度很重要，但是因为它开始包含零字节，所以不需要在目标文件中存储显式零字节。bss 部分的发明是为了从目标文件中消除那些显式的零。</p>
+<p>absolute section:此部分的地址 0 始终“重定位”到运行时地址 0。如果您想要引用ld在重定位时不得更改的地址，这很有用。在这个意义上，我们说绝对地址是“不可重定位的”：它们在重定位期间不会改变。</p>
+<p>undefined section:这个“部分”是对前面部分中没有的对象的地址引用的全部内容。</p>
+<p>汇编器内部section:这些部分仅供内部使用as。它们在运行时没有任何意义。大多数情况下，您实际上并不需要了解这些部分；但它们可以在as 警告消息中提及，因此了解它们的含义可能会有所帮助as。这些段用于允许您的汇编语言程序中的每个表达式的值都是相对于段的地址。</p>
+<p>ASSEMBLER-INTERNAL-LOGIC-ERROR!发现内部汇编程序逻辑错误。这意味着汇编程序中存在错误</p>
+<p>expr section:汇编器在内部将复杂表达式存储为符号组合。当它需要将表达式表示为符号时，它会将其放在 expr 部分。</p>
+<p>Sub-Sections:
+组装的字节通常分为两部分：文本和数据。您可能在命名部分中有单独的数据组，您希望在目标文件中最终彼此靠近，即使它们在汇编程序源代码中不连续.as允许您为此目的使用小节。在每个部分中，可以有编号从 0 到 8192 的子部分。组装到同一子部分中的对象与同一子部分中的其他对象一起进入目标文件。例如，编译器可能希望将常量存储在文本部分中，但可能不希望它们散布在正在组装的程序中。在这种情况下，编译器可以发出 ‘.text 0’ 在输出每一段代码之前，以及一个 ‘.text1’ 在输出每组常量之前。</p>
+<p>Subsections是可选的。 如果您不使用小节，则所有内容都在第零小节中。</p>
+<p>要指定要将后续语句组装到哪个小节中，请使用数字参数来指定它，</p>
+<p>每个部分都有一个位置计数器，对于组装到该部分中的每个字节，位置计数器都会增加一。因为小节只是一种方便，as所以没有小节位置计数器的概念。无法直接操作位置计数器——但 .align指令会更改它，并且任何标签定义都会捕获其当前值。正在组装语句的部分的位置计数器称为活动位置计数器。</p>
+<p>bss section:</p>
+<p>bss 部分用于本地公共变量存储。您可以在 bss 部分分配地址空间，但您不能在程序执行之前指定要加载的数据。当您的程序开始运行时，bss 部分的所有内容都是零字节。</p>
+<p>.lcomm伪操作在 bss 部分定义了一个符号；见 .lcomm。</p>
+<p>.comm伪操作可以用来声明一个公共符号，这是未初始化符号的另一种形式；见.comm。</p>
+<p>当为支持多段的目标（如ELF或COFF）进行汇编时，您可以.bss像往常一样切换到段并定义符号；见.section。您只能将零值组装到该部分中。通常，该部分将仅包含符号定义和 .skip指令（请参阅 参考资料.skip）。</p>
+<ul class="simple">
+<li><p>Labels                Labels</p></li>
+</ul>
+<p>标签写为一个符号，后跟一个冒号 ‘：’。该符号则表示活动位置计数器的当前值，并且例如是合适的指令操作数。如果您使用相同的符号来表示两个不同的位置，则会收到警告：第一个定义会覆盖任何其他定义。</p>
+<ul class="simple">
+<li><p>Setting Symbols               Giving Symbols Other Values</p></li>
+</ul>
+<p>可以通过写一个符号，后跟一个等号’来给一个符号一个任意值=’，后跟一个表达式（请参阅表达式）。这相当于使用.set 指令。见.set。同样，使用双等号 ‘=’’=.eqv’ 这里表示指令的等价物 。见.eqv。</p>
+<ul class="simple">
+<li><p>Symbol Names          Symbol Names</p></li>
+</ul>
+<p>符号名称以字母或 ‘ 之一开头._’。在大多数机器上，您还可以$在符号名称中使用；机器依赖项中记录了例外情况。该字符后面可以跟任何数字、字母、美元符号（除非针对特定目标机器另有说明）和下划线的字符串。当用 ‘ 引用符号名称时，这些限制不适用”’，这对于大多数目标都是允许的。用 ‘ 转义带引号的符号名称中的字符' 通常只延伸到 ‘' 本身和 ‘”’，在撰写本文时。</p>
+<p>字母大小写很重要：foo是与 . 不同的符号名称Foo。</p>
+<p>符号名称不以数字开头。本地标签是此规则的一个例外。见下文。</p>
+<p>支持多字节字符，但请注意 多字节处理选项可能会阻止它们的使用。要生成包含多字节字符的符号名称，请将其括在双引号中并使用转义码。cf 请参阅字符串。当前不支持从标签生成多字节符号名称。</p>
+<p>由于多字节符号名称不常见，并且可能被恶意使用，因此as提供了一个命令行选项 (–multibyte-handling=warn-sym-only) 可用于在定义包含多字节字符的符号名称时生成警告消息。</p>
+<p>每个符号只有一个名称。汇编语言程序中的每个名称都只指一个符号。您可以在程序中多次使用该符号名称。</p>
+<p>本地符号名称
+本地符号是任何以某些本地标签前缀开头的符号。默认情况下，本地标签前缀是 ‘.L’ 对于 ELF 系统或 ‘大号’ 对于传统的 a.out 系统，但每个目标可能有自己的一组本地标签前缀。在 HPPA 上，本地符号以 ‘ 开头美元’。</p>
+<p>局部符号在汇编程序中定义和使用，但它们通常不保存在目标文件中。因此，它们在调试时不可见。你可以使用’-L’ 选项（请参阅包含本地符号）以在目标文件中保留本地符号。</p>
+<p>本地标签
+局部标签不同于局部符号。本地标签帮助编译器和程序员临时使用名称。它们创建的符号保证在输入源代码的整个范围内都是唯一的，并且可以通过简单的符号来引用。要定义本地标签，请编写格式为 ‘ñ：’（其中N表示任何非负整数）。要参考该标签的最新先前定义，请写入 ‘<a href="#id18"><span class="problematic" id="id19">铌_</span></a>’，使用与定义标签时相同的数字。要引用本地标签的下一个定义，请编写 ‘N f’。这 ‘b’ 代表“向后”，而 ‘F’ 代表“前锋”。</p>
+<p>对如何使用这些标签没有任何限制，您也可以重复使用它们。这样就可以重复定义相同的本地标签（使用相同的数字’ñ’)，尽管您只能引用该编号的最近定义的本地标签（用于向后引用）或特定本地标签的下一个定义以用于向前引用。还值得注意的是，前 10 个本地标签 (‘0：“……”9：’) 以比其他方式更有效的方式实现。</p>
+<p>这是一个例子：</p>
+<p>1：分支 1f
+2：分支 1b
+1：分支 2f
+2：分支 1b
+相当于：</p>
+<p>label_1：分支 label_3
+label_2：分支 label_1
+label_3：分支 label_4
+label_4：分支 label_3
+本地标签名称只是一个符号设备。在汇编器使用它们之前，它们会立即转换为更传统的符号名称。符号名称存储在符号表中，出现在错误消息中，并且可以选择发送到目标文件。名称由以下部分构成：</p>
+<p>local label prefix
+所有本地符号都以系统特定的本地标签前缀开头。通常都as和ld忘记以本地标签前缀开头的符号。这些标签用于您永远不会看到的符号。如果你使用’-L’ 选项然后as将这些符号保留在目标文件中。如果您还指示ld保留这些符号，则可以在调试中使用它们。</p>
+<p>number
+这是在本地标签定义中使用的数字。所以如果标签写着’55：’ 那么数字是 ‘55’。</p>
+<p>C-B
+包含了这个不寻常的字符，因此您不会意外发明同名的符号。该字符的 ASCII 值为 ‘002’（控制-B）。</p>
+<p>ordinal number
+这是一个序列号，用于保持标签的区别。’的第一个定义0：’得到号码’1’。’的第15个定义0：’得到号码’15’， 等等。同样的第一个定义 ‘1：’得到号码’1’ 并且它的第 15 个定义得到 ‘15’ 也是如此。</p>
+<p>例如，第一个1:可能被命名，第 44个可能被命名。 .L1C-B13:.L3C-B44</p>
+<p>美元本地标签
+在某些目标上as还支持一种更加本地化的本地标签形式，称为美元标签。一旦定义了非本地标签，这些标签就会超出范围（即，它们变得未定义）。因此，它们仅对输入源代码的一小部分区域有效。相比之下，正常的本地标签保留在整个文件的范围内，或者直到它们被另一个相同的本地标签重新定义。</p>
+<p>美元标签的定义方式与普通本地标签完全相同，只是它们的数值有一个美元符号后缀，例如，’55 美元：’。</p>
+<p>它们还可以通过使用 ASCII 字符的转换名称与普通本地标签区分开来001’ (control-A) 作为魔术字符将它们与普通标签区分开来。例如，’的第五个定义6 美元’可能被命名为’.L6 C-A5’。</p>
+<ul class="simple">
+<li><p>Dot           The Special Dot Symbol</p></li>
+</ul>
+<p>特殊符号 ‘.’ 是指正在 as组装的当前地址。因此，表达式’melvin: .long .’ 定义melvin包含它自己的地址。将值分配给与 指令.相同。.org因此，表达式’.=.+4’和说’是一样的.space 4’。</p>
+<ul class="simple">
+<li><p>Symbol Attributes             Symbol Attributes</p></li>
+</ul>
+<p>每个符号除了其名称外，还具有“值”和“类型”属性。根据输出格式，符号还可以具有辅助属性。</p>
+<p>如果您使用符号而不定义它，则as所有这些属性都假定为零，并且可能不会警告您。这使符号成为外部定义的符号，这通常是您想要的。</p>
+<p>•符号值            值
+•符号类型           类型
+• a.out 符号              符号属性：a.out</p>
+<ul class="simple">
+<li><p>符号值：符号的值（通常）是 32 位。对于在文本、数据、bss 或绝对部分中标记位置的符号，该值是从该部分开始到标签的地址数。对于文本、数据和 bss 段，符号的值自然会随着ld链接期间段基地址的变化而变化。绝对符号的值在链接期间不会改变：这就是它们被称为绝对符号的原因。未定义符号的值以特殊方式处理。如果为 0，则该符号未在此汇编源文件中定义，并 ld尝试从链接到同一程序的其他文件中确定其值。您只需提及符号名称而不定义它即可制作这种符号。非零值表示一个.comm 通用声明。该值是要保留多少公共存储，以字节（地址）为单位。该符号是指分配存储的首地址。</p></li>
+<li><p>符号类型：符号的类型属性包含重定位（节）信息、指示符号是外部的任何标志设置，以及（可选）链接器和调试器的其他信息。确切的格式取决于使用的目标代码输出格式。</p></li>
+<li><p>符号属性：
+a.符号描述：这是一个任意的 16 位值。您可以使用.desc语句来建立符号的描述符值（请参阅 参考资料.desc）。描述符值对 没有任何意义 as。
+b.其他：这是一个任意的 8 位值。没有任何意义as。</p></li>
+</ul>
+<p>表达式指定地址或数值。空格可以在表达式之前和/或之后。表达式的结果必须是绝对数，或者是特定部分的偏移量。如果表达式不是绝对的，并且在as看到表达式时没有足够的信息来了解其部分，则可能需要对源程序进行第二次遍历来解释表达式 - 但第二次遍历当前尚未实现。 as在这种情况下中止并显示错误消息。</p>
+<ul class="simple">
+<li><p>Empty Exprs           Empty Expressions</p></li>
+</ul>
+<p>空表达式没有值：它只是空格或空值。无论何时需要绝对表达式，您都可以省略该表达式，并as假定值为（绝对）0。这与其他汇编程序兼容。</p>
+<ul class="simple">
+<li><p>Integer Exprs         Integer Expressions</p></li>
+</ul>
+<p>整数表达式是由运算符分隔的一个或多个参数。</p>
+<ul class="simple">
+<li><p>Arguments             Arguments</p></li>
+</ul>
+<p>参数是符号、数字或子表达式。在其他情况下，参数有时被称为“算术操作数”。在本手册中，为避免将它们与机器语言的“指令操作数”混淆，我们使用术语“参数”仅指表达式的一部分，保留“操作数”一词仅指机器指令操作数。</p>
+<p>评估符号以产生 { section NNN }，其中 section是 text、data、bss、absolute 或 undefined 之一。 NNN是一个有符号的 2 的补码 32 位整数。</p>
+<p>数字通常是整数。</p>
+<p>数字可以是 flonum 或 bignum。在这种情况下，系统会警告您只使用低 32 位，并as假装这 32 位是整数。您可以编写作用于奇异常量的整数操作指令，与其他汇编程序兼容。</p>
+<p>子表达式是左括号 ‘(‘ 后跟一个整数表达式，后跟一个右括号 ‘)’; 或前缀运算符后跟参数。</p>
+<ul class="simple">
+<li><p>Operators             Operators</p></li>
+</ul>
+<p>运算符是算术函数，例如+or %。前缀运算符后跟一个参数。中缀运算符出现在它们的参数之间。运算符可以在空格之前和/或之后。</p>
+<ul class="simple">
+<li><p>Prefix Ops            Prefix Operators</p></li>
+</ul>
+<p>as具有以下前缀运算符。他们每个人都有一个论点，这个论点必须是绝对的。</p>
+<ul class="simple">
+<li></li>
+</ul>
+<p>否定。二进制补码否定。</p>
+<p>~
+互补。按位不是。</p>
+<ul class="simple">
+<li><p>Infix Ops             Infix Operators</p></li>
+</ul>
+<p>中缀运算符有两个参数，两边各一个。运算符具有优先级，但具有相同优先级的运算从左到右执行。除了+或-，两个参数都必须是绝对的，结果是绝对的。</p>
+<p>最高优先级
+*
+乘法。</p>
+<p>/
+师。截断与 C 运算符 ‘ 相同/’</p>
+<p>%
+剩下的。</p>
+<p>&lt;&lt;
+左移。与 C 运算符相同 ‘&lt;&lt;’。</p>
+<p>&gt;&gt;
+右移。与 C 运算符相同 ‘&gt;&gt;’。</p>
+<p>中间优先级
+|
+按位包含或。</p>
+<p>&amp;
+按位与。</p>
+<p>^
+按位异或。</p>
+<p>!
+按位与否。</p>
+<p>低优先级
++
+加法。如果任一参数是绝对的，则结果具有另一个参数的部分。您不能将来自不同部分的参数加在一起。</p>
+<ul class="simple">
+<li></li>
+</ul>
+<p>减法。如果右参数是绝对的，则结果具有左参数的部分。如果两个参数都在同一节中，则结果是绝对的。你不能从不同的部分减去参数。</p>
+<p>==
+等于</p>
+<p>&lt;&gt;
+!=
+不等于</p>
+<p>&lt;
+小于</p>
+<p>&gt;
+大于</p>
+<p>&gt;=
+大于或等于</p>
+<p>&lt;=
+小于或等于</p>
+<p>比较运算符可以用作中缀运算符。真结果的值为 -1，而假结果的值为 0。请注意，这些运算符执行有符号比较。</p>
+<p>最低优先级
+&amp;&amp;
+逻辑与。</p>
+<p>||
+逻辑或。</p>
+<p>这两个逻辑运算可以用来组合子表达式的结果。请注意，与比较运算符不同，true 结果返回值 1，但 false 结果仍返回 0。还要注意，逻辑或运算符的优先级略低于逻辑与。</p>
+<p>简而言之，只有在地址中添加或减去偏移量才有意义；您只能在两个参数之一中有一个已定义的部分。</p>
+<p>所有汇编程序指令的名称都以句点 (‘.’）。对于大多数目标，名称不区分大小写，并且通常以小写形式编写。</p>
+<p>本章讨论了无论GNU汇编器的目标机器配置如何都可用的指令。一些机器配置提供了额外的指令。请参阅机器依赖项。</p>
+<ul class="simple">
+<li><p>Abort         .abort</p></li>
+</ul>
+<p>该指令立即停止程序集。这是为了与其他汇编程序兼容。最初的想法是汇编语言源将通过管道传输到汇编器中。如果源的发送者退出，它可以使用这个指令告诉as也退出。.abort未来会被淘汰。</p>
+<ul class="simple">
+<li><p>Align         .align [abs-expr[, abs-expr[, abs-expr]]]</p></li>
+</ul>
+<p>将位置计数器（在当前小节中）填充到特定的存储边界。第一个表达式（必须是绝对的）是所需的对齐方式，如下所述。如果省略此表达式，则使用默认值 0，有效地禁用对齐要求。</p>
+<p>第二个表达式（也是绝对的）给出要存储在填充字节中的填充值。它（和逗号）可以省略。如果省略，填充字节通常为零。但是，在大多数系统上，如果该部分被标记为包含代码并且省略了填充值，则该空间将被无操作指令填充。</p>
+<p>第三个表达式也是绝对的，也是可选的。如果存在，则它是此对齐指令应跳过的最大字节数。如果进行对齐需要跳过比指定最大值更多的字节，则根本不进行对齐。您可以完全省略填充值（第二个参数），只需在所需对齐后使用两个逗号即可；如果您希望在适当的时候用无操作指令填充对齐，这将很有用。</p>
+<p>指定所需对齐的方式因系统而异。对于使用 ELF 的 arc、hppa、i386、iq2000、m68k、or1k、s390、sparc、tic4x 和 xtensa，第一个表达式是以字节为单位的对齐请求。例如 ‘.align 8’ 使位置计数器前进，直到它是 8 的倍数。如果位置计数器已经是 8 的倍数，则不需要更改。对于 tic54x，第一个表达式是单词的对齐请求。</p>
+<p>对于其他系统，包括使用 a.out 格式的 ppc、i386、arm 和 strongarm，它是位置计数器在前进后必须具有的低位零位的数量。例如 ‘.对齐 3’ 使位置计数器前进，直到它是 8 的倍数。如果位置计数器已经是 8 的倍数，则不需要更改。</p>
+<p>这种不一致是由于 GAS 必须模拟的这些系统的各种本地汇编程序的不同行为。GAS 还提供.balign和.p2align指令，稍后描述，它们在所有架构中具有一致的行为（但特定于 GAS）。</p>
+<ul class="simple">
+<li><p>Altmacro              .altmacro</p></li>
+</ul>
+<p>启用备用宏模式，启用：</p>
+<p>LOCAL name [ , … ]
+有一个附加指令 ,LOCAL可用。它用于为每个name参数生成字符串替换，并替换每个宏扩展中name的任何实例。替换字符串在程序集中是唯一的，并且对于每个单独的宏扩展都不同。 LOCAL允许您编写定义符号的宏，而不必担心单独的宏扩展之间的冲突。</p>
+<p>String delimiters
+除了以下之外，您还可以编写以其他方式分隔的字符串 ： “string”</p>
+<p>‘string’
+您可以使用单引号字符分隔字符串。</p>
+<p>&lt;string&gt;
+您可以使用匹配的尖括号来分隔字符串。</p>
+<p>single-character string escape
+要在字符串中包含任何单个字符（即使该字符本来有一些特殊含义），您可以在字符前加上 ‘！’（感叹号）。例如，你可以写 ‘&lt;4.3 ！&gt; 5.4 ！！&gt;’ 获取文字文本 ‘4.3 &gt; 5.4！’。</p>
+<p>Expression results as strings
+你可以写 ‘%表达式’ 计算表达式expr 并将结果用作字符串。</p>
+<ul class="simple">
+<li><p>Ascii         .ascii “string”…</p></li>
+</ul>
+<p>.ascii需要用逗号分隔的零个或多个字符串文字（请参阅Strings ）。它将每个字符串（没有自动尾随零字节）组装成连续的地址。</p>
+<ul class="simple">
+<li><p>Asciz         .asciz “string”…</p></li>
+</ul>
+<p>.asciz就像.ascii，但每个字符串后跟一个零字节。’中的“z”.asciz’ 代表“零”。请注意，未用逗号分隔的多个字符串参数将连接在一起，并且仅存储一个最终的零字节。</p>
+<ul class="simple">
+<li><p>Attach_to_group               .attach_to_group name</p></li>
+</ul>
+<p>将当前部分附加到命名组。这就像使用G属性声明节一样，但可以在创建节后完成。请注意，如果在使用此指令时 group 部分不存在，那么它将被创建。</p>
+<ul class="simple">
+<li><p>Balign                .balign [abs-expr[, abs-expr]]</p></li>
+</ul>
+<p>将位置计数器（在当前小节中）填充到特定的存储边界。第一个表达式（必须是绝对的）是以字节为单位的对齐请求。例如 ‘.balign 8’ 使位置计数器前进，直到它是 8 的倍数。如果位置计数器已经是 8 的倍数，则不需要更改。如果省略表达式，则使用默认值 0，从而有效地禁用对齐要求。</p>
+<p>第二个表达式（也是绝对的）给出要存储在填充字节中的填充值。它（和逗号）可以省略。如果省略，填充字节通常为零。但是，在大多数系统上，如果该部分被标记为包含代码并且省略了填充值，则该空间将被无操作指令填充。</p>
+<p>第三个表达式也是绝对的，也是可选的。如果存在，则它是此对齐指令应跳过的最大字节数。如果进行对齐需要跳过比指定最大值更多的字节，则根本不进行对齐。您可以完全省略填充值（第二个参数），只需在所需对齐后使用两个逗号即可；如果您希望在适当的时候用无操作指令填充对齐，这将很有用。</p>
+<p>.balignw和指令是指令的.balignl变体 .balign。该.balignw指令将填充模式视为两个字节的字值。这些.balignl指令将填充模式视为一个四字节长字值。例如，.balignw 4,0x368d将对齐到 4 的倍数。如果它跳过两个字节，它们将被填充 0x368d 值（字节的确切位置取决于处理器的字节序）。如果它跳过 1 或 3 个字节，则填充值未定义。</p>
+<ul class="simple">
+<li><p>Bss           .bss subsection</p></li>
+</ul>
+<p>.bss告诉as将以下语句组装到 bss 部分的末尾。对于基于 ELF 的目标，可以提供可选的小节表达式（必须计算为正整数）。在这种情况下，语句被附加到指定的 bss 小节的末尾。</p>
+<ul class="simple">
+<li><p>Bundle directives             .bundle_align_mode abs-expr, etc</p></li>
+</ul>
+<p>.bundle_align_mode启用或禁用对齐指令包模式。在这种模式下，相邻指令序列被分组到固定大小的包中。如果参数为零，则禁用此模式（这是默认状态）。如果参数不为零，它会将指令包的大小作为 2 的幂（至于 .p2align指令，请参见P2align）。</p>
+<p>对于某些目标，ABI 要求没有指令可以跨越某个对齐的边界。捆绑包只是从对齐的边界开始的一系列指令。例如，如果 abs-expr是5，则包大小为 32，因此每个对齐的 32 字节块是一个包。当对齐指令束模式生效时，没有一条指令可以跨越束之间的边界。如果一条指令的开始距离太接近包的结尾，以至于该特定指令的长度无法容纳在包中，那么该包末尾的空间将被无操作指令填充，因此该指令在下一个包中开始. 作为推论，如果任何单个指令的编码长于捆绑包大小，则会出现错误。</p>
+<p>和.bundle_lock指令.bundle_unlock指令允许显式控制指令束填充。这些指令仅.bundle_align_mode在用于启用对齐指令包模式时才有效。如果它们在 .bundle_align_mode根本没有被使用时出现，或者当最后一个指令是.bundle_align_mode 0.</p>
+<p>对于某些目标，ABI 要求某些指令只能作为指定允许的多条指令序列的一部分出现，所有指令都在同一个包中。一对.bundle_lock 和.bundle_unlock指令定义了一个捆绑锁定 指令序列。出于对齐指令束模式的目的，以 开头.bundle_lock和结尾 的序列.bundle_unlock被视为单个指令。也就是说，整个序列必须适合单个束，并且不能跨越束边界。如有必要，将在序列的第一条指令之前插入无操作指令，以便整个序列从对齐的捆绑边界开始。如果序列长于包大小，则为错误。</p>
+<p>为了方便在汇编器宏中使用.bundle_lock和内部（请参阅宏），可以嵌套捆绑锁定序列。也就是说，在下一个指令之前的 第二个指令没有任何效果，除非它必须与另一个关闭匹配，以便有相同数量的和指令。 .bundle_unlock.bundle_lock.bundle_unlock.bundle_unlock.bundle_lock.bundle_unlock</p>
+<ul class="simple">
+<li><p>Byte          .byte expressions</p></li>
+</ul>
+<p>.byte需要零个或多个表达式，用逗号分隔。每个表达式都组装到下一个字节中。</p>
+<ul class="simple">
+<li><p>CFI directives                .cfi_startproc [simple], .cfi_endproc, etc.</p></li>
+</ul>
+<p>CFI指令原因：</p>
+<ul class="simple">
+<li><p>Comm          .comm symbol , length</p></li>
+</ul>
+<p>.comm声明一个名为symbol的通用符号。链接时，一个对象文件中的公共符号可能与另一个对象文件中已定义或同名的公共符号合并。如果ld没有看到符号的定义——只有一个或多个常见符号——那么它将分配长度字节的未初始化内存。 长度必须是绝对表达式。如果ld看到多个具有相同名称的常用符号，并且它们的大小不同，它将使用最大的大小分配空间。</p>
+<p>当使用 ELF 或（作为 GNU 扩展）PE 时，该.comm指令采用可选的第三个参数。这是所需的符号对齐方式，对于 ELF 指定为字节边界（例如，对齐 16 意味着地址的最低有效 4 位应为零），对于 PE 指定为 2 的幂（例如，对齐 5 表示对齐到 32 字节边界）。对齐必须是绝对表达式，并且必须是 2 的幂。如果ld为公共符号分配未初始化的内存，则在放置符号时将使用对齐方式。如果未指定对齐方式，as则将对齐方式设置为小于或等于符号大小的 2 的最大幂，在 ELF 上最多为 16，或者在 PE 1上设置为 4 的默认节对齐方式。</p>
+<p>HPPA的语法.comm略有不同。语法是’符号.comm，长度’; 符号是可选的。</p>
+<ul class="simple">
+<li><p>Data          .data subsection</p></li>
+</ul>
+<p>.data告诉as将以下语句组装到数据子节编号子节的末尾（这是一个绝对表达式）。如果省略subsection，则默认为零。</p>
+<ul class="simple">
+<li><p>Dc            .dc[size] expressions</p></li>
+</ul>
+<p>该.dc指令需要零个或多个用逗号分隔的表达式。对这些表达式求值，并将它们的值插入当前部分。发出值的大小取决于 .dc指令的后缀：</p>
+<p>‘.a’
+发出 N 位值，其中 N 是目标系统上地址的大小。</p>
+<p>‘.b’
+发出 8 位值。</p>
+<p>‘.d’
+发出双精度浮点值。</p>
+<p>‘.l’
+发出 32 位值。</p>
+<p>‘.s’
+发出单精度浮点值。</p>
+<p>‘.w’
+发出 16 位值。注意 - 即使在.word指令会发出 32 位值的目标上也是如此。</p>
+<p>‘.x’
+发出长双精度浮点值。</p>
+<p>如果不使用后缀，则 ‘.w’ 假设。</p>
+<p>字节顺序取决于目标，浮点值的大小和格式也是如此。</p>
+<ul class="simple">
+<li><p>Dcb           .dcb[size] number [,fill]</p></li>
+<li><p>Ds            .ds[size] number [,fill]</p></li>
+<li><p>Def           .def name</p></li>
+<li><p>Desc          .desc symbol, abs-expression</p></li>
+<li><p>Dim           .dim</p></li>
+<li><p>Double                .double flonums</p></li>
+<li><p>Eject         .eject</p></li>
+<li><p>Else          .else</p></li>
+<li><p>Elseif                .elseif</p></li>
+<li><p>End           .end</p></li>
+<li><p>Endef         .endef</p></li>
+<li><p>Endfunc               .endfunc</p></li>
+<li><p>Endif         .endif</p></li>
+<li><p>Equ           .equ symbol, expression</p></li>
+</ul>
+<p>该指令将symbol的值设置为expression。与.set同义</p>
+<ul class="simple">
+<li><p>Equiv         .equiv symbol, expression</p></li>
+<li><p>Eqv           .eqv symbol, expression</p></li>
+<li><p>Err           .err</p></li>
+</ul>
+<p>如果as汇编一个.err指令，它将打印一条错误消息，除非-Z使用了选项，它不会生成目标文件。这可用于在条件编译的代码中发出错误信号。
+• Error         .error string</p>
+<p>与 类似.err，此指令发出错误，但您可以指定将作为错误消息发出的字符串。如果您不指定消息，则默认为”.error directive invoked in source file”. 请参阅错误和警告消息。</p>
+<p>.error “此代码尚未组装和测试。”
+• Exitm         .exitm</p>
+<p>提前退出当前宏定义。</p>
+<ul class="simple">
+<li><p>Extern                .extern</p></li>
+</ul>
+<p>.extern在源程序中被接受——为了与其他汇编程序兼容——但它被忽略了。 as将所有未定义的符号视为外部符号。
+• Fail          .fail
+生成错误或警告。如果表达式的值是 500 或更大，as将打印一条警告消息。如果该值小于 500，as将打印一条错误消息。该消息将包含表达式的值。这有时在复杂的嵌套宏或条件汇编中很有用。
+• File          .file
+.file该指令有两种不同的版本。支持 DWARF2 行号信息的目标使用 DWARF2 版本的 .file. 其他目标使用默认版本。</p>
+<p>默认版本
+这个版本的.file指令告诉as我们即将开始一个新的逻辑文件。语法是：</p>
+<p>.file字符串
+string是新的文件名。通常，无论文件名是否被引号 ‘ 包围，都会被识别”’; 但如果你想指定一个空文件名，你必须给引号 - “”。这种说法将来可能会消失：它只被认为与旧as程序兼容。</p>
+<p>DWARF2 版本
+当发出 DWARF2 行号信息时，.file将文件名分配给.debug_line文件名表。语法是：</p>
+<p>.file文件号 文件名
+fileno操作数应该是唯一的正整数，用作表中条目的索引。文件名操作数是用双引号括起来的 C 字符串文字。文件名可以包含目录元素。如果是这样，那么目录将被添加到目录表中，并且基本名称将被添加到文件表中。</p>
+<p>文件名索引的详细信息向用户公开，因为文件名表与.debug_infoDWARF2 调试信息部分共享，因此用户必须知道表条目将具有的确切索引。</p>
+<p>如果已通过-gdwarf-5.file选项然后也允许 扩展版本：</p>
+<p>.file文件号[目录名]文件名[md5值]
+在此版本中，允许使用单独的目录名称，但如果使用此名称，则filename不应包含任何目录组件，除了fileno等于 0：在这种情况下，dirname应为当前目录，而filename应为当前处理的文件，后者不必位于前者中。此外，可以提供文件名内容的 MD5 哈希值。这也将存储在文件表中，并且可以被读取调试信息的工具用来验证源文件的内容与编译文件的内容是否匹配。</p>
+<ul class="simple">
+<li><p>Fill          .fill repeat , size , value</p></li>
+</ul>
+<p>repeat、size和value是绝对表达式。这会发出size字节 的重复副本。重复 可能为零或更多。 size可能是零或更大，但如果大于 8，则认为其值为 8，与其他人的汇编程序兼容。每个重复字节的内容取自一个 8 字节的数字。最高 4 个字节为零。最低顺序的 4 个字节是以正在组装的计算机上的整数的字节顺序呈现的值。重复中的每个size字节取自最低顺序 大小as这个数字的字节。同样，这种奇怪的行为与其他人的汇编程序兼容。</p>
+<p>大小和值是可选的。如果第二个逗号和value不存在，则value假定为零。如果第一个逗号和后面的标记不存在， 则假定大小为 1。</p>
+<ul class="simple">
+<li><p>Float         .float flonums</p></li>
+<li><p>Func          .func</p></li>
+</ul>
+<p>.func发出调试信息以表示函数名称，除非文件是在启用调试的情况下组装的，否则将被忽略。仅有的 ‘–gstabs[+]’ 目前支持。 label是函数的入口点，如果省略name 前面带有 ‘前导字符’ 用来。’前导字符’ 通常是_或没有，取决于目标。当前所有函数都定义为具有void返回类型。该函数必须以 终止.endfunc。
+• Global                .global symbol, .globl symbol
+.global使符号对 可见ld。如果您在部分程序中定义 符号，则其值可用于与其链接的其他部分程序。否则， 符号从链接到同一程序的另一个文件的同名符号中获取其属性。</p>
+<p>两种拼写（’.globl’ 和 ‘。全球的’) 被接受，以与其他汇编程序兼容。</p>
+<ul class="simple">
+<li><p>Gnu_attribute         .gnu_attribute tag,value</p></li>
+<li><p>Hidden                .hidden names</p></li>
+<li><p>hword         .hword expressions</p></li>
+<li><p>Ident         .ident</p></li>
+<li><p>If            .if absolute expression</p></li>
+<li><p>Incbin                .incbin “file”[,skip[,count]]</p></li>
+<li><p>Include               .include “file”</p></li>
+<li><p>Int           .int expressions</p></li>
+<li><p>Internal              .internal names</p></li>
+<li><p>Irp           .irp symbol,values…</p></li>
+<li><p>Irpc          .irpc symbol,values…</p></li>
+<li><p>Lcomm         .lcomm symbol , length</p></li>
+<li><p>Lflags                .lflags</p></li>
+<li><p>Line          .line line-number</p></li>
+<li><p>Linkonce              .linkonce [type]</p></li>
+<li><p>List          .list</p></li>
+<li><p>Ln            .ln line-number</p></li>
+<li><p>Loc           .loc fileno lineno</p></li>
+<li><p>Loc_mark_labels               .loc_mark_labels enable</p></li>
+<li><p>Local         .local names</p></li>
+<li><p>Long          .long expressions</p></li>
+<li><p>Macro         .macro name args…</p></li>
+<li><p>MRI           .mri val</p></li>
+<li><p>Noaltmacro            .noaltmacro</p></li>
+<li><p>Nolist                .nolist</p></li>
+<li><p>Nop           .nop</p></li>
+</ul>
+<p>该指令发出无操作指令。它在所有架构上都提供，允许创建涉及实际代码的架构中立测试。生成指令的大小是特定于目标的，但如果给出了可选的 大小参数，并且在汇编中的该点解析为绝对正值（不允许前向表达式），那么发出的无操作指令最少等于或超过总大小（以字节为单位）。 .nop确实会影响 DWARF 调试行信息的生成。一些目标不支持使用.nopwith size。</p>
+<ul class="simple">
+<li><p>Nops          .nops size[, control]</p></li>
+<li><p>Octa          .octa bignums</p></li>
+<li><p>Offset                .offset loc</p></li>
+<li><p>Org           .org new-lc, fill</p></li>
+<li><p>P2align               .p2align [abs-expr[, abs-expr[, abs-expr]]]</p></li>
+<li><p>PopSection            .popsection</p></li>
+<li><p>Previous              .previous</p></li>
+<li><p>Print         .print string</p></li>
+<li><p>Protected             .protected names</p></li>
+<li><p>Psize         .psize lines, columns</p></li>
+<li><p>Purgem                .purgem name</p></li>
+<li><p>PushSection           .pushsection name</p></li>
+<li><p>Quad          .quad bignums</p></li>
+<li><p>Reloc         .reloc offset, reloc_name[, expression]</p></li>
+<li><p>Rept          .rept count</p></li>
+<li><p>Sbttl         .sbttl “subheading”</p></li>
+<li><p>Scl           .scl class</p></li>
+<li><p>Section               .section name[, flags]</p></li>
+<li><p>Set           .set symbol, expression</p></li>
+<li><p>Short         .short expressions</p></li>
+<li><p>Single                .single flonums</p></li>
+<li><p>Size          .size [name , expression]</p></li>
+<li><p>Skip          .skip size [,fill]</p></li>
+<li><p>Sleb128               .sleb128 expressions</p></li>
+<li><p>Space         .space size [,fill]</p></li>
+<li><p>Stab          .stabd, .stabn, .stabs</p></li>
+<li><p>String                .string “str”, .string8 “str”, .string16 “str”, .string32 “str”, .string64 “str”</p></li>
+<li><p>Struct                .struct expression</p></li>
+<li><p>SubSection            .subsection</p></li>
+<li><p>Symver                .symver name,name2&#64;nodename[,visibility]</p></li>
+<li><p>Tag           .tag structname</p></li>
+<li><p>Text          .text subsection</p></li>
+<li><p>Title         .title “heading”</p></li>
+<li><p>Tls_common            .tls_common symbol, length[, alignment]</p></li>
+<li><p>Type          .type &lt;int | name , type description&gt;</p></li>
+<li><p>Uleb128               .uleb128 expressions</p></li>
+<li><p>Val           .val addr</p></li>
+<li><p>Version               .version “string”</p></li>
+<li><p>VTableEntry           .vtable_entry table, offset</p></li>
+<li><p>VTableInherit         .vtable_inherit child, parent</p></li>
+<li><p>Warning               .warning string</p></li>
+<li><p>Weak          .weak names</p></li>
+<li><p>Weakref               .weakref alias, symbol</p></li>
+<li><p>Word          .word expressions</p></li>
+<li><p>Zero          .zero size</p></li>
+<li><p>2byte         .2byte expressions</p></li>
+<li><p>4byte         .4byte expressions</p></li>
+<li><p>8byte         .8byte bignums</p></li>
+<li><p>Deprecated            Deprecated Directives</p></li>
+</ul>
+<hr class="docutils" />
+<div class="section" id="id15">
+<h2>对象属性<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="gnu">
+<h3>GNU对象属性：<a class="headerlink" href="#gnu" title="Permalink to this headline">¶</a></h3>
+<p>该.gnu_attribute指令使用 vendor ‘ 记录对象属性牛’。</p>
+<p>除了 ‘标签兼容性’，它的值有一个整数和一个字符串，如果标签号是奇数，GNU属性有一个字符串值，如果标签号是偶数，则有一个整数值。第二位 (tag &amp; 2为与架构无关的属性设置，为与架构相关的属性设置清除。</p>
+</div>
+</div>
+<div class="section" id="id16">
+<h2>机器相关<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bpf">
+<h3>BPF<a class="headerlink" href="#bpf" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id17">
+<h3>80386依赖属性<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
 </div>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="comp_base.html" class="btn btn-neutral float-left" title="内核编程概述" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="comp_api.html" class="btn btn-neutral float-left" title="linux 二进制接口" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="comp_ld.html" class="btn btn-neutral float-right" title="ld 在linux中的应用" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
