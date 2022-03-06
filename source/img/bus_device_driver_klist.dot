@@ -1,0 +1,148 @@
+digraph g {
+label = "bus <-> struct device <-> strut device_driver链接"
+graph [
+rankdir = "LR"
+];
+node [
+fontsize = "16"
+shape = "ellipse"
+
+];
+edge [
+];
+
+
+subgraph cluster_0 {
+label = "bus0:struct bus_type \-\> struct subsys_private";
+"subsys_private0"[label = "<f0> bus0:struct subsys_private \{\l | 
+         <f1> ...\n| 
+         <f2> struct klist *klist_devices;\r|
+         <f3> struct klist *klist_drivers;\r|
+         <f4> ...\n|
+         <f5> \}\l",shape = record];
+}
+
+
+subgraph cluster_3 {
+label = "device_00:struct device -> struct devie_private";
+"device_private00"[label = "<f0> device_private00:struct device_private \{\l|
+			   <f1> struct klist klist_children;\r|
+			   <f2> struct klist_node knode_parent;\r|
+			   <f3> struct klist_node knode_driver;\r|
+			   <f4> struct klist_node knode_bus;\r|
+			   <f5> struct klist_node knode_class;\r|
+			   <f6> ...\n\}\l",shape = record];
+
+}
+
+
+subgraph cluster_4 {
+
+label = "device_01:struct device \-\> struct devie_private";
+
+"device_private01"[label = "<f0> device_private01:struct device_private \{\l|
+			   <f1> struct klist klist_children;\r|
+			   <f2> struct klist_node knode_parent;\r|
+			   <f3> struct klist_node knode_driver;\r|
+			   <f4> struct klist_node knode_bus;\r|
+			   <f5> struct klist_node knode_class;\r|
+			   <f6> ...\n\}\l"; shape = record];
+			   
+}
+
+subgraph cluster_5 {
+label = "device_02:struct device \-\> struct devie_private";
+
+"device_private02"[label = "<f0> device_private02:struct device_private \{\l|
+			   <f1> struct klist klist_children;\r|
+			   <f2> struct klist_node knode_parent;\r|
+			   <f3> struct klist_node knode_driver;\r|
+			   <f4> struct klist_node knode_bus;\r|
+			   <f5> struct klist_node knode_class;\r|
+			   <f6> ...\n\}\l"; shape = record];
+			   
+}
+
+
+subgraph cluster_6 {
+label = "driver_0:struct device_driver\-\>struct driver_private";
+
+"driver_private0"[label = "<f0> driver_private0:struct driver_private \{\l|
+			   <f1> ...\n|
+			   <f2> struct klist klist_devices;\r|
+			   <f3> struct klist_node knode_bus;\r|
+			   <f4> ...\n\}\l",shape = record];
+			   
+}
+
+subgraph cluster_7 {
+label = "driver_1:struct device_driver\-\>struct driver_private";
+
+"driver_private1"[label = "<f0> driver_private1:struct driver_private \{\l|
+			   <f1> ...\n|
+			   <f2> struct klist klist_devices;\r|
+			   <f3> struct klist_node knode_bus;\r|
+			   <f4> ...\n\}\l", shape = record];
+			   
+}
+
+
+subgraph cluster_9 {
+label = "device_10:struct device -> struct devie_private";
+"device_private10"[label = "<f0> device_private10:struct device_private \{\l|
+			   <f1> struct klist klist_children;\r|
+			   <f2> struct klist_node knode_parent;\r|
+			   <f3> struct klist_node knode_driver;\r|
+			   <f4> struct klist_node knode_bus;\r|
+			   <f5> struct klist_node knode_class;\r|
+			   <f6> ...\n\}\l",shape = record];
+
+}
+
+subgraph cluster_10 {
+
+label = "device_11:struct device -> struct devie_private";
+
+"device_private11"[label = "<f0> device_private11:struct device_private \{\l|
+			   <f1> struct klist klist_children;\r|
+			   <f2> struct klist_node knode_parent;\r|
+			   <f3> struct klist_node knode_driver;\r|
+			   <f4> struct klist_node knode_bus;\r|
+			   <f5> struct klist_node knode_class;\r|
+			   <f6> ...\n\}\l"; shape = record];
+			   
+}
+
+subgraph cluster_11 {
+label = "device_12:struct device -> struct devie_private";
+
+"device_private12"[label = "<f0> device_private12:struct device_private \{\l|
+			   <f1> struct klist klist_children;\r|
+			   <f2> struct klist_node knode_parent;\r|
+			   <f3> struct klist_node knode_driver;\r|
+			   <f4> struct klist_node knode_bus;\r|
+			   <f5> struct klist_node knode_class;\r|
+			   <f6> ...\n\}\l"; shape = record];
+			   
+}
+"subsys_private0":f2 -> "device_private00":f4 [dir = both];
+"device_private00":f4 -> "device_private01":f4[dir = both]; 
+"device_private01":f4 -> "device_private02":f4[dir = both];
+
+"subsys_private0":f3 -> "driver_private0":f3[dir = both];
+"driver_private0":f3 -> "driver_private1":f3[dir = both];
+
+
+"driver_private0":f2 ->"device_private00":f3[dir = both];
+"device_private00":f3 -> "device_private01":f3[dir = both];
+"device_private01":f3 -> "device_private02":f3[dir = both];
+
+"device_private02":f4 -> "device_private10":f4[dir = both];
+"device_private10":f4 -> "device_private11":f4[dir = both];
+"device_private11":f4 -> "device_private12":f4[dir = both];
+
+"driver_private1":f2 -> "device_private10":f3[dir = both];
+"device_private10":f3 -> "device_private11":f3[dir = both];
+"device_private11":f3 -> "device_private12":f3[dir = both];
+
+}

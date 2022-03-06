@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GNU gprof:GNU性能分析工具 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>GNU gprof:GNU性能分析工具</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_devel/lk_comp/comp_gprof.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="gnu-gprof-gnu">
+<h1>GNU gprof:GNU性能分析工具<a class="headerlink" href="#gnu-gprof-gnu" title="Permalink to this headline">¶</a></h1>
+<p>手册描述了GNU分析器，gprof以及如何使用它来确定程序的哪些部分占用了大部分执行时间。我们假设您知道如何编写、编译和执行程序。占用时间，函数调用频率。
+背景描述
+^^^^^^^
+允许您了解程序在哪里花费时间以及在执行时哪些函数调用了哪些其他函数。此信息可以向您显示程序的哪些部分比您预期的要慢，并且可能是重写以使您的程序执行得更快的候选者。它还可以告诉您哪些函数被调用的频率比您预期的多或少。这可以帮助您发现原本未被注意到的错误。</p>
+<p>由于分析器使用在程序实际执行期间收集的信息，因此它可以用于太大或太复杂而无法通过读取源代码进行分析的程序。但是，程序的运行方式会影响配置文件数据中显示的信息。如果您在分析程序时不使用程序的某些功能，则不会为该功能生成任何配置文件信息。</p>
+<p>分析有几个步骤：</p>
+<p>您必须在启用分析的情况下编译和链接您的程序。请参阅编译程序以进行分析。
+您必须执行程序以生成配置文件数据文件。请参阅执行程序。
+您必须运行gprof以分析配置文件数据。请参阅gprof命令摘要。
+接下来的三章更详细地解释了这些步骤。</p>
+<p>分析可提供多种形式的输出。</p>
+<p>平面配置文件显示:您的程序在每个函数中花费了多少时间，以及该函数被调用了多少次。如果您只是想知道哪些函数消耗了大部分周期，这里简明扼要地说明了这一点。请参阅平面轮廓。</p>
+<p>调用图显示:对于每个函数，哪些函数调用了它，它调用了哪些其他函数，以及调用了多少次。还估计了每个函数的子例程花费了多少时间。这可以建议您尝试消除使用大量时间的函数调用的地方。请参阅调用图。</p>
+<p>带注释的源代码清单是程序源代码的副本，标有程序每行执行的次数。请参阅带注释的源列表。</p>
+<p>为了更好地理解分析是如何工作的，您可能希望阅读其实现的描述。请参阅分析的实现。</p>
+<p>要编译用于分析的源文件，请指定 ‘-pg’ 运行编译器时的选项。（这是您通常使用的选项的补充。）</p>
+<p>要链接程序以进行分析，如果您使用诸如cc 进行链接的编译器，只需指定’-pg’ 除了您通常的选择。相同的选项，’-pg’，更改编译或链接以执行分析所需的操作。以下是示例：</p>
+<p>cc -g -c myprog.c utils.c -pg
+cc -o myprog myprog.o utils.o -pg
+这 ‘-pg’ 选项也适用于编译和链接的命令：</p>
+<p>cc -o myprog myprog.c utils.c -g -pg
+注意：’-pg’ 选项必须是您的编译选项以及链接选项的一部分。如果不是，则不会收集调用图数据，并且当您运行时，gprof您将收到如下错误消息：</p>
+<p>gprof：gprof: gmon.out file is missing call-graph data</p>
+<p>如果您添加 ‘-Q’ 开关以抑制调用图数据的打印，您仍然可以看到时间样本：</p>
+<p>Flat profile:</p>
+<dl>
+<dt>Each sample counts as 0.01 seconds.</dt><dd><blockquote>
+<div><p>%   cumulative   self              self     total</p>
+</div></blockquote>
+<p>time   seconds   seconds    calls  Ts/call  Ts/call  name
+44.12      0.07     0.07                             zazLoop
+35.29      0.14     0.06                             main
+20.59      0.17     0.04                             bazMillion</p>
+</dd>
+</dl>
+<p>如果您ld直接运行链接器而不是通过诸如 之类的编译器cc，您可能必须指定一个分析启动文件 gcrt0.o作为第一个输入文件，而不是通常的启动文件crt0.o. 此外，您可能希望指定分析 C 库，libc_p.a, 通过写 ‘-lc_p’而不是通常的’-lc’。这不是绝对必要的，但这样做可以为您提供标准库函数的调用次数信息，例如read和open。例如：</p>
+<p>ld -o myprog /lib/gcrt0.o myprog.o utils.o -lc_p</p>
+<p>如果您在支持共享库的系统上运行程序，则在完全初始化该库之前调用共享库中的分析支持代码可能会遇到问题。这通常是由程序在运行时遇到分段错误时检测到的。解决方案是链接到包含分析支持代码的库的静态版本，gcc用户可以通过’-静止的’ 要么 ‘-static-libgcc’ 命令行选项。例如：</p>
+<p>gcc -g -pg -static-libgcc myprog.c utils.c -o myprog
+如果您只编译程序的某些模块，使用 ‘-pg’，你仍然可以分析程序，但你不会得到关于没有编译的模块的完整信息 ‘-pg’。对于这些模块中的功能，您获得的唯一信息是在它们中花费的总时间；没有记录他们被叫了多少次，或者从哪里来。这不会影响平面配置文件（除了calls函数的字段将为空白），但会大大降低调用图的有用性。</p>
+<p>如果您希望执行逐行分析，您应该使用该 gcov工具而不是gprof. 有关如何执行此操作的更多详细信息，请参阅该工具的手册或信息页面。</p>
+<p>请注意，旧版本gcc生成的逐行分析信息可以使用，gprof而不是gcov因此仍然支持在 gprof. 请参阅逐行分析。</p>
+<p>还值得注意的是，gcc实现了一个 ‘-finstrument-functions’ 命令行选项，它将在程序中每个函数的入口和出口处插入对用户提供的特殊检测例程的调用。这可用于实现替代分析方案。</p>
+<div class="section" id="id1">
+<h2>执行程序<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>编译程序以进行分析后，您必须运行它以生成所需的信息gprof。只需像往常一样运行程序，使用正常的参数、文件名等。程序应该正常运行，产生与往常一样的输出。但是，由于收集和写入配置文件数据所花费的时间，它的运行速度会比平时慢一些。</p>
+<p>你运行程序的方式——你给它的参数和输入——可能会对配置文件信息显示的内容产生巨大的影响。配置文件数据将描述为您使用的特定输入激活的程序部分。例如，如果您向程序发出的第一个命令是退出，则配置文件数据将显示初始化和清理中使用的时间，但不会显示其他内容。</p>
+<p>您的程序会将配置文件数据写入一个名为gmon.out 就在退出之前。如果已经有一个文件叫做gmon.out，其内容被覆盖。如果您担心文件可能会被覆盖，您可以在之后重命名该文件。如果您的系统 libc 允许，您可能能够以不同的名称写入配置文件数据。设置 GMON_OUT_PREFIX 环境变量；此名称将附加运行程序的 PID。</p>
+<p>为了写gmon.out文件正确，您的程序必须正常退出：通过从返回main或调用exit. 调用低级函数_exit不会写入配置文件数据，也不会由于未处理的信号而导致异常终止。</p>
+<p>这gmon.out文件在程序退出时写入程序的当前工作目录。这意味着如果您的程序调用 chdir，gmon.out文件将留在您的程序的最后一个目录chdir中。如果您没有在该目录中写入的权限，则不会写入文件，并且会收到错误消息。</p>
+<dl class="simple">
+<dt>旧版本的GNU分析库也可以编写一个名为bb.out. 此文件（如果存在）包含人类可读的基本块执行计数列表。不幸的是，人类可读的外观bb.out意味着基本块计数没有被写入gmon.out. 源代码分发中bbconv.pl包含的 Perl 脚本将转换为gprofbb.out文件转换为 . 可读的格式gprof。像这样调用它：</dt><dd><p>bbconv.pl &lt; bb.out &gt; bh-data</p>
+</dd>
+</dl>
+<p>这会将信息转换为bb.out变成 gprof可以理解的形式。但是你仍然需要告诉gprof 这个翻译信息的存在。为此，请 在命令行中包含bb-data以及 gprofgmon.out， 像这样：</p>
+<p>gprof options executable-file gmon.out bb-data [yet-more-profile-data-files…] [&gt; outfile]</p>
+</div>
+<div class="section" id="gprof">
+<h2>gprof命令总结<a class="headerlink" href="#gprof" title="Permalink to this headline">¶</a></h2>
+<p>拥有配置文件数据文件后gmon.out，您可以运行gprof 以解释其中的信息。该gprof程序在标准输出上打印平面配置文件和调用图。通常，您会将 ‘ 的输出重定向gprof到带有 ‘ 的文件中&gt;’。</p>
+<p>你gprof这样跑：</p>
+<p>gprof options [executable-file [profile-data-files…]] [&gt; outfile]</p>
+<p>这里方括号表示可选参数。</p>
+<p>如果省略可执行文件名，则文件a.out用来。如果您没有给出配置文件数据文件名，则该文件gmon.out用来。如果任何文件的格式不正确，或者配置文件数据文件似乎不属于可执行文件，则会打印一条错误消息。</p>
+<p>您可以通过在可执行文件名后输入所有名称来提供多个配置文件数据文件；然后将所有数据文件中的统计信息汇总在一起。</p>
+<p>这些选项的顺序无关紧要。</p>
+</div>
+<div class="section" id="id2">
+<h2>输出选项：<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>这些选项指定 gprof应该生成几种输出格式中的哪一种。</p>
+<p>其中许多选项采用可选的symspec来指定要包含或排除的函数。可以使用不同的符号规范多次指定这些选项，以包含或排除符号集。请参阅符号规范。</p>
+<p>指定这些选项中的任何一个都会覆盖默认值 (‘-p -q’)，它为所有函数打印平面配置文件和调用图分析。</p>
+<p>-A[symspec]
+–annotated-source[=symspec]
+这 ‘-一种’ 选项导致gprof打印带注释的源代码。如果指定了symspec，则仅打印匹配符号的输出。请参阅带注释的源列表。</p>
+<p>-b
+–brief
+如果’-b’ 选项，gprof不打印试图解释表中所有字段含义的详细说明。如果您打算打印输出，或者厌倦了看简介，这很有用。</p>
+<p>-C[symspec]
+–exec-counts[=symspec]
+这 ‘-C’ 选项导致gprof打印函数的计数以及每个函数被调用的次数。如果指定了symspec，则仅打印匹配符号的计数。</p>
+<p>如果配置文件数据文件包含基本块计数记录，则指定 ‘-l’ 选项，以及 ‘-C’，将导致计算和显示基本块执行计数。</p>
+<p>-i
+–file-info
+这 ‘-一世’ 选项会导致gprof显示有关配置文件数据文件的摘要信息，然后退出。显示直方图、调用图和基本块计数记录的数量。</p>
+<p>-I dirs
+–directory-path=dirs
+这 ‘-一世’ 选项指定要在其中查找源文件的搜索目录列表。环境变量GPROF_PATH 也可用于传达此信息。主要用于带注释的源输出。</p>
+<p>-J[symspec]
+–no-annotated-source[=symspec]
+这 ‘-J’ 选项导致gprof不打印带注释的源代码。如果指定了 symspecgprof ，则打印带注释的源，但不包括匹配的符号。</p>
+<p>-L
+–print-path
+通常，在打印源文件名时会抑制路径组件。这 ‘-L’ 选项导致gprof 打印源文件名的完整路径名，该路径名由图像文件中的符号调试信息确定，并且与调用编译器的目录相关。</p>
+<p>-p[symspec]
+–flat-profile[=symspec]
+这 ‘-p’ 选项导致gprof打印平面配置文件。如果指定了 symspec，则仅打印匹配符号的平面配置文件。请参阅平面轮廓。</p>
+<p>-P[symspec]
+–no-flat-profile[=symspec]
+这 ‘-P’ 选项会导致gprof禁止打印平面轮廓。如果指定了symspecgprof ，则打印一个平面配置文件，但不包括匹配的符号。</p>
+<p>-q[symspec]
+–graph[=symspec]
+这 ‘-q’ 选项导致gprof打印调用图分析。如果指定了 symspec，则仅打印匹配符号及其子代的调用图。请参阅调用图。</p>
+<p>-Q[symspec]
+–no-graph[=symspec]
+这 ‘-Q’ 选项导致gprof禁止打印调用图。如果指定了symspecgprof ，则打印调用图，但不包括匹配的符号。</p>
+<p>-t
+–table-length=num
+这 ‘-t’ 选项导致在启用源注释时列出每个源文件中的num最活跃的源代码行。默认值为 10。</p>
+<p>-y
+–separate-files
+此选项仅影响带注释的源输出。通常，gprof将带注释的源文件打印到标准输出。如果指定了此选项，则为名为的文件的注释源路径/文件名 在文件中生成文件名-ann. 如果底层文件系统会截断文件名-ann让它覆盖原来的文件名，gprof在文件中生成带注释的源文件名.ann相反（如果原始文件名具有扩展名，则该扩展名将替换 为.ann）。</p>
+<p>-Z[symspec]
+–no-exec-counts[=symspec]
+这 ‘-Z’ 选项导致gprof不打印函数的计数以及每个函数被调用的次数。如果指定了 symspec，则打印计数，但排除匹配的符号。</p>
+<p>-r
+–function-ordering
+这 ‘–函数排序’ 选项导致gprof根据分析数据为程序打印建议的函数排序。此选项建议一种排序，该排序可以改善程序在支持可执行文件中函数的任意排序的系统上的分页、tlb 和缓存行为。</p>
+<p>如何强制链接器以特定顺序放置函数的具体细节取决于系统并且超出了本手册的范围。</p>
+<p>-R map_file
+–file-ordering map_file
+这 ‘–文件排序’ 选项导致gprof根据分析数据为程序打印建议的 .o 链接行排序。在不支持可执行文件中函数的任意排序的系统上，此选项建议可以改进程序的分页、tlb 和缓存行为的排序。</p>
+<p>使用’-一种’ 强烈建议使用此选项使用参数。</p>
+<p>map_file参数是一个文件的路径名，它为对象文件映射提供函数名。文件的格式类似于程序的输出nm。</p>
+<p>c-parse.o:00000000 T yyparse
+c-parse.o:00000004 C yyerrflag
+c-lang.o:00000000 T 也许_objc_method_name
+c-lang.o:00000000 T print_lang_statistics
+c-lang.o:00000000 T识别objc_keyword
+c-decl.o:00000000 T print_lang_identifier
+c-decl.o:00000000 T print_lang_type
+…</p>
+<p>要使用GNU创建map_file，请键入类似 . nmnm –extern-only –defined-only -v –print-file-name program-name</p>
+<p>-T
+–traditional
+这 ‘-T’ 选项导致gprof以“传统” BSD 样式打印其输出。</p>
+<p>-w width
+–width=width
+将输出线的宽度设置为width。目前仅在调用图底部打印函数索引时使用。</p>
+<p>-x
+–all-lines
+此选项仅影响带注释的源输出。默认情况下，仅对基本块开头的行进行注释。如果指定此选项，则基本块中的每一行都通过重复第一行的注释来进行注释。此行为类似于tcov’’-一种’。</p>
+<p>–demangle[=style]
+–no-demangle
+这些选项控制在打印输出时是否应对 C++ 符号名称进行解码。默认设置是对符号进行解构。该 –no-demangle选项可用于关闭拆解。不同的编译器有不同的修饰风格。可选的 demangling 样式参数可用于为您的编译器选择合适的 demangling 样式。</p>
+<blockquote>
+<div><p>-a</p>
+</div></blockquote>
+<p>–no-static
+这 ‘-一种’ 选项导致gprof禁止打印静态声明的（私有）函数。（这些函数的名称未列为全局函数，并且在定义它们的文件/函数/块之外不可见。）在这些函数中花费的时间、对它们的调用等都将归因于在可执行文件中直接在它之前加载的函数。此选项影响平面配置文件和调用图。</p>
+<p>-c
+–static-call-graph
+这 ‘-C’ 选项会导致程序的调用图被启发式增强，该启发式检查目标文件的文本空间并识别二进制机器代码中的函数调用。由于仅在输入函数时才生成正常调用图记录，因此此选项标识可能已调用但从未调用过的子项。对未在启用分析的情况下编译的函数的调用也会被识别，但前提是它们存在符号表条目。此选项通常找不到对动态库例程的调用。通过此启发式识别的父母或孩子在呼叫图中指示，呼叫计数为 ‘0’。</p>
+<p>-D
+–ignore-non-functions
+这 ‘-D’ 选项会导致gprof忽略未知函数的符号。此选项将在受支持的系统（例如 Solaris 和 HPUX）上提供更准确的配置文件数据。</p>
+<p>-k from/to
+这 ‘-k’ 选项允许您从调用图中删除从匹配 symspec 的符号到匹配 symspec到的符号的任何弧。</p>
+<p>-l
+–line
+这 ‘-l’ 选项启用逐行分析，这导致直方图命中计入单个源代码行，而不是函数。此功能仅适用于由旧版本gcc编译器编译的程序。较新的版本 gcc旨在与该gcov工具一起使用。</p>
+<p>如果程序是在启用基本块计数的情况下编译的，则此选项还将确定每行代码执行了多少次。虽然逐行分析可以帮助隔离程序在大型函数中花费时间的地方，但它也显着增加了 的运行时间gprof，并放大了统计不准确性。请参阅统计抽样误差。</p>
+<p>–inline-file-names
+此选项会导致gprof在平面配置文件和调用图中的每个符号之后打印源文件。如果与 ‘ 一起使用，则会打印文件的完整路径-L’ 选项。</p>
+<p>-m num
+–min-count=num
+此选项仅影响执行计数输出。执行少于num次的符号将被抑制。</p>
+<p>-nsymspec
+–time=symspec
+这 ‘-n’ 选项gprof在其调用图分析中仅传播与symspec匹配的符号的时间。</p>
+<p>-Nsymspec
+–no-time=symspec
+这 ‘-n’ 选项gprof在其调用图分析中导致不传播与symspec匹配的符号的时间。</p>
+<p>-Sfilename
+–external-symbol-table=filename
+这 ‘-S’ 选项导致gprof读取外部符号表文件，例如/proc/kallsyms，而不是从给定的目标文件中读取符号表（默认为a.out）。这对于分析内核模块很有用。</p>
+<p>-z
+–display-unused-functions
+如果你给’-z’ 选项，gprof将提及平面配置文件中的所有函数，即使是那些从未调用过且没有时间花在其中的函数。这与 ‘ 结合使用很有用-C’ 用于发现从未调用过哪些例程的选项。</p>
+</div>
+<div class="section" id="id3">
+<h2>其他选项<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>-d[num]
+–debug[=num]
+这 ‘-d数字’ 选项指定调试选项。如果未指定num ，则启用所有调试。请参阅调试gprof。</p>
+<p>-h
+–help
+这 ‘-H’ 选项打印命令行使用情况。</p>
+<p>-Oname
+–file-format=name
+选择配置文件数据文件的格式。识别的格式是 ‘汽车’（默认），’bsd’, ‘4.4bsd’, ‘魔法’， 和 ‘教授’（尚不支持）。</p>
+<p>-s
+–sum
+这 ‘-s’ 选项导致gprof汇总它读入的配置文件数据文件中的信息，并写出一个名为的配置文件数据文件gmon.sum，其中包含gprof读入的配置文件数据文件中的所有信息。文件gmon.sum 可能是指定的输入文件之一；这样做的效果是将其他输入文件中的数据合并到gmon.sum.</p>
+<p>最终你可以在gprof没有 ‘ 的情况下再次运行-s’ 分析文件中的累积数据gmon.sum.</p>
+<p>-v
+–version
+这 ‘-v’ 标志导致gprof打印当前版本号，然后退出。</p>
+</div>
+<div class="section" id="id4">
+<h2>丢弃的选项<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>这些选项已替换为使用 symspecs 的较新版本。</p>
+<p>-e function_name
+这 ‘-e函数’ 选项告诉gprof不要在调用图中打印有关函数function_name（及其子…）的信息。该函数仍将被列为任何调用它的函数的子函数，但其​​索引号将显示为 ‘[未打印]’。超过一个 ‘-e’ 可以给出选项；每个 ‘ 只能指示一个function_name-e’ 选项。</p>
+<p>-E function_name
+该选项的工作方式与该选项类似，但在函数中花费的时间（以及未从其他任何地方调用的子项）将不会用于计算调用图的时间百分比。超过一个 ‘-E function-e-E’ 可以给出选项；每个 ‘ 只能指示一个 function_name-E’ 选项。</p>
+<p>-f function_name
+这 ‘-f函数’ 选项导致gprof将调用图限制为函数function_name及其子项（及其子项……）。超过一个 ‘-F’ 可以给出选项；每个 ‘ 只能指示一个function_name-F’ 选项。</p>
+<p>-F function_name
+这 ‘-F函数’ 选项的工作方式与-f选项类似，但只有在函数及其子项（及其子项……）中花费的时间将用于确定调用图的总时间和时间百分比。超过一个 ‘-F’ 可以给出选项；每个 ‘ 只能指示一个function_name-F’ 选项。这 ‘-F’ 选项覆盖 ‘-E’ 选项。</p>
+<p>请注意，每个 、-e或 选项只能指定一个函数。要指定多个函数，请使用多个选项。例如，这个命令： -E-f-F</p>
+<p>gprof -e 无聊 -f foo -f bar myprogram &gt; gprof.output
+foo在调用图中列出从或bar到达但不能从到达的所有函数 boring。</p>
+</div>
+<div class="section" id="id5">
+<h2>符号规范<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p>许多输出选项允许使用symspecs（符号规范）包含或排除函数，遵守以下语法：</p>
+<blockquote>
+<div><p>filename_containing_a_dot</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line">funcname_not_containing_a_dot</div>
+<div class="line">linenumber</div>
+<div class="line">( [ any_filename ] <a href="#id6"><span class="problematic" id="id7">`</span></a>:’ ( any_funcname | linenumber ) )</div>
+</div>
+<p>以下是一些示例符号规范：</p>
+<p>‘main.c’
+选择文件中的所有内容主程序— 字符串中的点表示将字符串gprof解释为文件名，而不是函数名。要选择名称不包含点的文件，应指定尾随冒号。例如， ‘odd：’ 被解释为文件名为奇怪的.</p>
+<p>‘main’
+选择所有名为 ‘main’。</p>
+<p>请注意，同一函数名可能有多个实例，因为某些定义可能是本地的（即静态的）。除非函数名在程序中是唯一的，否则必须使用下面解释的冒号符号来指定来自特定源文件的函数。</p>
+<p>有时，函数名称包含点。在这种情况下，必须在名称中添加前导冒号。例如， ‘:.mul’选择功能’.mul’。</p>
+<p>在某些目标文件格式中，符号有一个前导下划线。 gprof通常不会打印这些下划线。当您在 symspec 中命名符号时，您应该完全按照gprof输出中的打印方式输入它。例如，如果编译器产生一个符号 ‘_main’ 从您的main函数中，gprof仍将其打印为 ‘main’ 在它的输出中，所以你应该使用 ‘main’ 在 symspecs 中。</p>
+<p>‘main.c:main’
+选择函数’main’在main.c文件中.</p>
+<p>‘main.c:134’
+选择main.c文件中的第 134 行.</p>
+<p>5.解析gprof输出
+gprof可以产生几种不同的输出风格，下面介绍其中最重要的一种。这里没有描述最简单的输出样式（文件信息、执行计数以及函数和文件排序），但记录了触发它们的相应选项。请参阅输出选项。</p>
+<p>•flat profile输出         平面配置文件显示了在每个函数中直接执行所花费的时间。</p>
+</div>
+<div class="section" id="flat-profile">
+<h2>Flat profile:<a class="headerlink" href="#flat-profile" title="Permalink to this headline">¶</a></h2>
+<p>平面配置文件显示您的程序执行每个函数所花费的总时间。除非’-z’ 选项时，没有明显花费时间的函数，也没有明显调用它们的函数，没有被提及。请注意，如果一个函数不是为分析而编译的，并且没有运行足够长的时间以显示在程序计数器直方图上，那么它将与从未调用过的函数无法区分。</p>
+<p>这是一个小程序的平面配置文件的一部分：</p>
+<dl>
+<dt>Each sample counts as 0.01 seconds.</dt><dd><blockquote>
+<div><p>%   cumulative   self              self     total</p>
+</div></blockquote>
+<p>time   seconds   seconds    calls  ms/call  ms/call  name
+33.34      0.02     0.02     7208     0.00     0.00  open
+16.67      0.03     0.01      244     0.04     0.12  offtime
+16.67      0.04     0.01        8     1.25     1.25  memccpy
+16.67      0.05     0.01        7     1.43     1.43  write
+16.67      0.06     0.01                             mcount</p>
+<blockquote>
+<div><p>0.00      0.06     0.00      236     0.00     0.00  tzset
+0.00      0.06     0.00      192     0.00     0.00  tolower
+0.00      0.06     0.00       47     0.00     0.00  strlen
+0.00      0.06     0.00       45     0.00     0.00  strchr
+0.00      0.06     0.00        1     0.00    50.00  main
+0.00      0.06     0.00        1     0.00     0.00  memcpy
+0.00      0.06     0.00        1     0.00    10.11  print
+0.00      0.06     0.00        1     0.00     0.00  profil
+0.00      0.06     0.00        1     0.00    50.00  report</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>…
+这些函数首先通过减少在它们中花费的运行时间进行排序，然后通过减少调用次数，然后按名称的字母顺序排列。函数’mcount’ 和 ‘简介’ 是轮廓仪的一部分，出现在每个平面轮廓中；他们的时间可以衡量由于分析而产生的开销。</p>
+<p>就在列标题之前，会出现一条语句，指示每个样本计算了多少时间。这个抽样周期估计每个时间数字的误差范围。不比这个大很多的时间数字是不可靠的。在此示例中，每个样本计为 0.01 秒，这表明采样率为 100 Hz。程序的总执行时间为 0.06 秒，如 ‘累计秒数’ 场地。由于每个样本的计数为 0.01 秒，这意味着在运行期间只采集了六个样本。其中两个样本发生在程序处于 ‘打开’ 函数，如 ‘自秒’ 场地。其他四个样本中的每一个都出现在 ‘休息时间’, ‘内存’, ‘写’， 和 ‘mcount’。由于只采集了六个样本，因此这些值都不能被认为是特别可靠的。在另一次运行中，’自秒’字段’mcount’很可能是’0.00’ 要么 ‘0.02’。有关完整的讨论， 请参阅Statistical Sampling Error 。</p>
+<p>列表中的其余函数（那些 ‘自秒’字段是’0.00’) 根本没有出现在直方图样本中。但是，调用图表明它们已被调用，因此它们被列出，按降序排列来电’ 场地。显然，执行这些函数花费了一些时间，但由于直方图样本的缺乏，无法确定每个函数花费了多少时间。</p>
+<p>以下是每行中的字段的含义：</p>
+<p>% time：</p>
+<p>这是您的程序在此函数中花费的总执行时间的百分比。这些加起来应该是 100%。
+cumulative seconds：
+这是计算机执行此功能所花费的累计总秒数，加上此表中此功能之上的所有功能所花费的时间。</p>
+<p>self seconds：
+这是仅此函数所占用的秒数。平面配置文件列表首先按此编号排序。</p>
+<p>calls：
+这是函数被调用的总次数。如果函数从未被调用，或者无法确定调用次数（可能是因为函数未在启用分析的情况下编译），则调用字段为空白。</p>
+<p>self ms/call：
+这表示每次调用在此函数中花费的平均毫秒数（如果已分析此函数）。否则，此功能的此字段为空白。
+total ms/call：
+如果对此函数进行了分析，这表示在此函数及其后代每次调用中花费的平均毫秒数。否则，此功能的此字段为空白。这是平面配置文件中唯一使用调用图分析的字段。</p>
+<p>name：
+这是函数的名称。平面配置文件在self 秒后按此字段的字母顺序排序，并且对呼叫 字段进行排序。</p>
+<p>•调用图            调用图显示了哪些函数调用了其他哪些函数，以及在包含子例程调用时每个函数使用了多少时间。</p>
+<p>调用图显示了每个函数及其子函数花费了多少时间。从这些信息中，您可以找到虽然它们本身可能没有花费太多时间的函数，但它们称为其他确实使用了异常时间的函数。这是一个小程序的示例调用。此调用来自与gprof上一节中的平面配置文件示例相同的运行。</p>
+<p>granularity: each sample hit covers 2 byte(s) for 20.00% of 0.05 seconds</p>
+<dl class="simple">
+<dt>index % time    self  children    called     name</dt><dd><p>&lt;spontaneous&gt;</p>
+</dd>
+<dt>[1]    100.0    0.00    0.05                 start [1]</dt><dd><p>0.00    0.05       1/1           main [2]
+0.00    0.00       1/2           on_exit [28]
+0.00    0.00       1/1           exit [59]</p>
+</dd>
+</dl>
+<blockquote>
+<div><p>0.00    0.05       1/1           report [3]</p>
+</div></blockquote>
+<blockquote>
+<div><p>0.00    0.03       8/8           timelocal [6]
+0.00    0.01       1/1           print [9]
+0.00    0.01       9/9           fgets [12]
+0.00    0.00      12/34          strncmp &lt;cycle 1&gt; [40]
+0.00    0.00       8/8           lookup [20]
+0.00    0.00       1/1           fopen [21]
+0.00    0.00       8/8           chewtime [24]
+0.00    0.00       8/16          skipspace [44]</p>
+</div></blockquote>
+<blockquote>
+<div><p>0.00        0.00     236+1           tzset &lt;cycle 2&gt; [26]</p>
+</div></blockquote>
+<hr class="docutils" />
+<p>充满破折号的行将该表划分为条目，每个条目一个。每个条目都有一行或多行。</p>
+<p>在每个条目中，主行是以方括号中的索引号开头的行。这一行的末尾说明了该条目用于哪个功能。条目中的前面几行描述了这个函数的调用者，下面几行描述了它的子例程（ 当我们谈到调用图时 也称为子例程）。</p>
+<p>这些条目按在函数及其子例程中花费的时间排序。</p>
+<p>调用图中从未提及 内部分析函数mcount（请参阅The Flat Profile ）。</p>
+<p>•初级             主行内容的详细信息。
+调用图条目中的主要行是描述该条目所涉及的函数并给出该函数的总体统计信息的行。</p>
+<p>作为参考，我们重复 report主示例中函数条目的主要行，以及显示字段名称的标题行：</p>
+<p>索引％时间自我孩子叫名字
+…
+[3] 100.0 0.00 0.05 1 份报告 [3]
+以下是主行中的字段的含义：</p>
+<p>index
+条目用连续的整数编号。因此，每个函数都有一个索引号，它出现在其主行的开头。</p>
+<p>每个对函数的交叉引用，作为另一个函数的调用者或子例程，都给出了它的索引号以及它的名称。如果您希望查找该功能的条目，索引号将指导您。</p>
+<p>% time
+这是在此函数中花费的总时间的百分比，包括在从此函数调用的子例程中花费的时间。</p>
+<p>再次为该函数的调用者计算在该函数中花费的时间。因此，将这些百分比相加是没有意义的。</p>
+<p>self
+这是在此函数中花费的总时间。这应该与seconds平面配置文件中此功能字段中打印的数字相同。</p>
+<p>children
+这是此函数进行的子例程调用所花费的总时间。这应该等于直接在此函数下方列出的所有子项 self 的总和。children</p>
+<p>called
+这是函数被调用的次数。</p>
+<p>如果函数以递归方式调用自身，则有两个数字，用 ‘ 分隔+’。第一个数字计算非递归调用，第二个计算递归调用。</p>
+<p>在上面的示例中，该函数report被调用一次 main。</p>
+<p>name
+这是当前函数的名称。索引号在其后重复。</p>
+<p>如果函数是递归循环的一部分，则循环编号将打印在函数名称和索引编号之间（请参阅如何描述相互递归函数）。例如，如果函数gnurr是第一个循环的一部分，并且索引号为 12，那么它的主行将像这样结束：</p>
+<p>gnurr &lt;周期 1&gt; [12]</p>
+<p>•来电者            来电线路内容的详细信息。</p>
+<p>函数调用者的行
+一个函数的入口对于它被调用的每个函数都有一行。这些行的字段与主行的字段相对应，但由于上下文的不同，它们的含义也有所不同。作为参考，我们从函数的条目中重复两行 report，即主行和它之前的一个调用者行，以及显示字段名称的标题行：</p>
+<p>index  % time    self  children called     name
+…</p>
+<blockquote>
+<div><p>0.00    0.05       1/1           main [2]</p>
+</div></blockquote>
+<p>[3]    100.0    0.00    0.05       1         report [3]</p>
+<p>以下是 caller-line 中被调用的字段的report 含义main：</p>
+<p>self
+report从 调用它时估计自身花费的时间量main。</p>
+<p>children
+估计report 何时report从调用的子例程中花费的时间量main。</p>
+<p>self和字段的总和是对fromchildren调用所花费时间的估计。 reportmain</p>
+<p>called
+两个数字：report从 调用的次数，然后是所有调用者 main的非递归调用总数。report</p>
+<p>name and index number
+此行适用的调用者的姓名report，后跟调用者的索引号。</p>
+<p>并非所有函数在调用图中都有条目；gprof要求省略某些功能的一些选项。当调用者没有自己的条目时，它仍然在它调用的函数的条目中有调用者行。</p>
+<p>如果调用者是递归循环的一部分，则循环编号打印在名称和索引编号之间。</p>
+<p>如果无法确定函数调用者的身份，则会打印一个虚拟调用者行，其中包含 ‘&lt;自发的&gt;’ 作为“呼叫者的姓名”，所有其他字段为空白。这可能发生在信号处理程序上。</p>
+<p>•子程序            子程序行内容的详细信息。</p>
+<p>一个函数的每个子例程都有一行——换句话说，它调用的每个其他函数都有一行。这些行的字段与主行的字段相对应，但由于上下文的不同，它们的含义也有所不同。作为参考，我们从函数的条目中重复两行 main，主行和子例程的一行，以及显示字段名称的标题行：</p>
+<p>index  % time    self  children called     name
+…
+[2]    100.0    0.00    0.05       1         main [2]</p>
+<blockquote>
+<div><p>0.00    0.05       1/1           report [3]</p>
+</div></blockquote>
+<p>以下是main 调用的子程序行中字段的含义report：</p>
+<p>self
+直接在从 调用report 时所花费的时间量的估计。 reportmain</p>
+<p>children
+估计report 何时report从调用的子例程中花费的时间量main。self和字段的总和是调用fromchildren所花费的总时间的估计值。 reportmain</p>
+<p>called
+两个数字，对reportfrom的调用次数，main 后跟对 的非递归调用的总数report。 这个比率用于确定有多少时间report和时间被计入。请参阅估计时间。 selfchildrenmainchildren</p>
+<p>name
+此行适用的子例程的名称main，后跟子例程的索引号。如果调用者是递归循环的一部分，则循环编号打印在名称和索引编号之间。</p>
+<p>•周期             当有递归循环时，比如a调用b调用a…</p>
+<p>由于调用图中存在递归循环，该图可能会变得复杂。如果一个函数调用另一个函数（直接或间接）调用（或似乎调用）原始函数，则存在循环。例如：如果a调用b, 和b调用a, 那么a和b形成一个循环。</p>
+<p>只要一对函数之间存在双向调用路径，它们就属于同一个循环。如果a和b相互呼唤和相互 b呼唤c，这三个都形成一个循环。请注意，即使b仅a在未从调用的情况下调用a， gprof也无法确定这一点，因此a并且b仍然被视为循环。</p>
+<p>循环用连续的整数编号。当一个函数属于一个循环时，每次函数名出现在调用图中，它后面都会跟着’&lt;周期数&gt;’。</p>
+<p>周期很重要的原因是它们使调用图中的时间值自相矛盾。的“在孩子身上花费a的时间”应该包括在其子例程b和b’s 子例程中花费的时间——但b’s 子例程之一是a！有多少 a时间应该包含在 的孩子中a，什么时候 a是间接递归的？</p>
+<p>解决这个悖论的方法gprof是为整个周期创建一个条目。该条目的第一行描述了直接花费在循环功能中的总时间。循环的“子程序”是循环的各个函数，以及由它们直接调用的所有其他函数。循环的“调用者”是循环外调用循环内函数的函数。</p>
+<p>这是调用图的一个示例部分，它显示了一个包含函数a和的循环b。通过调用 afrom进入循环main；两者都叫。 a_bc</p>
+</div>
+</div>
+<div class="section" id="index-time-self-children-called-name">
+<h1>index  % time    self  children called     name<a class="headerlink" href="#index-time-self-children-called-name" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div><p>1.77        0    1/1        main [2]</p>
+</div></blockquote>
+<dl class="simple">
+<dt>[3]     91.71    1.77        0    1+5    &lt;cycle 1 as a whole&gt; [3]</dt><dd><p>1.02        0    3          b &lt;cycle 1&gt; [4]
+0.75        0    2          a &lt;cycle 1&gt; [5]</p>
+</dd>
+</dl>
+<blockquote>
+<div><blockquote>
+<div><p>2          a &lt;cycle 1&gt; [5]</p>
+</div></blockquote>
+<p>0        0    3/6        c [6]</p>
+</div></blockquote>
+<dl>
+<dt>[5]     38.86    0.75        0    1      a &lt;cycle 1&gt; [5]</dt><dd><blockquote>
+<div><p>3          b &lt;cycle 1&gt; [4]</p>
+</div></blockquote>
+<p>0        0    3/6        c [6]</p>
+</dd>
+</dl>
+<hr class="docutils" />
+<p>（该程序的整个调用图还包含一个用于 main调用a的条目和一个用于调用 的条目c，以及调用者 a和b。）</p>
+<dl class="simple">
+<dt>index  % time    self  children called     name</dt><dd><p>&lt;spontaneous&gt;</p>
+</dd>
+<dt>[1]    100.00       0     1.93    0      start [1]</dt><dd><p>0.16     1.77    1/1        main [2]</p>
+</dd>
+</dl>
+<blockquote>
+<div><p>1.77        0    1/1        a &lt;cycle 1&gt; [5]</p>
+</div></blockquote>
+<blockquote>
+<div><p>1.02        0    3          b &lt;cycle 1&gt; [4]
+0.75        0    2          a &lt;cycle 1&gt; [5]</p>
+<blockquote>
+<div><p>0        0    6/6        c [6]</p>
+</div></blockquote>
+</div></blockquote>
+<blockquote>
+<div><blockquote>
+<div><p>2          a &lt;cycle 1&gt; [5]</p>
+</div></blockquote>
+<p>0        0    3/6        c [6]</p>
+</div></blockquote>
+<dl>
+<dt>[5]     38.86    0.75        0    1      a &lt;cycle 1&gt; [5]</dt><dd><blockquote>
+<div><p>3          b &lt;cycle 1&gt; [4]</p>
+</div></blockquote>
+<p>0        0    3/6        c [6]</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="c-6">
+<h1>[6]      0.00       0        0    6      c [6]<a class="headerlink" href="#c-6" title="Permalink to this headline">¶</a></h1>
+<p>循环主行的self字段是循环所有功能所花费的总时间。它等于 self循环中各个功能的字段总和，可在这些功能的子程序行的条目中找到。</p>
+<p>children循环的主要行和子程序行的字段只计算循环外的子程序。即使a调用 b了，在这些调用中花费的时间b也不计入 a’s childrentime。b因此，当这些调用中的时间包括对 的间接递归调用时，我们不会遇到要做什么的问题a。</p>
+<p>循环条目中的调用者行字段估计在整个循环及其其他子例程 children中花费的时间量，即调用者在循环中调用函数的时间。</p>
+<p>循环的主行中的called字段有两个数字：第一，循环中的函数被循环外的函数调用的次数；其次，它们在循环中被函数调用的次数（包括循环中的函数调用自身的次数）。这是对通常拆分为非递归和递归调用的概括。</p>
+<p>循环条目中循环成员的called子程序行字段表示从循环中的函数调用该函数的次数。所有这些的总和是主行 called字段中的第二个数字。</p>
+<p>在一个循环中的一个函数的单独条目中，同一循环中的其他函数可以作为子例程和调用者出现。这些行显示循环中每个函数调用或从循环中的其他函数调用的次数。这些行中的selfandchildren字段是空白的，因为在进行递归时很难为它们定义含义。</p>
+<p>•逐行             gprof可以分析单个源代码行</p>
+<p>gprof’’-l’ 选项使程序执行 逐行分析。在这种模式下，直方图样本不分配给函数，而是分配给单独的源代码行。这仅适用于使用旧版本gcc编译器编译的程序。较新的版本gcc 使用不同的程序 - gcov- 逐行显示分析信息。</p>
+<p>对于旧版本gcc的程序，通常必须使用 ‘-G’ 选项，除了 ‘-pg’，以便生成用于跟踪源代码行的调试符号。请注意，在程序的更旧版本中gcc，必须使用 ‘-一种’ 命令行选项也是如此。</p>
+<p>平面轮廓是逐行模式中最有用的输出表。调用图不像正常情况那样有用，因为当前版本gprof不会将调用图弧从源代码行传播到封闭函数。但是，调用图确实显示了调用每个函数的每一行代码以及计数。</p>
+<p>这是gprof’s 输出的一部分，没有逐行分析。请注意，这ct_init占了四个直方图命中和 13327 次调用init_block。</p>
+<p>Flat profile:</p>
+<dl>
+<dt>Each sample counts as 0.01 seconds.</dt><dd><blockquote>
+<div><p>%   cumulative   self              self     total</p>
+</div></blockquote>
+<p>time   seconds   seconds    calls  us/call  us/call  name
+30.77      0.13     0.04     6335     6.31     6.31  ct_init</p>
+<blockquote>
+<div><p>Call graph (explanation follows)</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>granularity: each sample hit covers 4 byte(s) for 7.69% of 0.13 seconds</p>
+<p>index % time    self  children    called     name</p>
+<blockquote>
+<div><p>0.00    0.00       1/13496       name_too_long
+0.00    0.00      40/13496       deflate
+0.00    0.00     128/13496       deflate_fast
+0.00    0.00   13327/13496       ct_init</p>
+</div></blockquote>
+<p>[7]      0.0    0.00    0.00   13496         init_block</p>
+<p>现在让我们看一下gprof同一程序运行的一些输出，这一次启用了逐行分析。请注意，ct_init的四个直方图命中被分解为四行源代码——在第 349、351、382 和 385 行中的每一行都发生了一次命中。在调用图中，请注意如何将 ct_init的 13327 调用init_block分解为一个调用从第 396 行，从第 384 行拨打 3071，从第 385 行拨打 3730，从 387 拨打 6525。</p>
+<p>Flat profile:</p>
+<dl>
+<dt>Each sample counts as 0.01 seconds.</dt><dd><blockquote>
+<div><p>%   cumulative   self</p>
+</div></blockquote>
+<dl>
+<dt>time   seconds   seconds    calls  name</dt><dd><p>7.69      0.10     0.01           ct_init (trees.c:349)
+7.69      0.11     0.01           ct_init (trees.c:351)
+7.69      0.12     0.01           ct_init (trees.c:382)
+7.69      0.13     0.01           ct_init (trees.c:385)</p>
+<blockquote>
+<div><p>Call graph (explanation follows)</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>granularity: each sample hit covers 4 byte(s) for 7.69% of 0.13 seconds</p>
+<blockquote>
+<div><p>% time    self  children    called     name</p>
+<blockquote>
+<div><p>0.00    0.00       1/13496       name_too_long (gzip.c:1440)
+0.00    0.00       1/13496       deflate (deflate.c:763)
+0.00    0.00       1/13496       ct_init (trees.c:396)
+0.00    0.00       2/13496       deflate (deflate.c:727)
+0.00    0.00       4/13496       deflate (deflate.c:686)
+0.00    0.00       5/13496       deflate (deflate.c:675)
+0.00    0.00      12/13496       deflate (deflate.c:679)
+0.00    0.00      16/13496       deflate (deflate.c:730)
+0.00    0.00     128/13496       deflate_fast (deflate.c:654)
+0.00    0.00    3071/13496       ct_init (trees.c:384)
+0.00    0.00    3730/13496       ct_init (trees.c:385)
+0.00    0.00    6525/13496       ct_init (trees.c:387)</p>
+</div></blockquote>
+</div></blockquote>
+<p>[6]  0.0    0.00    0.00   13496         init_block (trees.c:408)</p>
+<p>•注释来源           带注释的源代码列表显示标有执行计数的源代码</p>
+<p>gprof’’-一种’ 选项触发一个带注释的源代码列表，其中列出了程序的源代码，每个函数都标有它被调用的次数。您可能还需要指定 ‘-一世’ 选项，如果gprof找不到源代码文件。</p>
+<p>使用旧版本gcc编译 ‘gcc … -g -pg -a’ 除了函数计数代码之外，还使用基本块计数代码来扩充您的程序。这gprof可以确定每行代码执行了多少次。该程序 提供了对显示基本块计数的更新版本的gcc支持。gcov</p>
+<p>例如，考虑以下函数，取自 gzip，添加了行号：</p>
+<blockquote>
+<div><p>1 ulg updcrc(s, n)
+2     uch <a href="#id8"><span class="problematic" id="id9">*</span></a>s;
+3     unsigned n;
+4 {
+5     register ulg c;
+6
+7     static ulg crc = (ulg)0xffffffffL;
+8
+9     if (s == NULL) {</p>
+</div></blockquote>
+<p>10         c = 0xffffffffL;
+11     } else {
+12         c = crc;
+13         if (n) do {
+14             c = crc_32_tab[…];
+15         } while (–n);
+16     }
+17     crc = c;
+18     return c ^ 0xffffffffL;
+19 }</p>
+<p>updcrc至少有五个基本块。一是功能本身。第 if9 行的语句生成了另外两个基本块，一个用于if. if第13 行产生第四个基本块，do循环的内容形成第五个基本块。编译器还可以生成额外的基本块来处理各种特殊情况。</p>
+<p>一个为基本块计数而增强的程序可以用’来分析gprof -l -A’。这 ‘-X’ 选项也很有帮助，以确保每行代码至少标记一次。这是示例运行 updcrc的带注释的源列表：gzip</p>
+<blockquote>
+<div><blockquote>
+<div><blockquote>
+<div><dl class="simple">
+<dt>ulg updcrc(s, n)</dt><dd><p>uch <a href="#id10"><span class="problematic" id="id11">*</span></a>s;
+unsigned n;</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl>
+<dt>2 -&gt;{</dt><dd><p>register ulg c;</p>
+<p>static ulg crc = (ulg)0xffffffffL;</p>
+</dd>
+</dl>
+<p>2 -&gt;    if (s == NULL) {
+1 -&gt;        c = 0xffffffffL;
+1 -&gt;    } else {
+1 -&gt;        c = crc;
+1 -&gt;        if (n) do {</p>
+</div></blockquote>
+<p>26312 -&gt;            c = crc_32_tab[…];</p>
+</div></blockquote>
+<dl>
+<dt>26312,1,26311 -&gt;        } while (–n);</dt><dd><blockquote>
+<div><p>}</p>
+</div></blockquote>
+<p>2 -&gt;    crc = c;
+2 -&gt;    return c ^ 0xffffffffL;
+2 -&gt;}</p>
+</dd>
+</dl>
+<p>在这个例子中，函数被调用了两次，一次通过了if语句的每个分支。循环体do 一共执行了 26312 次。注意while 语句是如何注释的。它开始执行 26312 次，每次循环迭代一次。其中一次（最后一次）它退出，同时分支回到循环的开头 26311 次。</p>
+<div class="section" id="id12">
+<h2>6 gprof 输出准确率<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id13">
+<h3>统计抽样误差<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<p>为您提供的运行时间数据gprof是基于抽样过程的，因此它们可能存在统计上的不准确性。如果一个函数只运行很短的时间，那么平均而言，采样过程应该只在该动作中捕获该函数一次，那么它很有可能实际上会找到该函数零次或两次。</p>
+<p>相比之下，调用次数和基本块数字是通过计数而不是抽样得出的。如果您的程序是确定性和单线程的，它们是完全准确的，并且不会因运行而异。在多线程应用程序或与多线程库链接的单线程应用程序中，仅当计数函数是线程安全的时，计数才具有确定性。（注意：注意 glibc 中的 mcount 计数函数不是 线程安全的）。请参阅分析的实现。</p>
+<p>在平面配置文件开头打印的采样周期表示采样的频率。经验法则是，如果运行时间数字远大于采样周期，则它是准确的。</p>
+<p>可以预测实际的误差量。对于n 个样本，预期误差是n的平方根。例如，如果采样周期为 0.01 秒，foo运行时间为 1 秒， n为 100 个样本（1 秒/0.01 秒），sqrt( nfoo ) 为 10 个样本，因此运行时间中的预期误差为 0.1 秒 (10*0.01 秒)，或观测值的 10%。同样，如果采样周期为 0.01 秒，bar运行时间为 100 秒，n为 10000 个样本，sqrt( n ) 为 100 个样本，因此 运行时间中的预期误差bar为 1 秒，或 1%观测值。可能会有这么大的变化平均从一次分析运行到下一次。（有时它会变化更多。）</p>
+<p>这并不意味着一个小的运行时间数字就没有信息。如果程序的总运行时间很大，那么一个函数的一小段运行时间确实会告诉您该函数使用了整个程序时间的一小部分。通常这意味着它不值得优化。</p>
+<p>获得更高准确性的一种方法是为您的程序提供更多（但相似）的输入数据，这样会花费更长的时间。另一种方法是组合多次运行的数据，使用 ‘-s’ 的选项gprof。方法如下：
+1.Run your program once.
+2.Issue the command ‘mv gmon.out gmon.sum’.
+3.Run your program again, the same as before.
+4.Merge the new data in gmon.out into gmon.sum with this command:</p>
+<blockquote>
+<div><p>gprof -s executable-file gmon.out gmon.sum</p>
+</div></blockquote>
+<p>5.Repeat the last two steps as often as you wish.
+6.Analyze the cumulative data using this command:</p>
+<blockquote>
+<div><p>gprof executable-file gmon.sum &gt; output-file</p>
+</div></blockquote>
+</div>
+<div class="section" id="id14">
+<h3>估计自进程时间<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p>调用图中的一些数字是估计值——例如， children时间值和调用者和子程序行中的所有时间数字。</p>
+<p>配置文件数据本身没有关于这些测量的直接信息。相反，gprof通过对您的程序做出可能正确或不正确的假设来估计它们。</p>
+<p>所做的假设是每次调用任何函数foo所花费的平均时间与调用者无关foo。如果 foo总共使用了 5 秒，并且 2/5 的调用foo来自a，那么假设foo将 2 秒贡献给a’ children时间。</p>
+<p>这个假设通常是正确的，但对于某些程序来说，它远非正确。假设foo它的参数为零时返回非常快；假设a总是将零作为参数传递，而其他调用者foo传递其他参数。在这个程序中，所有的时间都花在了foo来自调用者的调用中，而不是a. 但gprof无法知道这一点；它会盲目地、错误地foo向 a.</p>
+<p>我们希望有一天能将更完整的数据放入gmon.out，这样就不再需要这个假设了，如果我们能弄清楚怎么做的话。对于新手来说，估计的数字通常比误导更有用。</p>
+</div>
+</div>
+<div class="section" id="id15">
+<h2>7常见问题<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+<p>如何获得有关程序中热点的更准确信息？
+查看每行呼叫计数只能说明部分情况。因为gprof只能按函数报告调用时间和计数，所以获得有关程序花费时间的更细粒度信息的最佳方法是将大函数重新分解为对较小函数的调用序列。但是请注意，这可能会引入人工热点，因为使用 ‘ 编译-pg’ 给函数调用增加了很大的开销。另一种解决方案是使用非侵入式分析器，例如 oprofile。</p>
+<p>如何找到程序中执行次数最多的行？
+使用该gcov程序。</p>
+<p>如何找到我的程序中哪些行称为特定函数？
+采用 ‘gprof -l’ 并在调用图中查找函数。调用者将按功能和行号进行细分。</p>
+<p>如何分析运行时间不到一秒的程序？
+尝试使用这样的 shell 脚本：</p>
+<dl class="simple">
+<dt>for i in <cite>seq 1 100</cite>; do</dt><dd><p>fastprog
+mv gmon.out gmon.out.$i</p>
+</dd>
+</dl>
+<p>done</p>
+<p>gprof -s fastprog gmon.out.*</p>
+<p>gprof fastprog gmon.sum</p>
+<p>如果您的程序是完全确定的，那么所有调用计数将是 100 的简单倍数（即，在每次运行中调用一次的函数将出现调用计数为 100）。</p>
+</div>
+<div class="section" id="id16">
+<h2>9分析过程细节分析<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="profiling">
+<h3>Profiling的实现<a class="headerlink" href="#profiling" title="Permalink to this headline">¶</a></h3>
+<p>分析通过改变程序中每个函数的编译方式来工作，以便在调用它时，它会隐藏一些关于它从哪里调用的信息。由此，分析器可以找出调用它的函数，并且可以计算它被调用了多少次。当您的程序使用 ‘ 编译时，编译器会进行此更改-pg’ 选项，这会导致每个函数调用mcount （或_mcount，或__mcount，取决于操作系统和编译器）作为其第一个操作之一。</p>
+<p>包含在分析库中的mcount例程负责在内存调用图表中记录其父例程（子例程）及其父例程的父例程。这通常是通过检查堆栈帧来找到子地址和原始父节点的返回地址来完成的。由于这是一个非常依赖于机器的操作，mcount 它本身通常是一个简短的汇编语言存根例程，它提取所需的信息，然后__mcount_internal 使用两个参数调用（一个普通的 C 函数） -frompc和selfpc. __mcount_internal负责维护内存调用图，其中记录frompc、selfpc和每个调用弧被遍历的次数。</p>
+<p>GCC 版本 2 提供了一个神奇的函数 ( __builtin_return_address)，它允许通用mcount函数从堆栈帧中提取所需的信息。但是，在某些架构上，尤其是 SPARC 上，使用这个内置函数的计算成本可能非常高，并且mcount出于性能原因使用 的汇编语言版本。</p>
+<p>库例程的调用次数信息是使用特殊版本的 C 库收集的。其中的程序与通常的 C 库中的程序相同，但它们是用 ‘ 编译的-pg’。如果您将程序与 ‘gcc … -pg’，它会自动使用库的分析版本。</p>
+<p>分析还涉及在程序运行时观察程序，并保持程序计数器不时发生的位置的直方图。通常，程序计数器在运行时每秒大约查看 100 次，但确切的频率可能因系统而异。</p>
+<p>这样做是两种方式之一。大多数类 UNIX 操作系统都提供了一个profil()系统调用，它向内核注册一个内存数组，以及一个决定程序地址空间如何映射到数组中的比例因子。典型的缩放值会导致每 2 到 8 个字节的地址空间映射到一个数组槽。在系统时钟的每个滴答声上（假设分析的程序正在运行），程序计数器的值都会被检查，并且内存阵列中的相应插槽会增加。由于这是在内核中完成的，无论如何它都必须中断进程来处理时钟中断，所以只需要很少的额外系统开销。</p>
+<p>但是，某些操作系统，尤其是 Linux 2.0（及更早版本）不提供profil()系统调用。在这样的系统上，内核安排定期向进程传递信号（通常是通过setitimer()），然后进程执行检查程序计数器和增加内存阵列中的插槽的相同操作。由于这种方法需要在每次采样时将信号传递到用户空间，因此它使用的开销比基于内核的分析要多得多。此外，由于传递信号所需的额外延迟，这种方法也不太准确。</p>
+<p>一个特殊的启动例程为直方图分配内存并调用profil()或设置时钟信号处理程序。该例程 ( monstartup) 可以通过多种方式调用。在 Linux 系统上，使用之前gcrt0.o调用的特殊分析启动文件，而不是默认的. 使用这个特殊的启动文件是使用’的效果之一monstartupmaincrt0.ogcc … -pg’ 链接。在 SPARC 系统上，不使用特殊的启动文件。相反，mcount例程在第一次调用时（通常main是在调用时）调用monstartup.</p>
+<p>如果编译器的 ‘-一种’ 选项被使用，基本块计数也被启用。然后使用一个静态计数数组编译每个目标文件，最初为零。在可执行代码中，每当一个新的基本块开始时（即，当一个if语句出现时），就会插入一条额外的指令来增加数组中相应的计数。在编译时，构造了一个成对的数组来记录每个基本块的起始地址。总之，这两个数组记录了每个基本块的起始地址，以及它被执行的次数。</p>
+<p>分析库还包括一个函数mcleanup（atexit()gmon.out. 关闭分析，输出各种标题，写入直方图，然后是调用图弧和基本块计数。</p>
+<p>的输出gprof没有表明程序中受 I/O 或交换带宽限制的部分。这是因为程序计数器的样本是在程序运行时间的固定间隔内获取的。因此，gprof输出中的时间测量没有说明程序未运行的时间。例如，程序的一部分创建了如此多的数据，以至于它不能一次全部放入物理内存中，可能会由于抖动而运行得很慢，但gprof会说它使用的时间很少。另一方面，按运行时采样的优点是其他用户的负载量不会直接影响您获得的输出。</p>
+</div>
+<div class="section" id="id17">
+<h3>9.2数据文件格式<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<p>用于配置文件数据的旧 BSD 派生文件格式不包含允许检查数据文件是否真的是 gprof文件的魔法 cookie。此外，它不提供版本号，因此几乎不可能更改文件格式。 GNU gprof 使用提供这些特性的新文件格式。为了向后兼容，GNU gprof继续支持旧的 BSD 派生格式，但并非所有功能都支持它。例如，旧文件格式无法容纳基本块执行计数。</p>
+<p>新的文件格式在头文件中定义gmon_out.h. 它由一个包含魔术 cookie 和版本号的标头以及一些可用于未来扩展的备用字节组成。配置文件数据文件中的所有数据都采用为其收集配置文件的目标的本机格式。 GNU gprof自动适应使用的字节顺序。</p>
+<p>在新的文件格式中，标题后面是一系列记录。目前，共有三种不同的记录类型：直方图记录、调用图弧记录和基本块执行计数记录。每个文件可以包含任意数量的每种记录类型。读取文件时，GNU gprof将确保相同类型的记录相互兼容，并计算所有记录的并集。例如，对于基本块执行计数，并集只是每个基本块的所有执行计数的总和。</p>
+<p>9.2.1 直方图记录
+直方图记录由一个标头组成，后跟一个 bin 数组。标头包含直方图跨越的文本段范围、直方图的字节大小（与旧的 BSD 格式不同，这不包括标头的大小）、分析时钟的速率和物理尺寸bin 计数在按分析时钟速率缩放后表示。物理维度由两部分指定：最多 15 个字符的长名称和单个字符的缩写。例如，表示实时的直方图会将长名称指定为“秒”，将缩写指定为“s”。此功能对于支持性能监视器硬件的架构很有用（幸运的是，这种硬件正变得越来越普遍）。例如，在 DEC OSF/1 下，“uprofile”命令可用于生成指令缓存未命中的直方图。在这种情况下，直方图标题中的维度可以设置为“i-cache misses”，缩写可以设置为“1”（因为它只是一个计数，而不是物理维度）。此外，在这种情况下，分析速率必须设置为 1。</p>
+<p>直方图 bin 是 16 位数字，每个 bin 代表等量的文本空间。例如，如果文本段长为一千字节，并且直方图中有十个 bin，则每个 bin 代表一百个字节。</p>
+<p>9.2.2 调用图记录
+调用图记录的格式与 BSD 派生文件格式中使用的格式相同。它由调用图中的弧和指示在程序执行期间遍历弧的次数的计数组成。弧由一对地址指定：第一个必须在调用者的函数内，第二个必须在被调用者的函数内。在函数级别执行分析时，这些地址可以指向相应函数内的任何位置。但是，在行级分析时，地址最好尽可能靠近调用站点/入口点。这将确保行级调用图能够准确识别哪一行源代码执行了对函数的调用。</p>
+<p>9.2.3 基本块执行计数记录
+基本块执行计数记录由一个标题和一系列地址/计数对组成。标头仅指定序列的长度。在地址/计数对中，地址标识基本块，计数指定基本块执行的次数。可以使用基本地址中的任何地址。</p>
+</div>
+<div class="section" id="id18">
+<h3>9.3gprof的内部操作<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<p>像大多数程序一样，gprof首先处理其选项。sym_ids.c:sym_id_add在此阶段，如果指定了使用 symspecs 的选项 ，它可能会构建其 symspec 列表 ( )。gprof维护一个符号规范的链接列表，最终将变成 12 个符号表，组织成六个包含/排除对——每个对用于平面轮廓 (INCL_FLAT/EXCL_FLAT)、调用图弧 (INCL_ARCS/EXCL_ARCS)、打印在调用图中 (INCL_GRAPH/EXCL_GRAPH)、调用图中的时序传播 (INCL_TIME/EXCL_TIME)、带注释的源列表 (INCL_ANNO/EXCL_ANNO) 和执行计数列表 (INCL_EXEC/EXCL_EXEC)。</p>
+<p>在选项处理之后，gprof通过将所有 symspec 添加 default_excluded_list到排除列表 EXCL_TIME 和 EXCL_GRAPH 来完成构建 symspec 列表，如果指定了逐行分析，还指定 EXCL_FLAT。这些默认排除不会添加到 EXCL_ANNO、EXCL_ARCS 和 EXCL_EXEC。</p>
+<p>接下来，调用 BFD 库打开目标文件，验证它是否是目标文件，并读取其符号表 ( core.c:core_init)，使用bfd_canonicalize_symtab后分配适当大小的符号数组。此时，函数映射被读取（如果 ‘–文件排序’ 选项已被指定），核心文本空间被读入内存（如果 ‘-C’ 给出了选项）。</p>
+<p>gprof自己的符号表，一个 Sym 结构的数组，现在已经构建好了。这可以通过两个例程之一以两种方式之一完成，具体取决于是否逐行分析（’-l’ 选项）已启用。对于普通分析，扫描 BFD 规范符号表。对于逐行分析，检查每个文本空间地址，并在每次行号更改时创建一个新的符号表条目。在任何一种情况下，都要通过符号表两次——一次计算所需符号表的大小，另一次实际读取符号。在两次传递之间，将Sym创建一个具有适当长度的类型数组。最后，symtab.c:symtab_finalize 调用对符号表进行排序并删除重复条目（具有相同内存地址的条目）。</p>
+<p>符号表必须是一个连续的数组，原因有二。首先，qsort库函数（对数组进行排序）将用于对符号表进行排序。symtab.c:sym_lookup此外，符号查找例程（功能符号用is_func标志表示。行号符号没有设置特殊标志。此外，一个符号可以有一个is_static标志来表明它是一个本地符号。</p>
+<p>读取符号表后，现在可以将 symspecs 转换为 Syms ( sym_ids.c:sym_id_parse)。请记住，单个 symspec 可以匹配多个符号。创建了一个符号表 ( ) 数组，syms其中的每个条目都是要从特定列表中包含或排除的 Syms 符号表。主符号表和符号规范由嵌套循环检查，每个与符号规范匹配的符号都插入到适当的符号表中。这要完成两次，一次是计算每个所需符号表的大小，另一次是构建表，这些表已在通道之间分配。从现在开始，要确定符号是否在包含或排除符号规范列表中，只需在数组 gprof中的适当表上使用其标准符号查找例程即可。syms</p>
+<p>现在读取配置文件数据文件本身 ( gmon_io.c:gmon_out_read)，首先通过检查新样式 ‘gmon.out’ 标题，然后假设这是一个老式的 BSD ‘gmon.out’ 如果幻数测试失败。</p>
+<p>新型直方图记录由 读取hist.c:hist_read_rec。对于第一个直方图记录，分配一个内存数组来保存所有的bin，并读入。当读取多个profile数据文件（或具有多个直方图记录的文件）时，每对直方图记录的内存范围必须相等，或不重叠。对于每对直方图记录，分辨率（内存区域大小除以 bin 数量）必须相同。所有直方图记录的时间单位必须相同。如果满足上述包含，则合并相同内存范围的所有直方图。</p>
+<p>当每个调用图记录被读取call_graph.c:cg_read_rec时cg_arcs.c:arc_add（随着每条弧的添加，父子弧和子父弧的链表被维护。孩子的调用计数和弧的调用计数都按记录的调用计数递增。</p>
+<p>读取基本块记录 ( basic_blocks.c:bb_read_rec)，但前提是已选择逐行分析。每个基本块地址都与符号表中的相应行符号相匹配，并在符号的 bb_addr 和 bb_calls 数组中创建一个条目。同样，如果同一地址存在多个基本块记录，则调用计数是累积的。</p>
+<p>如果请求 ( gmon_io.c:gmon_out_write)，则会转储 gmon.sum 文件。</p>
+<p>如果数据文件中存在直方图，则hist.c:hist_assign_samples通过遍历所有样本箱并将它们分配给符号，将它们分配给符号 ( )。由于符号表是按内存地址升序排序的，因此我们可以在遍历样本箱时简单地按照符号表进行操作。此步骤包括针对 INCL_FLAT/EXCL_FLAT 的符号规范检查。根据直方图比例因子，一个样本仓可能跨越多个符号，在这种情况下，样本计数的一部分被分配给每个符号，与重叠程度成比例。这种效果在普通分析中很少见，但在逐行分析期间重叠更为常见，例如，可能导致两条相邻行中的每条都被计为半个命中。</p>
+<p>如果调用图数据存在，cg_arcs.c:cg_assemble则调用。首先，如果’-C’ 被指定时，一个与机器相关的例程 ( find_call) 扫描每个符号的机器代码，寻找子例程调用指令，并将它们添加到调用图，调用计数为零。拓扑排序是通过深度优先对所有符号进行编号（cg_dfn.c:cg_dfn)，这样孩子的编号总是小于他们的父母，然后在符号表中制作一个指针数组并将其排序为数字顺序，这是逆拓扑顺序（孩子出现在父母之前）。此时还检测到循环，循环的所有成员都分配有相同的拓扑编号。现在通过这个排序的符号指针数组进行两次传递。第一遍，从头到尾（父母到孩子），计算孩子传播到每个父母的时间分数和一个打印标志。打印标志反映了对 INCL_GRAPH/EXCL_GRAPH 的 symspec 处理，父项的包含或排除（打印或不打印）属性被传播到其子项，除非它们本身明确出现在 INCL_GRAPH 或 EXCL_GRAPH 中。第二关，从头到尾（从孩子到父母）实际上是沿着调用图传播时间，需要检查 INCL_TIME/EXCL_TIME。现在将打印标志、分数和时间存储在符号结构中，拓扑排序数组现在被丢弃，并组装了一个新的指针数组，这次按传播时间排序。</p>
+<p>最后，打印用户请求的各种输出，这现在相当简单。调用图 ( cg_print.c:cg_print) 和平面轮廓 ( hist.c:hist_print) 是已计算值的反刍。带注释的源代码清单 ( basic_blocks.c:print_annotated_source) 使用基本块信息（如果存在）用调用计数标记每一行代码，否则只显示函数调用计数。</p>
+<p>函数排序代码在源代码本身（cg_print.c）中记录得很少。基本上，使用最多的函数和父级最多的函数放在首位，其次是其他使用最多的函数，其次是使用率较低的函数，最后是未使用的函数。</p>
+</div>
+<div class="section" id="id19">
+<h3>9.4调试gprof<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<p>如果gprof在启用调试的情况下编译，则 ‘-d’ 选项触发调试输出（到标准输出），这有助于理解其操作。指定的调试编号被解释为以下选项的总和：</p>
+<p>2 - 拓扑排序
+在调用图分析期间监控符号的深度优先编号</p>
+<p>4 - 循环
+显示符号，因为它们被识别为循环头</p>
+<p>16 - 计数
+读取调用图弧时，显示每个弧以及如何计算对每个函数的总调用</p>
+<p>32 - 调用图弧排序
+在每个调用图条目中对单个父/子进行排序的详细信息</p>
+<p>64 - 读取直方图和调用图记录
+在读取直方图时显示它们的地址范围，以及每个调用图弧</p>
+<p>128 - 符号表
+从目标文件中读取、分类和排序符号表。对于逐行分析 (‘-l’ 选项），还显示分配给内存地址的行号。</p>
+<p>256 - 静态调用图
+‘的跟踪操作-C’ 选项</p>
+<p>512 - 符号表和弧表查找
+查找例程的详细操作</p>
+<p>1024 - 调用图传播
+显示函数时间如何沿调用图传播</p>
+<p>2048 - 基本块
+显示从配置文件数据中读取的基本块记录（仅对 ‘ 有意义-l’ 选项）</p>
+<p>第4096章
+显示符号到符号的模式匹配操作</p>
+<p>8192 - 注释源
+跟踪 ‘ 的操作-一种’ 选项</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

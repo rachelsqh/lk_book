@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux fail_function分析:基于函数的错误注入 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>linux fail_function分析:基于函数的错误注入</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_code_base/kernel_base/func_injection.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux-fail-function">
+<h1>linux fail_function分析:基于函数的错误注入<a class="headerlink" href="#linux-fail-function" title="Permalink to this headline">¶</a></h1>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>描述：</p>
+<p>针对内核函数的开始处进行注入。所以kprobe就是有这种功能在。哎呀真理了个啥呀，就提供了一个框架，都怀疑是我自己写的了，先放着，下一遍确认是否是代码树的问题。</p>
+<div class="section" id="id1">
+<h2>底层原理<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>register_kprobe(&amp;attr-&gt;kp);</p>
+</div></blockquote>
+<p>浅显理解：debugfs文件夹：</p>
+<blockquote>
+<div><p>底层逻辑：设置时调用register_kprobe 在相关函数入口点注册hook.底层原理没有什么特别需要注意的。
+只有两个技术点：</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>debugfs相关操作；</p></li>
+<li><p>kprobe</p></li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h2>操作方法<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>放下，貌似没有</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

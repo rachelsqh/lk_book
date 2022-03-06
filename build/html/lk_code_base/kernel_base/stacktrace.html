@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux 栈跟踪管理：unwind_{frame,guess,orc},stacktrace &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>linux 栈跟踪管理：unwind_{frame,guess,orc},stacktrace</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_code_base/kernel_base/stacktrace.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux-unwind-frame-guess-orc-stacktrace">
+<h1>linux 栈跟踪管理：unwind_{frame,guess,orc},stacktrace<a class="headerlink" href="#linux-unwind-frame-guess-orc-stacktrace" title="Permalink to this headline">¶</a></h1>
+<div class="literal-block-wrapper docutils container" id="id78">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id78" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>对栈帧，栈跟踪基础及应用进行总结，分析</p>
+<div class="section" id="id1">
+<h2>应用场景<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>panic() –&gt; dump_stack()</p>
+</div>
+<div class="section" id="id2">
+<h2>原理分析<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>结构<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>struct unwind_state {</p>
+<p>}</p>
+<p>struct pt_regs {</p>
+<p>}</p>
+<p>struct stack_frame_user {</p>
+<p>}</p>
+<p>struct stack_trace_consume {</p>
+<p>}</p>
+<p>struct stack_trace {</p>
+<p>}</p>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>函数说明<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h3>通用部分（导出）<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>stack_trace_print:
+- 说明：</p>
+<blockquote>
+<div><dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>stack_trace_print - Print the entries in the stack trace</p></li>
+<li><p>&#64;entries:        Pointer to storage array</p></li>
+<li><p>&#64;nr_entries:     Number of entries in the storage array</p></li>
+<li><p>&#64;spaces: Number of leading spaces to print</p></li>
+</ul>
+<p><a href="#id6"><span class="problematic" id="id7">*</span></a>/</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+<li><dl>
+<dt>int stack_trace_snprint(char <a href="#id8"><span class="problematic" id="id9">*</span></a>buf, size_t size, const unsigned long <a href="#id10"><span class="problematic" id="id11">*</span></a>entries,</dt><dd><blockquote>
+<div><p>unsigned int nr_entries, int spaces)</p>
+</div></blockquote>
+<p>/**</p>
+</dd>
+</dl>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_snprint - Print the entries in the stack trace into a buffer</p></li>
+<li><p>&#64;buf:        Pointer to the print buffer</p></li>
+<li><p>&#64;size:       Size of the print buffer</p></li>
+<li><p>&#64;entries:    Pointer to storage array</p></li>
+<li><p>&#64;nr_entries: Number of entries in the storage array</p></li>
+<li><p>&#64;spaces:     Number of leading spaces to print</p></li>
+<li></li>
+<li><p>Return: Number of bytes printed.</p></li>
+</ul>
+<p><a href="#id12"><span class="problematic" id="id13">*</span></a>/</p>
+</div></blockquote>
+<ul>
+<li><dl>
+<dt>unsigned int stack_trace_save(unsigned long <a href="#id14"><span class="problematic" id="id15">*</span></a>store, unsigned int size,</dt><dd><blockquote>
+<div><p>unsigned int skip）</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>/**</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_save - Save a stack trace into a storage array</p></li>
+<li><p>&#64;store:      Pointer to storage array</p></li>
+<li><p>&#64;size:       Size of the storage array</p></li>
+<li><p>&#64;skipnr:     Number of entries to skip at the start of the stack trace</p></li>
+<li></li>
+<li><p>Return: Number of trace entries stored.</p></li>
+</ul>
+<p><a href="#id16"><span class="problematic" id="id17">*</span></a>/</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>unsigned int stack_trace_save_tsk(struct task_struct <a href="#id18"><span class="problematic" id="id19">*</span></a>tsk, unsigned long <a href="#id20"><span class="problematic" id="id21">*</span></a>store,</dt><dd><p>unsigned int size, unsigned int skipnr)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>/**</p></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_save_tsk - Save a task stack trace into a storage array</p></li>
+<li><p>&#64;task:       The task to examine</p></li>
+<li><p>&#64;store:      Pointer to storage array</p></li>
+<li><p>&#64;size:       Size of the storage array</p></li>
+<li><p>&#64;skipnr:     Number of entries to skip at the start of the stack trace</p></li>
+<li></li>
+<li><p>Return: Number of trace entries stored.</p></li>
+</ul>
+<p><a href="#id22"><span class="problematic" id="id23">*</span></a>/</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>unsigned int stack_trace_save_regs(struct pt_regs <a href="#id24"><span class="problematic" id="id25">*</span></a>regs, unsigned long <a href="#id26"><span class="problematic" id="id27">*</span></a>store,</dt><dd><p>unsigned int size, unsigned int skipnr)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>说明
+/**</p></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_save_regs - Save a stack trace based on pt_regs into a storage array</p></li>
+<li><p>&#64;regs:       Pointer to pt_regs to examine</p></li>
+<li><p>&#64;store:      Pointer to storage array</p></li>
+<li><p>&#64;size:       Size of the storage array</p></li>
+<li><p>&#64;skipnr:     Number of entries to skip at the start of the stack trace</p></li>
+<li></li>
+<li><p>Return: Number of trace entries stored.</p></li>
+</ul>
+<p><a href="#id28"><span class="problematic" id="id29">*</span></a>/</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>int stack_trace_save_tsk_reliable(struct task_struct <a href="#id30"><span class="problematic" id="id31">*</span></a>tsk, unsigned long <a href="#id32"><span class="problematic" id="id33">*</span></a>store,</dt><dd><p>unsigned int size)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>说明</p></li>
+</ul>
+<p>/**</p>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_save_tsk_reliable - Save task stack with verification</p></li>
+<li><p>&#64;tsk:        Pointer to the task to examine</p></li>
+<li><p>&#64;store:      Pointer to storage array</p></li>
+<li><p>&#64;size:       Size of the storage array</p></li>
+<li></li>
+<li><p>Return:      An error if it detects any unreliable features of the</p></li>
+<li><p>stack. Otherwise it guarantees that the stack trace is</p></li>
+<li><p>reliable and returns the number of entries stored.</p></li>
+<li></li>
+<li><p>If the task is not ‘current’, the caller <em>must</em> ensure the task is inactive.</p></li>
+</ul>
+<p><a href="#id34"><span class="problematic" id="id35">*</span></a>/</p>
+</div></blockquote>
+<ul>
+<li><p>unsigned int stack_trace_save_user(unsigned long <a href="#id36"><span class="problematic" id="id37">*</span></a>store, unsigned int size)
+- 说明</p>
+<blockquote>
+<div><p>/**</p>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_save_user - Save a user space stack trace into a storage array</p></li>
+<li><p>&#64;store:      Pointer to storage array</p></li>
+<li><p>&#64;size:       Size of the storage array</p></li>
+<li></li>
+<li><p>Return: Number of trace entries stored.</p></li>
+</ul>
+<p><a href="#id38"><span class="problematic" id="id39">*</span></a>/</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>unsigned int stack_trace_save(unsigned long <a href="#id40"><span class="problematic" id="id41">*</span></a>store, unsigned int size,</dt><dd><p>unsigned int skipnr)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>说明</p></li>
+</ul>
+<p>/**</p>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_save - Save a stack trace into a storage array</p></li>
+<li><p>&#64;store:      Pointer to storage array</p></li>
+<li><p>&#64;size:       Size of the storage array</p></li>
+<li><p>&#64;skipnr:     Number of entries to skip at the start of the stack trace</p></li>
+<li></li>
+<li><p>Return: Number of trace entries stored</p></li>
+</ul>
+<p><a href="#id42"><span class="problematic" id="id43">*</span></a>/</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>unsigned int stack_trace_save_tsk(struct task_struct <a href="#id44"><span class="problematic" id="id45">*</span></a>task,</dt><dd><p>unsigned long <a href="#id46"><span class="problematic" id="id47">*</span></a>store, unsigned int size,
+unsigned int skipnr)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>说明</p></li>
+</ul>
+<blockquote>
+<div><p>/**</p>
+</div></blockquote>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_save_tsk - Save a task stack trace into a storage array</p></li>
+<li><p>&#64;task:       The task to examine</p></li>
+<li><p>&#64;store:      Pointer to storage array</p></li>
+<li><p>&#64;size:       Size of the storage array</p></li>
+<li><p>&#64;skipnr:     Number of entries to skip at the start of the stack trace</p></li>
+<li></li>
+<li><p>Return: Number of trace entries stored</p></li>
+</ul>
+<p><a href="#id48"><span class="problematic" id="id49">*</span></a>/</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>int stack_trace_save_tsk_reliable(struct task_struct <a href="#id50"><span class="problematic" id="id51">*</span></a>tsk, unsigned long <a href="#id52"><span class="problematic" id="id53">*</span></a>store,</dt><dd><p>unsigned int size)</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>说明</p></li>
+</ul>
+<p>/**</p>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_save_tsk_reliable - Save task stack with verification</p></li>
+<li><p>&#64;tsk:        Pointer to the task to examine</p></li>
+<li><p>&#64;store:      Pointer to storage array</p></li>
+<li><p>&#64;size:       Size of the storage array</p></li>
+<li></li>
+<li><p>Return:      An error if it detects any unreliable features of the</p></li>
+<li><p>stack. Otherwise it guarantees that the stack trace is</p></li>
+<li><p>reliable and returns the number of entries stored.</p></li>
+<li></li>
+<li><p>If the task is not ‘current’, the caller <em>must</em> ensure the task is inactive.</p></li>
+</ul>
+<p><a href="#id54"><span class="problematic" id="id55">*</span></a>/</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>unsigned int stack_trace_save_user(unsigned long <em>store, unsigned int size)
+- 说明
+/*</em></p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>stack_trace_save_user - Save a user space stack trace into a storage array</p></li>
+<li><p>&#64;store:      Pointer to storage array</p></li>
+<li><p>&#64;size:       Size of the storage array</p></li>
+<li></li>
+<li><p>Return: Number of trace entries stored</p></li>
+</ul>
+<p><a href="#id56"><span class="problematic" id="id57">*</span></a>/</p>
+</div></blockquote>
+</div>
+<div class="section" id="id58">
+<h3>架构相关(底层实现）<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt>void arch_stack_walk(stack_trace_consume_fn consume_entry, void <a href="#id59"><span class="problematic" id="id60">*</span></a>cookie,</dt><dd><p>struct task_struct <a href="#id61"><span class="problematic" id="id62">*</span></a>task, struct pt_regs <a href="#id63"><span class="problematic" id="id64">*</span></a>regs)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>int arch_stack_walk_reliable(stack_trace_consume_fn consume_entry,</dt><dd><p>void <a href="#id65"><span class="problematic" id="id66">*</span></a>cookie, struct task_struct <a href="#id67"><span class="problematic" id="id68">*</span></a>task)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>static int copy_stack_frame(const struct stack_frame_user __user <a href="#id69"><span class="problematic" id="id70">*</span></a>fp,</dt><dd><p>struct stack_frame_user <a href="#id71"><span class="problematic" id="id72">*</span></a>frame)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>void arch_stack_walk_user(stack_trace_consume_fn consume_entry, void <a href="#id73"><span class="problematic" id="id74">*</span></a>cookie,</dt><dd><p>const struct pt_regs <a href="#id75"><span class="problematic" id="id76">*</span></a>regs)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="uwind">
+<h2>底层uwind原理分析<a class="headerlink" href="#uwind" title="Permalink to this headline">¶</a></h2>
+<p>内核文档：<a class="reference external" href="https://www.kernel.org/doc/html/latest/x86/orc-unwinder.html">https://www.kernel.org/doc/html/latest/x86/orc-unwinder.html</a></p>
+<div class="section" id="config-dwarf-config-frame">
+<h3>内核配置：CONFIG_DWARF/CONFIG_FRAME<a class="headerlink" href="#config-dwarf-config-frame" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt>Choose kernel unwinder(ORC unwinder) –&gt;</dt><dd><ul class="simple">
+<li><p>ORC unwinder – CONFIG_UNWINDER_ORC – unwind_orc.c (DWARF)</p></li>
+<li><p>Frame pointer unwinder – CONFIG_UNWINDER_FRAME_POINTER – unwind_frame.c</p></li>
+<li><p>Guess unwinder – CONFIG_UNWINDER_GUESS  – unwind_guess.c</p></li>
+</ul>
+</dd>
+</dl>
+<p>这个选项决定了panics,oopses,bugs,warnings,perf,/proc/&lt;pid&gt;/stack,livepatch,lockdep等使用的内核栈展开方法。</p>
+</div>
+<div class="section" id="id77">
+<h3>信息添加原理<a class="headerlink" href="#id77" title="Permalink to this headline">¶</a></h3>
+<p>引用文档：tools/objtool/Documentation/stack-validation.txt</p>
+<ul class="simple">
+<li><p>sorttable.h: 添加ORC unwind tables排序支持和其他更新</p></li>
+<li><p>ORC 数据由 objtool 生成</p></li>
+</ul>
+<p>Objtool 通过与编译时堆栈元数据验证功能集成来生成 ORC 数据，在 tools/objtool/Documentation/stack-validation.txt 中有详细描述。在分析 .o 文件的所有代码路径后，它会创建一个 orc_entry 结构数组，以及与这些结构关联的指令地址的并行数组，并将它们分别写入 .orc_unwind 和 .orc_unwind_ip 部分。</p>
+<p>ORC 代表糟糕的倒带能力。</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

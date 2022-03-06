@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux 内核代码分析 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>linux 内核代码分析</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/lk_code_base/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux">
+<h1>linux 内核代码分析<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="kernel_base/index.html">linux 内核基础</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/acct.html">统计信息及方法总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/lock.html">linux 竞争与一致性问题处理</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lock.html#id1">锁</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lock.html#id2">内存/缓存一致性</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lock.html#per-cpu">per cpu变量问题</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lock.html#id3">原子操作</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lock.html#futex">futex</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/extable.html">linux 异常表:extable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/jump_label.html">linux :jump_label 分析</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/jump_label.html#jump-label">jump label应用场景</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/jump_label.html#id1">jump label实现原理</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/jump_label.html#gcc">编译器部分（gcc)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/jump_label.html#id2">架构依赖部分</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/jump_label.html#id3">通用部分</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/jump_label.html#id4">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/kexec_elf.html">linux 加载ELF 内核文件：kexec</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kexec_elf.html#kexec">kexec应用场景</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kexec_elf.html#kexec-load-kernel-image">kexec –load $KERNEL_IMAGE，就对这个程序进行分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kexec_elf.html#id1">内核加载流程图</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kexec_elf.html#id2">系统调用</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kexec_elf.html#kexec-load">kexec_load</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kexec_elf.html#id3">流程图</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kexec_elf.html#kexec-file-load">kexec_file_load</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kexec_elf.html#id4">流程图</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kexec_elf.html#kexec-elf-load">kexec_elf_load</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kexec_elf.html#id5">原理流程图：</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kexec_elf.html#id6">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/irq/index.html">linux 中断架构</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/irq/x86_int.html">X86中断部分原理（eg:APIC)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/irq/common_int_arch.html">linux 中断系统软件部分</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/irq/int_notice.html">linux 中断常见问题总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/resource.html">linux 资源管理: resource</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/resource.html#id1">资源管理数据结构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/resource.html#struct-resource">struct resource 全局定义</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/notifier.html">linux 内核通知链: notifier</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/notifier.html#id1">应用场景描述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/notifier.html#id2">通知链分类</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/notifier.html#id3">结构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/notifier.html#id4">导出符号</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/notifier.html#id5">常用通知链总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/notifier.html#reboot">reboot通知链接总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/workqueue.html">linux 工作队列: workqueue</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/workqueue.html#id1">工作队列应用场景</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/workqueue.html#id2">工作队列实现原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/workqueue.html#id3">具体参考</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/signal.html">linux 信号:signal</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/signal.html#id1">信号在进程中的实现</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/signal.html#id2">信号处理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/signal.html#id3">信号状态图</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/signal.html#id4">信号处理时机</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/kallsyms.html">linux 内核符号:kallsyms + 导出符号</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kallsyms.html#id1">内核符号的产生</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kallsyms.html#id2">以上是内核符号的产生过程，下面我们看内核模块中内核符号的产生：</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kallsyms.html#demo-k-m1-ko">demo:k_m1.ko</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kallsyms.html#k-m1-c">k_m1.c</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kallsyms.html#nm-n-k-m1-ko">内核模块符号：nm -n  k_m1.ko</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kallsyms.html#id3">内核符号的使用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kallsyms.html#export-xxx">导出符号：EXPORT_XXX原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kallsyms.html#id4">符号应用总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/module.html">linux 内核模块实现原理分析</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/module.html#kbuild">内核模块编译：kbuild</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/module.html#id1">内核模块编译流程原理分析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/module.html#id2">构建过程分析</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/module.html#id7">构建模块过程中的的符号处理</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/module.html#k-m-mod-c-k-m-mod-o">k_m.mod.c –&gt; k_m.mod.o:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/module.html#k-m-o-k-m-mod-o-k-m-ko">k_m.o + k_m.mod.o –&gt; k_m.ko</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/module.html#k-m-ko">k_m.ko二进制格式分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/module.html#id8">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/module.html#id9">内核模块加载过程分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/module.html#id10">内核模块卸载</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/module.html#id11">内核模块中可调用的函数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/module.html#id12">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/seccomp.html">linux 沙箱:seccomp</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/seccomp.html#seccomp">seccomp系统调用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/seccomp.html#id1">内核示例程序</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/trace/index.html">linux 内核跟踪调试代码架构</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/alt_int_x86.html">linux 底层指令替换原理</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/alt_int_x86.html#api">API分析</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/kprobe.html">linux kprobe/kretprobe 分析总结</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#id1">应用场景</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#id2">原理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#kprobe">kprobe总体架构</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#kprobes">Kprobes 功能和限制</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#id73">探头开销</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#kprobes-kretprobes">Kprobes/kretprobes 示例</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#id74">调试接口</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#kprobes-sysctl">kprobes sysctl 接口</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#id75">总结</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/kprobe.html#id76">参考</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/uprobe.html">用户空间探针（uprobes)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/uprobe.html#trace-uprobe">trace uprobe使用场景</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/livepatch.html">linux 实时补丁-livepatch</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/livepatch.html#livepatch">livepatch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/livepatch.html#livepatchelf">Livepatch模块Elf格式</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/livepatch.html#id42">用例</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/trace.html">linux 内核跟踪调试:trace</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/trace.html#kernel-trace-trace-c">kernel/trace/trace.c</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/bpf.html">bpf总结</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/bpf.html#id1">应用场景</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/bpf.html#id2">加载原理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/bpf.html#id3">虚拟机原理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/bpf.html#id4">bpf汇编</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/bpf.html#kernel-o">kernel.o编程规范</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/bpf.html#id5">bpf空间到内核空间映射</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/bpf.html#id6">具体应用</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/bpf_zh.html">BPF-HELPERS</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/trace/bpf_zh.html#list-of-ebpf-helper-functions-bpf-kernel">list of eBPF helper functions: bpf kernel 部分只能调用这部分函数</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/perf.html">linux perf(events)分析总结</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/kgdb.html">linux 内核跟踪调试代码架构</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/trace/kheaders.html">kheaders</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/lk_sec/index.html">linux 内核安全架构分析</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/cred.html">凭证（cred)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/digsig.html">数字签名验证</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/dsv.html">dsv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/ima.html">IMA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/key.html">kernel key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/ksp.html">内核自我保护(KSP)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/lsm.html">linux security子系统</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/lk_sec/lsm.html#lsm-linux-hooks">LSM模块：linux 通用安全hooks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/lk_sec/lsm.html#lsm">LSM模块开发</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/lk_sec/lsm.html#landlock-lsm">Landlock LSM</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/sak.html">SAK</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/sctp.html">SCTP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/lk_sec/tpm.html">可信平台模块</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/audit.html">linux 审计（audit)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/func_injection.html">linux fail_function分析:基于函数的错误注入</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/func_injection.html#id1">底层原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/func_injection.html#id2">操作方法</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/sysctl.html">linux 通用linux系统控制接口:sysctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/sys.html">linux 系统级接口：sys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/static_call.html">linux static_call 分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/stacktrace.html">linux 栈跟踪管理：unwind_{frame,guess,orc},stacktrace</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/stacktrace.html#id1">应用场景</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/stacktrace.html#id2">原理分析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/stacktrace.html#id3">结构</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/stacktrace.html#id4">函数说明</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/stacktrace.html#id5">通用部分（导出）</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/stacktrace.html#id58">架构相关(底层实现）</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/stacktrace.html#uwind">底层uwind原理分析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/stacktrace.html#config-dwarf-config-frame">内核配置：CONFIG_DWARF/CONFIG_FRAME</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/stacktrace.html#id77">信息添加原理</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/stackleak.html">linux stackleak</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/printk.html">linux printk实现原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/rcu.html">linux rcu原理分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/kcsan.html">linux KCSAN分析</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kcsan.html#id1">错误报告</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kcsan.html#id2">选择性分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kcsan.html#debugfs">DebugFS 接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kcsan.html#id3">调优性能</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/power.html">linux 电源管理:power</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/softirq.html">linux 软中断：softirq</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/softirq.html#id3">句柄注册(上状态图)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/softirq.html#id4">性能分析与总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/syscall.html">linux 系统调用原理</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/syscall.html#x86">x86 架构支持:</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/syscall.html#syscall-sysret">64位模式下快速系统调用:SYSCALL/SYSRET</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/syscall.html#id2">linux内核实现方式</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/syscall.html#os">系统调用流程图：OS负责处理栈切换</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/alg_base.html">linux 基础算法总结</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/alg_base.html#id1">链表</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/alg_base.html#id2">单向链表</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/alg_base.html#id3">双向链表</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/alg_base.html#id4">哈希表</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/alg_base.html#id5">位图</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/alg_base.html#map">map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/alg_base.html#id6">红黑树</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/alg_base.html#kfifo">kfifo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/alg_base.html#id7">数据结构定义限定符总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/alg_base.html#container-of">container_of()</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/bug_panic.html">bug/panic分析与总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/cfi.html">Clang Contol Flow Integrity(CFI) error and slowpath handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/configfs.html">导出当前内核配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/stack-validation.html">Compile-time stack metadata validation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/stack-validation.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/stack-validation.html#why-do-we-need-stack-metadata-validation">Why do we need stack metadata validation?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/stack-validation.html#rules">Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/stack-validation.html#objtool-warnings">Objtool warnings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/stack-validation.html#adding-exceptions">Adding exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/context_tracking.html">上下文跟踪（context tracking）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/kcmp.html">kcmp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/kheaders.html">kernel headers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/ksysfs.html">sys/kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/latencytop.html">延迟显示基础设施</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/namespace.html">命名空间</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/cgroup.html">资源隔离</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/params.html">内核参数处理机制总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/padata.html">并行数据处理接口</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/relay.html">relay描述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/scftorture.html">scftorture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/scs.html">Shadow Call Stack support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/umd.html">用户模式驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/umh.html">内核usermode helper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/up.html">uniprocessor-only support functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/user.html">user</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/watchdog.html">看门狗</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/watch_queue.html">watch queue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/urn.html">user return-notifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/p_event.html">event事件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/time.html">定时器子系统</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_base/kobject.html">kobject理解</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kobject.html#ksetkobject">对kset、kobject的理解</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kobject.html#id1">kobject 结构关系图</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kobject.html#uevent">uevent总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kobject.html#kobject-api">kobject API总结</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kobject.html#kobjectkset">kobject加入kset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kernel_base/kobject.html#id12">kobject 操作</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kobject.html#id13">内嵌kobject的内核结构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kobject.html#id14">内核示例程序</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_base/kobject.html#id15">引用参考</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_ps/index.html">linux 进程管理</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/x86_ps.html">x86进程管理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_base.html">pid组织总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_base.html#id1">内核线程部分总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_base.html#linux">linux 进程统计信息总结/导出信息</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_base.html#id2">linux 进程性能调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_state_machine.html">linux fork过程描述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_state_machine.html#linux-exec">linux exec描述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_state_machine.html#detect-hung-task-d-state">Detect Hung Task (D state)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_state_machine.html#linux-exit">linux exit过程描述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_sched.html">linux 进程调度管理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_sched.html#id1">linux 进程性能调试</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_ps/ps_connector.html">Connector</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_mem/index.html">linux 内存管理</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mem_kernel_arch.html">内存在进程中的表示</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/mem_kernel_arch.html#id2">概述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/mem_kernel_arch.html#id3">结构描述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html">内存管理概述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html#kaslr">KASLR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html#iomem">iomem相关总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html#id2">内存统计信息</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html#mmapvma">mmap来理解vma及硬件页关联：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html#id3">内存性能测试方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html#slab-slub">物理页面管理机制：slab/slub/…</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html#id4">内存安全机制：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html#swap">swap:交换内存：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_man.html#id5">其他内存相关：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/x86_mm.html">x86架构级内存管理总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/x86_mm.html#id1">缺页中断：看硬件映射</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/x86_mm.html#id84">}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/x86_mm.html#id95">}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/x86_mm.html#id186">}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/x86_mm.html#id217">}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/x86_mm.html#id244">}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/x86_mm.html#id253">}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/x86_mm.html#id276">}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/x86_mm.html#id285">}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kernel_mem/x86_mm.html#id300">}</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_mem/mm_pro.html">内存编程总结（内核）</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_fs/index.html">linux 文件系统分析</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kernel_fs/vfs.html">文件系统总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_fs/f_prog.html">编程应用总结</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_cpu/index.html">linux CPU管理</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kernel_cpu/cpu_init.html">CPU初始化：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_cpu/cpu_state_machine.html">linux CPU状态机描述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_cpu/cpu_sched.html">cpu与进程调度</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_cpu/cpu_reboot.html">reboot过程分析</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_driver/index.html">linux 驱动架构分析</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/driver_base.html">linux 驱动基础总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/driver_base.html#dma">DMA总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/device_driver_arch.html">linux ACPI架构驱动：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/device_driver_arch.html#linux">linux 驱动架构描述：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/device_driver_arch.html#id1">linux 块设备驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/device_driver_arch.html#linux-i2c-smbus-spi">linux i2c/smbus/spi总线驱动：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/device_driver_arch.html#linux-usb">linux USB总线驱动：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/device_driver_arch.html#id2">linux 字符驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/device_driver_arch.html#id3">linux 网络驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/device_driver_arch.html#linux-pci">linux PCI架构驱动：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_driver/device_driver_arch.html#id4">linux 设备树：</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lk_net/index.html">linux 内核网络代码分析</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lk_net/net_arch.html">linux 内核网络架构原理总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lk_net/net_prog.html">内核编程相关</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_virt/index.html">linux 内核虚拟化技术</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kernel_virt/x86_virt.html">virio驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_virt/virt_io.html">virio编程</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

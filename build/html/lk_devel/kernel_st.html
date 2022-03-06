@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内核测试 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="kernel debug 实验记录" href="kernel_debug_ig.html" />
+    <link rel="prev" title="二进制工具" href="lk_comp/comp_bin_tool.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">linux 内核开发基础</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="k_doc.html">内核文档综述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lk_build/index.html">linux 内核构建</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lk_comp/index.html">linux 内核编程</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">内核测试</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#kunit-kunit-linux-kernel-unit-testing">kUnit(KUnit-Linux Kernel Unit Testing)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kselftest-linux-kernel-selftests">kselftest(Linux Kernel Selftests)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">代码覆盖性测试工具</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gcov">gcov</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kcov">kcov</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">动态分析工具</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">工具示例</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#linux">linux 内核跟踪</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ftrace-sys-kernel-debug-tracing">ftrace:/sys/kernel/debug/tracing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ftrace-sys-kernel-debug-tracing-readme">ftrace配置说明总结：/sys/kernel/debug/tracing/README</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ftrace">ftrace实现框架及原理分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#demo">参考demo</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">内核补丁</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">linux 内核性能测试</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">linux 内核调试编程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">内核模块调试</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">linux 内核测试协议</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-rtla">linux 实时分析工具：rtla</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kernel_debug_ig.html">kernel debug 实验记录</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gnuplot.html">曲线图-gnuplot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">linux 内核开发基础</a> &raquo;</li>
+      <li>内核测试</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/lk_devel/kernel_st.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>内核测试<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="kunit-kunit-linux-kernel-unit-testing">
+<h2>kUnit(KUnit-Linux Kernel Unit Testing)<a class="headerlink" href="#kunit-kunit-linux-kernel-unit-testing" title="Permalink to this headline">¶</a></h2>
+<p>是一个完全在内核中的系统，用于“白盒”测试：因为测试代码是内核的一部分，它可以访问不暴露给用户空间的内部结构和函数。</p>
+<p>因此，KUnit 测试最好针对内核的小而独立的部分编写，这些部分可以单独进行测试。这与“单元”测试的概念非常吻合。
+例如，KUnit 测试可能会测试单个内核函数（甚至是通过函数的单个代码路径，例如错误处理案例），而不是整个特性。
+这也使得 KUnit 测试的构建和运行速度非常快，允许它们作为开发过程的一部分频繁运行。</p>
+</div>
+<div class="section" id="kselftest-linux-kernel-selftests">
+<h2>kselftest(Linux Kernel Selftests)<a class="headerlink" href="#kselftest-linux-kernel-selftests" title="Permalink to this headline">¶</a></h2>
+<p>主要是在用户空间中实现的，测试是普通的用户空间脚本或程序。
+这使得编写更复杂的测试或需要更多地操纵整个系统状态的测试（例如，生成进程等）变得更容易。但是，不能直接从 kselftest 调用内核函数。这意味着只有以某种方式（例如通过系统调用、设备、文件系统等）暴露给用户空间的内核功能才能使用 kselftest 进行测试。为了解决这个问题，一些测试包括一个配套的内核模块，它公开了更多的信息或功能。但是，如果测试大部分或完全在内核中运行，KUnit 可能是更合适的工具。</p>
+<p>因此，kselftest 非常适合测试整个功能，因为这些将向用户空间公开一个接口，该接口可以测试，但不能测试实现细节。这与“系统”或“端到端”测试非常吻合。
+例如，所有新的系统调用都应该伴随着 kselftest 测试。</p>
+</div>
+<div class="section" id="id2">
+<h2>代码覆盖性测试工具<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="gcov">
+<h3>gcov<a class="headerlink" href="#gcov" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="kcov">
+<h3>kcov<a class="headerlink" href="#kcov" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>动态分析工具<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>内核还支持许多动态分析工具，当它们出现在正在运行的内核中时，它们会尝试检测问题类别。这些通常会寻找不同类别的错误，例如无效的内存访问、并发问题（例如数据竞争）或其他未定义的行为（例如整数溢出）。</p>
+<p>这些工具倾向于将内核作为一个整体进行测试，而不是像 kselftest 或 KUnit 测试那样“通过”。通过在启用这些工具的内核上运行测试，它们可以与 KUnit 或 kselftest 结合使用：然后您可以确保在测试期间不会发生这些错误。
+其中一些工具与 KUnit 或 kselftest 集成，如果检测到问题，将自动失败测试。</p>
+<div class="section" id="id4">
+<h3>工具示例<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>kmemleak:检测可能的内存泄漏.https://www.kernel.org/doc/html/latest/dev-tools/kmemleak.html</p></li>
+<li><p>KASAN: 检测无效的内存访问，例如越界和释放后使用错误.https://www.kernel.org/doc/html/latest/dev-tools/kasan.html</p></li>
+<li><p>UBSAN 检测 C 标准未定义的行为，例如整数溢出。<a class="reference external" href="https://www.kernel.org/doc/html/latest/dev-tools/ubsan.html">https://www.kernel.org/doc/html/latest/dev-tools/ubsan.html</a></p></li>
+<li><p>KCSAN 检测数据竞争。请参阅内核并发清理程序 (KCSAN)https://www.kernel.org/doc/html/latest/dev-tools/kcsan.html</p></li>
+<li><p>KFENCE 是一种内存问题的低开销检测器，它比 KASAN 快得多，并且可以在生产中使用。参见内核电子围栏 (KFENCE)https://www.kernel.org/doc/html/latest/dev-tools/kfence.html</p></li>
+<li><p>lockdep 是一个锁定正确性验证器。请参阅 运行时锁定正确性验证器.https://www.kernel.org/doc/html/latest/locking/lockdep-design.html</p></li>
+<li><p>内核中还有其他几个调试工具，其中许多可以在 lib/Kconfig.debug 中找到.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="linux">
+<h2>linux 内核跟踪<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
+<p>/sys/kernel/debug</p>
+<div class="section" id="ftrace-sys-kernel-debug-tracing">
+<h3>ftrace:/sys/kernel/debug/tracing<a class="headerlink" href="#ftrace-sys-kernel-debug-tracing" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="ftrace-sys-kernel-debug-tracing-readme">
+<h3>ftrace配置说明总结：/sys/kernel/debug/tracing/README<a class="headerlink" href="#ftrace-sys-kernel-debug-tracing-readme" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h4>原文：<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text">/sys/kernel/debug/tracing/README</span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141</pre></div></td><td class="code"><div class="highlight"><pre><span></span> tracing mini-HOWTO:
+
+     # echo 0 &gt; tracing_on : quick way to disable tracing
+<span class="hll">     # echo 1 &gt; tracing_on : quick way to re-enable tracing
+</span><span class="hll">
+</span>     Important files:
+             trace                   - The static contents of the buffer
+                                      To clear the buffer write into this file: echo &gt; trace
+             trace_pipe              - A consuming read to see the contents of the buffer
+             current_tracer          - function and latency tracers
+             available_tracers       - list of configured tracers for current_tracer
+             error_log               - error log for failed commands (that support it)
+             buffer_size_kb          - view and modify size of per cpu buffer
+             buffer_total_size_kb    - view total size of all cpu buffers
+
+     trace_clock             -change the clock used to order events
+             local:          Per cpu clock but may not be synced across CPUs
+             global:         Synced across CPUs but slows tracing down.
+             counter:        Not a clock, but just an increment
+             uptime:         Jiffy counter from time of boot
+             perf:           Same clock that perf events use
+             x86-tsc:        TSC cycle counter
+
+     timestamp_mode  -view the mode used to timestamp events
+             delta:   Delta difference against a buffer-wide timestamp
+             absolute:   Absolute (standalone) timestamp
+
+     trace_marker            - Writes into this file writes into the kernel buffer
+
+     trace_marker_raw                - Writes into this file writes binary data into the kernel buffer
+     tracing_cpumask                 - Limit which CPUs to trace
+     instances               - Make sub-buffers with: mkdir instances/foo
+                               Remove sub-buffer with rmdir
+     trace_options           - Set format or modify how tracing happens
+                               Disable an option by prefixing &#39;no&#39; to the
+                               option name
+     saved_cmdlines_size     - echo command number in here to store comm-pid list
+
+     available_filter_functions - list of functions that can be filtered on
+     set_ftrace_filter       - echo function name in here to only trace these
+                               functions
+          accepts: func_full_name or glob-matching-pattern
+          modules: Can select a group via module
+          Format: :mod:&lt;module-name&gt;
+          example: echo :mod:ext3 &gt; set_ftrace_filter
+          triggers: a command to perform when function is hit
+          Format: &lt;function&gt;:&lt;trigger&gt;[:count]
+          trigger: traceon, traceoff
+                   enable_event:&lt;system&gt;:&lt;event&gt;
+                   disable_event:&lt;system&gt;:&lt;event&gt;
+                   stacktrace
+                   snapshot
+                   dump
+                   cpudump
+          example: echo do_fault:traceoff &gt; set_ftrace_filter
+                   echo do_trap:traceoff:3 &gt; set_ftrace_filter
+          The first one will disable tracing every time do_fault is hit
+          The second will disable tracing at most 3 times when do_trap is hit
+            The first time do trap is hit and it disables tracing, the
+            counter will decrement to 2. If tracing is already disabled,
+            the counter will not decrement. It only decrements when the
+            trigger did work
+          To remove trigger without count:
+            echo &#39;!&lt;function&gt;:&lt;trigger&gt; &gt; set_ftrace_filter
+          To remove trigger with a count:
+            echo &#39;!&lt;function&gt;:&lt;trigger&gt;:0 &gt; set_ftrace_filter
+
+     set_ftrace_notrace      - echo function name in here to never trace.
+         accepts: func_full_name, *func_end, func_begin*, *func_middle*
+         modules: Can select a group via module command :mod:
+             Does not accept triggers
+
+     set_ftrace_pid          - Write pid(s) to only function trace those pids
+                                (function)
+     set_ftrace_notrace_pid          - Write pid(s) to not function trace those pids
+                                 (function)
+     set_graph_function      - Trace the nested calls of a function (function_graph)
+     set_graph_notrace       - Do not trace the nested calls of a function (function_graph)
+     max_graph_depth         - Trace a limited depth of nested calls (0 is unlimited)
+
+     snapshot                - Like &#39;trace&#39; but shows the content of the static
+                               snapshot buffer. Read the contents for more
+                               information
+     stack_trace             - Shows the max stack trace when active
+     stack_max_size  - Shows current max stack size that was traced
+                               Write into this file to reset the max size (trigger a
+                               new trace)
+     stack_trace_filter      - Like set_ftrace_filter but limits what stack_trace
+                               traces
+     dynamic_events          - Create/append/remove/show the generic dynamic events
+                               Write into this file to define/undefine new trace events.
+     kprobe_events           - Create/append/remove/show the kernel dynamic events
+                               Write into this file to define/undefine new trace events.
+     uprobe_events           - Create/append/remove/show the userspace dynamic events
+                               Write into this file to define/undefine new trace events.
+             accepts: event-definitions (one definition per line)
+             Format: p[:[&lt;group&gt;/]&lt;event&gt;] &lt;place&gt; [&lt;args&gt;]
+                 r[maxactive][:[&lt;group&gt;/]&lt;event&gt;] &lt;place&gt; [&lt;args&gt;]
+                        -:[&lt;group&gt;/]&lt;event&gt;
+             place: [&lt;module&gt;:]&lt;symbol&gt;[+&lt;offset&gt;]|&lt;memaddr&gt;
+             place (kretprobe): [&lt;module&gt;:]&lt;symbol&gt;[+&lt;offset&gt;]%return|&lt;memaddr&gt;
+             place (uprobe): &lt;path&gt;:&lt;offset&gt;[%return][(ref_ctr_offset)]
+             args: &lt;name&gt;=fetcharg[:type]
+             fetcharg: %&lt;register&gt;, @&lt;address&gt;, @&lt;symbol&gt;[+|-&lt;offset&gt;],
+                       $stack&lt;index&gt;, $stack, $retval, $comm, $arg&lt;N&gt;,
+                        +|-[u]&lt;offset&gt;(&lt;fetcharg&gt;), \imm-value, \&quot;imm-string&quot;
+             type: s8/16/32/64, u8/16/32/64, x8/16/32/64, string, symbol,
+                        b&lt;bit-width&gt;@&lt;bit-offset&gt;/&lt;container-size&gt;, ustring,
+                 &lt;type&gt;\[&lt;array-size&gt;\]
+
+     events/         - Directory containing all trace event subsystems:
+             enable          - Write 0/1 to enable/disable tracing of all events
+     events/&lt;system&gt;/        - Directory containing all trace events for &lt;system&gt;:
+             enable          - Write 0/1 to enable/disable tracing of all &lt;system&gt;
+                               events
+             filter          - If set, only events passing filter are traced
+     events/&lt;system&gt;/&lt;event&gt;/        - Directory containing control files for &lt;event&gt;:
+             enable          - Write 0/1 to enable/disable tracing of &lt;event&gt;
+             filter          - If set, only events passing filter are traced
+             trigger         - If set, a command to perform when event is hit
+                     Format: &lt;trigger&gt;[:count][if &lt;filter&gt;]
+                     trigger: traceon, traceoff
+                             enable_event:&lt;system&gt;:&lt;event&gt;
+                             disable_event:&lt;system&gt;:&lt;event&gt;
+                             stacktrace
+                             snapshot
+                     example: echo traceoff &gt; events/block/block_unplug/trigger
+                             echo traceoff:3 &gt; events/block/block_unplug/trigger
+                             echo &#39;enable_event:kmem:kmalloc:3 if nr_rq &gt; 1&#39; &gt; \
+                                     events/block/block_unplug/trigger
+                     The first disables tracing every time block_unplug is hit.
+                     The second disables tracing the first 3 times block_unplug is hit.
+                     The third enables the kmalloc event the first 3 times block_unplug
+                     is hit and has value of greater than 1 for the &#39;nr_rq&#39; event field.
+                     Like function triggers, the counter is only decremented if it
+                      enabled or disabled tracing.
+                     To remove a trigger without a count:
+                       echo &#39;!&lt;trigger&gt; &gt; &lt;system&gt;/&lt;event&gt;/trigger
+                     To remove a trigger with a count:
+                       echo &#39;!&lt;trigger&gt;:0 &gt; &lt;system&gt;/&lt;event&gt;/trigger
+                     Filters can be ignored when removing a trigger.
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>中文：
+追踪迷你HOWTO：</p>
+<p># echo 0 &gt; tracking_on : 禁用跟踪的快速方法</p>
+<p># echo 1 &gt; tracking_on : 重新启用跟踪的快速方法</p>
+<p>重要文件：
+trace - 缓冲区的静态内容</p>
+<p>清除缓冲区写入此文件：echo &gt; trace</p>
+<p>trace_pipe - 用于查看缓冲区内容的消耗性读取</p>
+<p>current_tracer - 函数和延迟跟踪器</p>
+<p>available_tracers - current_tracer 的已配置跟踪器列表</p>
+<p>error_log - 失败命令的错误日志（支持它）</p>
+<p>buffer_size_kb - 查看和修改每个 cpu 缓冲区的大小</p>
+<p>buffer_total_size_kb - 查看所有 cpu 缓冲区的总大小</p>
+<p>trace_clock - 更改用于排序事件的时钟</p>
+<p>本地：每个 cpu 时钟，但可能不会跨 CPU 同步</p>
+<p>全局：跨 CPU 同步，但会减慢跟踪速度。</p>
+<p>计数器：不是时钟，只是一个增量</p>
+<p>正常运行时间：从启动时间开始的 Jiffy 计数器</p>
+<p>perf：与 perf 事件使用的时钟相同</p>
+<p>x86-tsc：TSC 周期计数器</p>
+<p>timestamp_mode -查看用于时间戳事件的模式</p>
+<p>delta：与缓冲区范围时间戳的差异</p>
+<p>absolute：绝对（独立）时间戳</p>
+<p>trace_marker - 写入此文件写入内核缓冲区</p>
+<p>trace_marker_raw - 写入此文件将二进制数据写入内核缓冲区</p>
+<p>tracking_cpumask - 限制要跟踪的 CPU</p>
+<p>实例 - 使用： mkdir instances/foo 创建子缓冲区</p>
+<p>使用 rmdir 删除子缓冲区</p>
+<p>trace_options - 设置格式或修改跟踪的发生方式</p>
+<p>通过在前面加上“no”来禁用选项</p>
+<p>选项名称</p>
+<p>saved_cmdlines_size - 在此处回显命令号以存储 comm-pid 列表</p>
+<p>available_filter_functions - 可以过滤的函数列表</p>
+<p>set_ftrace_filter - 在此处回显函数名称以仅跟踪这些</p>
+<p>职能</p>
+<p>接受：func_full_name 或 glob-matching-pattern</p>
+<p>模块：可以通过模块选择一个组</p>
+<p>格式：:mod:&lt;模块名称&gt;</p>
+<p>示例：echo :mod:ext3 &gt; set_ftrace_filter</p>
+<p>triggers：触发函数时执行的命令</p>
+<p>格式：&lt;函数&gt;:&lt;触发器&gt;[:count]</p>
+<p>触发器：traceon，traceoff</p>
+<p>enable_event:&lt;系统&gt;:&lt;事件&gt;</p>
+<p>disable_event:&lt;系统&gt;:&lt;事件&gt;</p>
+<p>堆栈跟踪</p>
+<p>快照</p>
+<p>倾倒</p>
+<p>cpu转储</p>
+<p>示例：echo do_fault:traceoff &gt; set_ftrace_filter</p>
+<p>echo do_trap:traceoff:3 &gt; set_ftrace_filter</p>
+<p>第一个将在每次 do_fault 被命中时禁用跟踪</p>
+<p>当 do_trap 被击中时，第二个将禁用跟踪最多 3 次</p>
+<p>第一次 do 陷阱被击中并禁用跟踪，</p>
+<p>计数器将递减到 2。如果跟踪已被禁用，</p>
+<p>计数器不会递减。只有当</p>
+<p>触发器确实有效</p>
+<p>要删除触发器而不计数：</p>
+<p>echo ‘!&lt;function&gt;:&lt;trigger&gt; &gt; set_ftrace_filter</p>
+<p>要删除带有计数的触发器：</p>
+<p>echo ‘!&lt;function&gt;:&lt;trigger&gt;:0 &gt; set_ftrace_filter</p>
+<p>set_ftrace_notrace - 在此处回显函数名称以从不跟踪。</p>
+<p>接受：func_full_name、func_end、func_begin、func_middle</p>
+<p>模块：可以通过模块命令选择一个组：mod：</p>
+<p>不接受触发器</p>
+<p>set_ftrace_pid - 写入 pid(s) 以仅跟踪这些 pid</p>
+<p>（功能）</p>
+<p>set_ftrace_notrace_pid - 写入 pid(s) 以不跟踪这些 pid</p>
+<p>（功能）</p>
+<p>set_graph_function - 跟踪函数的嵌套调用 (function_graph)</p>
+<p>set_graph_notrace - 不跟踪函数的嵌套调用 (function_graph)</p>
+<p>max_graph_depth - 跟踪嵌套调用的有限深度（0 是无限的）</p>
+<p>快照 - 类似于“跟踪”，但显示静态内容</p>
+<p>快照缓冲区。阅读内容了解更多</p>
+<p>信息</p>
+<p>stack_trace - 活动时显示最大堆栈跟踪</p>
+<p>stack_max_size - 显示当前跟踪的最大堆栈大小</p>
+<p>写入此文件以重置最大大小（触发</p>
+<p>新的痕迹）</p>
+<p>stack_trace_filter - 与 set_ftrace_filter 类似，但限制了 stack_trace 的内容</p>
+<p>痕迹</p>
+<p>dynamic_events - 创建/附加/删除/显示通用动态事件</p>
+<p>写入此文件以定义/取消定义新的跟踪事件。</p>
+<p>kprobe_events - 创建/附加/删除/显示内核动态事件</p>
+<p>写入此文件以定义/取消定义新的跟踪事件。</p>
+<p>uprobe_events - 创建/附加/删除/显示用户空间动态事件</p>
+<p>写入此文件以定义/取消定义新的跟踪事件。</p>
+<p>接受：事件定义（每行一个定义）</p>
+<p>格式：p[:[&lt;group&gt;/]&lt;event&gt;] &lt;place&gt; [&lt;args&gt;]</p>
+<p>r[maxactive][:[&lt;group&gt;/]&lt;event&gt;] &lt;place&gt; [&lt;args&gt;]</p>
+<p>-:[&lt;组&gt;/]&lt;事件&gt;</p>
+<p>地点：[&lt;模块&gt;:]&lt;符号&gt;[+&lt;偏移&gt;]|&lt;memaddr&gt;</p>
+<p>位置（kretprobe）：[&lt;module&gt;:]&lt;symbol&gt;[+&lt;offset&gt;]%return|&lt;memaddr&gt;</p>
+<p>地点（uprobe）：&lt;path&gt;:&lt;offset&gt;[%return][(ref_ctr_offset)]</p>
+<p>参数：&lt;名称&gt;=fetcharg[:type]</p>
+<p>fetcharg: %&lt;register&gt;, &#64;&lt;address&gt;, &#64;&lt;symbol&gt;[+|-&lt;offset&gt;],</p>
+<p>$stack&lt;index&gt;, $stack, $retval, $comm, $arg&lt;N&gt;,</p>
+<p>+|-[u]&lt;offset&gt;(&lt;fetcharg&gt;), imm-value, “imm-string”</p>
+<p>类型：s8/16/32/64、u8/16/32/64、x8/16/32/64、字符串、符号、</p>
+<p>b&lt;bit-width&gt;&#64;&lt;bit-offset&gt;/&lt;container-size&gt;, ustring,</p>
+<p>&lt;类型&gt;[&lt;数组大小&gt;]</p>
+<p>events/ - 包含所有跟踪事件子系统的目录：</p>
+<p>enable - 写入 0/1 以启用/禁用所有事件的跟踪</p>
+<p>events/&lt;system&gt;/ - 包含 &lt;system&gt; 的所有跟踪事件的目录：</p>
+<p>enable - 写入 0/1 以启用/禁用所有 &lt;system&gt; 的跟踪</p>
+<p>事件</p>
+<p>filter - 如果设置，则仅跟踪通过过滤器的事件</p>
+<p>events/&lt;system&gt;/&lt;event&gt;/ - 包含 &lt;event&gt; 控制文件的目录：</p>
+<p>enable - 写入 0/1 以启用/禁用 &lt;event&gt; 的跟踪</p>
+<p>filter - 如果设置，则仅跟踪通过过滤器的事件</p>
+<p>trigger - 如果设置，当事件被触发时执行的命令</p>
+<p>格式：&lt;trigger&gt;[:count][if &lt;filter&gt;]</p>
+<p>触发器：traceon，traceoff</p>
+<p>enable_event:&lt;系统&gt;:&lt;事件&gt;</p>
+<p>disable_event:&lt;系统&gt;:&lt;事件&gt;</p>
+<p>堆栈跟踪</p>
+<p>快照</p>
+<p>示例：回显跟踪 &gt; 事件/块/block_unplug/触发器</p>
+<p>echo traceoff:3 &gt; 事件/块/block_unplug/触发器</p>
+<p>echo ‘enable_event:kmem:kmalloc:3 if nr_rq &gt; 1’ &gt;</p>
+<p>事件/块/block_unplug/触发器</p>
+<p>第一个在每次 block_unplug 被命中时禁用跟踪。</p>
+<p>第二个禁用跟踪前 3 次 block_unplug 被命中。</p>
+<p>第三个启用kmalloc事件前3次block_unplug</p>
+<p>被击中并且“nr_rq”事件字段的值大于 1。</p>
+<p>与函数触发器一样，计数器仅在</p>
+<p>启用或禁用跟踪。</p>
+<p>要删除没有计数的触发器：</p>
+<p>echo ‘!&lt;trigger&gt; &gt; &lt;system&gt;/&lt;event&gt;/trigger</p>
+<p>要删除带有计数的触发器：</p>
+<p>echo ‘!&lt;trigger&gt;:0 &gt; &lt;system&gt;/&lt;event&gt;/trigger</p>
+<p>删除触发器时可以忽略过滤器。</p>
+</div>
+</div>
+<div class="section" id="ftrace">
+<h3>ftrace实现框架及原理分析<a class="headerlink" href="#ftrace" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="demo">
+<h3>参考demo<a class="headerlink" href="#demo" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>内核补丁<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://www.kernel.org/doc/html/latest/dev-tools/checkpatch.html">https://www.kernel.org/doc/html/latest/dev-tools/checkpatch.html</a></p>
+</div>
+<div class="section" id="id7">
+<h2>linux 内核性能测试<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id8">
+<h2>linux 内核调试编程<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id9">
+<h2>内核模块调试<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id10">
+<h2>linux 内核测试协议<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="linux-rtla">
+<h2>linux 实时分析工具：rtla<a class="headerlink" href="#linux-rtla" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="lk_comp/comp_bin_tool.html" class="btn btn-neutral float-left" title="二进制工具" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kernel_debug_ig.html" class="btn btn-neutral float-right" title="kernel debug 实验记录" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

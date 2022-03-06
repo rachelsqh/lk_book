@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux内核跟踪点 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>linux内核跟踪点</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/lk_code_base/kernel_base/trace/tracepoint.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux">
+<h1>linux内核跟踪点<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
+<p>本文档介绍 Linux 内核跟踪点及其使用。它提供了如何在内核中插入跟踪点并将探测函数连接到它们的示例，并提供了一些探测函数的示例。</p>
+<div class="section" id="id1">
+<h2>应用场景<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>放置在代码中的跟踪点提供了一个挂钩来调用您可以在运行时提供的函数（探针）。跟踪点可以是“开启”（探针连接到它）或“关闭”（没有连接探针）。当跟踪点“关闭”时，它没有任何影响，除了添加微小的时间损失（检查分支的条件）和空间损失（在检测函数的末尾为函数调用添加几个字节并添加数据结构在一个单独的部分）。当跟踪点“打开”时，每次执行跟踪点时都会在调用者的执行上下文中调用您提供的函数。当提供的函数结束执行时，它返回给调用者（从跟踪点站点继续）。可以在代码中的重要位置放置跟踪点。它们是轻量级的钩子，可以传递任意数量的参数，这些参数的原型在头文件中的跟踪点声明中描述。</p>
+</div>
+<div class="section" id="id2">
+<h2>原理描述<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>跟踪点需要两个元素：
+- 跟踪点定义，放置在头文件中。</p>
+<ul class="simple">
+<li><p>跟踪点语句，在 C 代码中。</p></li>
+</ul>
+<p>为了使用跟踪点，您应该包含 linux/tracepoint.h。</p>
+<p>在 include/trace/events/subsys.h 中：</p>
+<p>#undef TRACE_SYSTEM
+#define TRACE_SYSTEM subsys</p>
+<p>#if !defined(_TRACE_SUBSYS_H) || defined(TRACE_HEADER_MULTI_READ)
+#define _TRACE_SUBSYS_H</p>
+<p>#include &lt;linux/tracepoint.h&gt;</p>
+<dl class="simple">
+<dt>DECLARE_TRACE(subsys_eventname,</dt><dd><p>TP_PROTO(int firstarg, struct task_struct <a href="#id3"><span class="problematic" id="id4">*</span></a>p),
+TP_ARGS(firstarg, p));</p>
+</dd>
+</dl>
+<p>#endif /* _TRACE_SUBSYS_H <a href="#id5"><span class="problematic" id="id6">*</span></a>/</p>
+<p>/* This part must be outside protection <a href="#id7"><span class="problematic" id="id8">*</span></a>/
+#include &lt;trace/define_trace.h&gt;</p>
+<p>在 subsys/file.c 中（必须添加跟踪语句）：</p>
+<p>#include &lt;trace/events/subsys.h&gt;</p>
+<p>#define CREATE_TRACE_POINTS
+DEFINE_TRACE(subsys_eventname);</p>
+<p>void somefct(void)
+{</p>
+<blockquote>
+<div><p>…
+trace_subsys_eventname(arg, task);
+…</p>
+</div></blockquote>
+<p>}</p>
+<ul>
+<li><p>subsys_eventname 是您的事件唯一的标识符</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>subsys 是您的子系统的名称。</p></li>
+<li><p>eventname 是要跟踪的事件的名称。</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>TP_PROTO(int firstarg, struct task_struct <a href="#id9"><span class="problematic" id="id10">*</span></a>p)是此跟踪点调用的函数的原型。</p></li>
+<li><p>TP_ARGS(firstarg, p)是参数名称，与原型中的相同。</p></li>
+<li><p>如果在多个源文件中使用标题，#define CREATE_TRACE_POINTS 应该只出现在一个源文件中。</p></li>
+</ul>
+<p>将函数（探针）连接到跟踪点是通过 register_trace_subsys_eventname() 为特定跟踪点提供探针（要调用的函数）来完成的。删除探针是通过 unregister_trace_subsys_eventname(); 它将移除探头。</p>
+<p>tracepoint_synchronize_unregister() 必须在模块退出函数结束之前调用，以确保没有调用者使用探针。这一点，以及在探测调用周围禁用抢占的事实，确保探测移除和模块卸载是安全的。</p>
+<p>跟踪点机制支持插入同一跟踪点的多个实例，但必须在整个内核中对给定的跟踪点名称进行单一定义，以确保不会发生类型冲突。跟踪点的名称修改是使用原型完成的，以确保键入正确。编译器在注册站点验证探针类型的正确性。跟踪点可以放在内联函数、内联静态函数、展开循环以及常规函数中。</p>
+<p>此处建议命名方案“subsys_event”作为旨在限制冲突的约定。跟踪点名称对内核来说是全局的：无论它们是在核心内核映像中还是在模块中，它们都被认为是相同的。</p>
+<p>如果必须在内核模块中使用跟踪点，可以使用 EXPORT_TRACEPOINT_SYMBOL_GPL() 或 EXPORT_TRACEPOINT_SYMBOL() 来导出定义的跟踪点。</p>
+<p>如果您需要为跟踪点参数做一些工作，并且该工作仅用于跟踪点，则可以使用以下内容将该工作封装在 if 语句中：</p>
+<dl>
+<dt>if (trace_foo_bar_enabled()) {</dt><dd><p>int i;
+int tot = 0;</p>
+<dl class="simple">
+<dt>for (i = 0; i &lt; count; i++)</dt><dd><p>tot += calculate_nuggets();</p>
+</dd>
+</dl>
+<p>trace_foo_bar(tot);</p>
+</dd>
+</dl>
+<p>}</p>
+<p>所有 trace_&lt;tracepoint&gt;() 调用都定义了一个匹配的 trace_&lt;tracepoint&gt;_enabled() 函数，如果启用了跟踪点，则返回 true，否则返回 false。trace_&lt;tracepoint&gt;() 应该始终在 if (trace_&lt;tracepoint&gt;_enabled()) 的块内，以防止启用跟踪点和看到检查之间的竞争。</p>
+<p>使用 trace_&lt;tracepoint&gt;_enabled() 的好处是它使用了 tracepoint 的 static_key 来允许使用跳转标签来实现 if 语句并避免条件分支。</p>
+<p>注意：便利宏 TRACE_EVENT 提供了另一种定义跟踪点的方法。查看http://lwn.net/Articles/379903、 <a class="reference external" href="http://lwn.net/Articles">http://lwn.net/Articles</a>/381064和http://lwn.net/Articles/383362 以获取更详细的系列文章。</p>
+<p>如果您需要从头文件调用跟踪点，不建议直接调用或使用 trace_&lt;tracepoint&gt;_enabled() 函数调用，因为如果文件中包含头文件，则头文件中的跟踪点可能会产生副作用设置了 CREATE_TRACE_POINTS 以及 trace_&lt;tracepoint&gt;() 不是那么小，如果被其他内联函数使用，可能会使内核膨胀。相反，包括 tracepoint-defs.h 并使用 tracepoint_enabled()。</p>
+<p>在 C 文件中：</p>
+<p>void do_trace_foo_bar_wrapper(args)
+{</p>
+<blockquote>
+<div><p>trace_foo_bar(args);</p>
+</div></blockquote>
+<p>}</p>
+<p>在头文件中：</p>
+<p>DECLARE_TRACEPOINT(foo_bar);</p>
+<p>static inline void some_inline_function()
+{</p>
+<blockquote>
+<div><p>[..]
+if (tracepoint_enabled(foo_bar))</p>
+<blockquote>
+<div><p>do_trace_foo_bar_wrapper(args);</p>
+</div></blockquote>
+<p>[..]</p>
+</div></blockquote>
+<p>}</p>
+</div>
+<div class="section" id="id11">
+<h2>总结：<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+<p>静态插入点流程：</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

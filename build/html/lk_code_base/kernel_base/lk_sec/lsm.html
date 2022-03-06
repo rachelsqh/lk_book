@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux security子系统 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cpu.html">cpu管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../driver.html">设备驱动</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../uboot.html">uboot理解</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>linux security子系统</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/lk_code_base/kernel_base/lk_sec/lsm.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux-security">
+<h1>linux security子系统<a class="headerlink" href="#linux-security" title="Permalink to this headline">¶</a></h1>
+<p>不能以模块形式出现,全部集成在内核中.</p>
+<p>静态hook,跟trace静态插桩部分是一样一样的.LSM不是一种策略,只是一种实现机制,一种框架,在其基础上可以实现策略.</p>
+<div class="section" id="lsm-linux-hooks">
+<h2>LSM模块：linux 通用安全hooks<a class="headerlink" href="#lsm-linux-hooks" title="Permalink to this headline">¶</a></h2>
+<p>其他安全策略都基于LSM进行实现.</p>
+<p>DEFINE_LSM():将加载hook放入特定的节.系统启动时会执行hook加载动作.运行过程中在桩点调用触发函数,运行特定位置的hook函数.</p>
+<img alt="../../../_images/lsm.svg" class="align-center" src="../../../_images/lsm.svg" /><p>selinux,smack tomoyo yama等均通过lsm(DEFINE_LSM)实现,没有例外.其中也夹杂了协议过滤部分.</p>
+<p>其中静态插桩点定义可以参考:include/linux/lsm_hook_defs.h</p>
+<p>调用函数封装: security/security.c</p>
+<p>策略注册: DEFINE_LSM</p>
+<p>我们以 kernel/schdule/core.c  系统掉调用sched_getparam为例:</p>
+<p>sched_getparam –&gt; security_task_getscheduler –&gt;call_int_hook(task_getscheduler)</p>
+<p>call_int_hook定义如下:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">enum kobject_action</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define call_int_hook(FUNC, IRC, ...) ({                        \</span>
+<span class="cp">        int RC = IRC;                                           \</span>
+<span class="cp">        do {                                                    \</span>
+<span class="hll"><span class="cp">                struct security_hook_list *P;                   \</span>
+</span><span class="hll"><span class="cp">                                                        \</span>
+</span><span class="cp">                hlist_for_each_entry(P, &amp;security_hook_heads.FUNC, list) { \</span>
+<span class="cp">                        RC = P-&gt;hook.FUNC(__VA_ARGS__);         \</span>
+<span class="cp">                        if (RC != 0)                            \</span>
+<span class="cp">                                break;                          \</span>
+<span class="cp">                }                                               \</span>
+<span class="cp">        } while (0);                                            \</span>
+<span class="cp">        RC;                                                     \</span>
+<span class="cp">})</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>要想在这个位置执行我们的安全策略,可以做如下操作(借用selinux代码:</p>
+</div>
+<div class="section" id="lsm">
+<h2>LSM模块开发<a class="headerlink" href="#lsm" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="landlock-lsm">
+<h2>Landlock LSM<a class="headerlink" href="#landlock-lsm" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

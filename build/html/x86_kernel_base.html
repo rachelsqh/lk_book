@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux X86内核基础 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="linux 内核基础代码分析" href="lk_code/index.html" />
+    <link rel="prev" title="曲线图-gnuplot" href="lk_devel/gnuplot.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">linux X86内核基础</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#x86">x86通用基础架构(硬件）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">linux/x86启动协议总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">X86功能标志</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">x86拓扑</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">内核级异常处理</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id6">硬件原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">软件处理</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">内核栈</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#entry">内核entry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#orc-unwinder">ORC unwinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">零页面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tlb">TLB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mtrr">mtrr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pat">PAT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#linux-iommu">linux IOMMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#intel-r-txt">Intel(R) TXT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#amd">AMD内存加密</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pti">页表隔离（PTI）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mds">mds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#intel-microcode">intel microcode 加载</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#intel-r-rdt">Intel(R) RDT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tsx-async-abort-taa-mitigation">TSX Async Abort (TAA) mitigation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id10">总线锁检测与处理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#io-apic">IO-APIC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#x86-64">x86_64支持</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sva">SVA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sgx">SGX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id11">x86架构的特性状态</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#x86-elf">x86 特定的 ELF 辅助向量</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xstate">在用户空间应用程序中使用 XSTATE 特性</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xtensa">Xtensa架构总结</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>linux X86内核基础</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/x86_kernel_base.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux-x86">
+<h1>linux X86内核基础<a class="headerlink" href="#linux-x86" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="x86">
+<h2>x86通用基础架构(硬件）<a class="headerlink" href="#x86" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id1">
+<h2>linux/x86启动协议总结<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id2">
+<h2>设备树<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id3">
+<h2>X86功能标志<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id4">
+<h2>x86拓扑<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id5">
+<h2>内核级异常处理<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h3>硬件原理<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id7">
+<h3>软件处理<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id8">
+<h2>内核栈<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="entry">
+<h2>内核entry<a class="headerlink" href="#entry" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="orc-unwinder">
+<h2>ORC unwinder<a class="headerlink" href="#orc-unwinder" title="Permalink to this headline">¶</a></h2>
+<p>与objtool关系</p>
+</div>
+<div class="section" id="id9">
+<h2>零页面<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="tlb">
+<h2>TLB<a class="headerlink" href="#tlb" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="mtrr">
+<h2>mtrr<a class="headerlink" href="#mtrr" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="pat">
+<h2>PAT<a class="headerlink" href="#pat" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="linux-iommu">
+<h2>linux IOMMU<a class="headerlink" href="#linux-iommu" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="intel-r-txt">
+<h2>Intel(R) TXT<a class="headerlink" href="#intel-r-txt" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="amd">
+<h2>AMD内存加密<a class="headerlink" href="#amd" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="pti">
+<h2>页表隔离（PTI）<a class="headerlink" href="#pti" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="mds">
+<h2>mds<a class="headerlink" href="#mds" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="intel-microcode">
+<h2>intel microcode 加载<a class="headerlink" href="#intel-microcode" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="intel-r-rdt">
+<h2>Intel(R) RDT<a class="headerlink" href="#intel-r-rdt" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="tsx-async-abort-taa-mitigation">
+<h2>TSX Async Abort (TAA) mitigation<a class="headerlink" href="#tsx-async-abort-taa-mitigation" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id10">
+<h2>总线锁检测与处理<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="io-apic">
+<h2>IO-APIC<a class="headerlink" href="#io-apic" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="x86-64">
+<h2>x86_64支持<a class="headerlink" href="#x86-64" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="sva">
+<h2>SVA<a class="headerlink" href="#sva" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="sgx">
+<h2>SGX<a class="headerlink" href="#sgx" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id11">
+<h2>x86架构的特性状态<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="x86-elf">
+<h2>x86 特定的 ELF 辅助向量<a class="headerlink" href="#x86-elf" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="xstate">
+<h2>在用户空间应用程序中使用 XSTATE 特性<a class="headerlink" href="#xstate" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="xtensa">
+<h2>Xtensa架构总结<a class="headerlink" href="#xtensa" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="lk_devel/gnuplot.html" class="btn btn-neutral float-left" title="曲线图-gnuplot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lk_code/index.html" class="btn btn-neutral float-right" title="linux 内核基础代码分析" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

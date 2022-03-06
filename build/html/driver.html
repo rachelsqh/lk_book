@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>设备驱动 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="进程管理" href="ps.html" />
+    <link rel="prev" title="cpu管理" href="cpu.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpu.html">cpu管理</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">设备驱动</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#linux">linux设备架构：</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">驱动的绑定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">总线类型</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">设备驱动程序设计模式</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#struct-device">基本设备结构:struct device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#devres">devres-管理设备资源</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#struct-device-driver">设备驱动程序: struct device_driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">linux 内核设备模型</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">平台设备和驱动程序</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>设备驱动</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/driver.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>设备驱动<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="linux">
+<h2>linux设备架构：<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h3>驱动的绑定<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>驱动绑定：设备与控制它的设备驱动程序相关联的过程。绑定动作一般由总线驱动来实现。</p></li>
+<li><p>总线：总线类型的结构包含系统中总线类型相同的设备列表，当调用device_register时将设备数据插入这个列表。总线结构中还包含一个驱动程序列表，当驱动程序调用driver_register函数时，将驱动插入驱动程序类表末尾，这两种事件会触发设备与驱动程序的绑定：
+- device_register:查找匹配的驱动，通过设备ID进行匹配。这个ID的格式和语义依赖总线进行实现。由总线驱动程序提供回调函数实现ID的匹配比较，成功返回1,否则为0：int match(struct device * dev, struct device_driver * drv);如果找到了匹配的设备驱动，将 设备的驱动指针只想匹配的驱动结构，并调用驱动程序的probe回调函数。驱动程序对硬件状态进行检查，并对其工作状态进行初始化。
+- driver_register原理同上。</p></li>
+<li><p>设备类：完成探测后设备注册所属的类。设备驱动只能属于一个类，在驱动结构的devclass中进行设置。在执行类中的register_dev回调函数时调用devclass_add_device来枚举类中的设备，并最终将设备注册为某个类。</p></li>
+<li><p>驱动：当一个驱动匹配到一个设备，设备的结构会插入到驱动结构中的设备列表中。一个设备只能有一个驱动程序，如果已经匹配了要跳过。</p></li>
+<li><p>sysfs文件：在总线的“设备”目录中创建一个符号链接，该链接指向物理层次结构中的设备目录。在驱动程序的“设备”目录中创建了一个符号链接，该链接指向物理层次结构中的设备目录。设备的目录在类的目录中创建。在该目录中创建一个符号链接，指向设备在 sysfs 树中的物理位置。可以在设备的物理目录中创建指向其类目录或类的顶级目录的符号链接（尽管这还没有完成）。也可以创建一个指向其驱动程序的目录。</p></li>
+<li><p>移除：
+- 当设备移除时，对应引用数会变成0。当引用计数为0时，驱动调用remove回调函数。将设备结构从驱动结构的设备列表中去除，并将驱动的应用计数减1.同时删除两者之间的符号链接。
+- 当驱动移除时，将对驱动结构的设备列表进行迭代处理，并针对每个设备调用驱动程序的remove回调函数。将设备结构从驱动结构的设备列表中删除并删除两者间的符号文件。</p></li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h3>总线类型<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>内核为每类如PCI,USB等设备声明一个静态的总线类型的对象。必须指定名字，可选择性初始化其match回调函数。</p>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text">pci_bus_type</span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span>struct bus_type pci_bus_type = {
+       .name = &quot;pci&quot;,
+       .match        = pci_bus_match,
+};
+
+extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，供驱动程序使用。
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul>
+<li><p>注册：总线驱动初始化时，调用bus_register来初始化总线对象中的剩余域并将总线对象插入总线类型的全局列表中（struct bus_type的结构列表）。总线对象注册后，总线驱动就可以使用其中的字段。</p></li>
+<li><p>回调：match:匹配驱动程序和设备。匹配引用的ID结构特定于总线实现。驱动程序通常会生命它们支持的设备的设备ID组，并保存在驱动结构中。</p></li>
+<li><p>设备和驱动程序列表 ：分别是 struct devices 和 struct device_drivers 的列表。总线驱动可以自由使用这些列表。使用前可能主要转换为特定的类型（这句话不是很准确？）.
+两种列表的迭代函数：（注意：需要确认函数名字？？？？？）
+- bus_for_each_dev 函数：</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">bus_for_each_dev 函数</span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">bus_for_each_dev</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span> <span class="n">bus</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">start</span><span class="p">,</span>
+                             <span class="kt">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">,</span>
+                             <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="p">));</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+<ul>
+<li><p>bus_for_each_drv函数：</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text">bus_for_each_dev 函数</span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">bus_for_each_drv</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span> <span class="n">bus</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">device_driver</span> <span class="o">*</span> <span class="n">start</span><span class="p">,</span>
+     <span class="kt">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">,</span> <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">device_driver</span> <span class="o">*</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="p">));</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<p>这两个函数遍历相应的列表，并为列表中的每个设备或驱动程序调用回调。所有列表访问都是通过获取总线的锁（当前读取）来同步的。列表中每个对象的引用计数在调用回调之前递增；在获得下一个对象后递减。调用回调时不持有锁。</p>
+</li>
+<li><p>sysfs</p></li>
+</ul>
+<p>有一个名为“bus”的顶级目录。每条总线在总线目录中都有一个目录，以及两个默认目录：</p>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text">tree /sys/bus/pci</span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span>/sys/bus/pci/
+|-- devices
+`-- drivers
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>在总线上注册的驱动程序会在总线的驱动程序目录中获得一个目录：</p>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text">tree /sys/bus/pci</span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span>/sys/bus/pci/
+|-- devices
+`-- drivers
+    |-- Intel ICH
+    |-- Intel ICH Joystick
+    |-- agpgart
+    `-- e100
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>在该类型的总线上发现的每个设备都会在总线的设备目录中获得指向物理层次结构中设备目录的符号链接：</p>
+<div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-text">tree /sys/bus/pci</span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span>/sys/bus/pci/
+|-- devices
+|   |-- 00:00.0 -&gt; ../../../root/pci0/00:00.0
+|   |-- 00:01.0 -&gt; ../../../root/pci0/00:01.0
+|   `-- 00:02.0 -&gt; ../../../root/pci0/00:02.0
+`-- drivers
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>导出属性</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id17">
+<div class="code-block-caption"><span class="caption-text">struct bus_attribute</span><a class="headerlink" href="#id17" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">bus_attribute</span> <span class="p">{</span>
+      <span class="k">struct</span> <span class="nc">attribute</span>        <span class="n">attr</span><span class="p">;</span>
+      <span class="kt">ssize_t</span> <span class="p">(</span><span class="o">*</span><span class="n">show</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">buf</span><span class="p">);</span>
+      <span class="kt">ssize_t</span> <span class="p">(</span><span class="o">*</span><span class="n">store</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>总线驱动程序可以使用与设备的 DEVICE_ATTR_RW 宏类似的 BUS_ATTR_RW 宏导出属性。例如，这样的定义：</p>
+<div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-text">BUS_ATTR_RW</span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>static BUS_ATTR_RW(debug);等价于 static bus_attribute bus_attr_debug;
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>然后可以使用以下命令在总线的 sysfs 目录中添加和删除属性：</p>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-text">添加/删除属性</span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">bus_create_file</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">bus_attribute</span> <span class="o">*</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">bus_remove_file</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">bus_attribute</span> <span class="o">*</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h3>设备驱动程序设计模式<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>常见的设计模式</p>
+<dl class="simple">
+<dt>1.状态容器;</dt><dd><p>虽然内核包含一些设备驱动程序，它们假设它们只会在某个系统（单例）上被探测（）一次，但通常假设驱动程序绑定到的设备将出现在多个实例中。这意味着 probe() 函数和所有回调都需要可重入。最常见的实现方式是使用状态容器设计模式。它通常有这种形式：</p>
+</dd>
+</dl>
+<div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-text">demo代码</span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="n">irqreturn_t</span> <span class="n">foo_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">irq</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="nc">foo</span> <span class="o">*</span><span class="n">foo</span> <span class="o">=</span> <span class="n">arg</span><span class="p">;</span>
+    <span class="p">(...)</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">foo_probe</span><span class="p">(...)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="nc">foo</span> <span class="o">*</span><span class="n">foo</span><span class="p">;</span>
+
+    <span class="p">(...)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">request_irq</span><span class="p">(</span><span class="n">irq</span><span class="p">,</span> <span class="n">foo_handler</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="n">foo</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>2.container_of();</p>
+<p>添加一个卸载的工作：</p>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-text">demo代码</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">foo</span> <span class="p">{</span>
+    <span class="n">spinlock_t</span> <span class="n">lock</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="nc">workqueue_struct</span> <span class="o">*</span><span class="n">wq</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="nc">work_struct</span> <span class="n">offload</span><span class="p">;</span>
+    <span class="p">(...)</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">foo_work</span><span class="p">(</span><span class="k">struct</span> <span class="nc">work_struct</span> <span class="o">*</span><span class="n">work</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="nc">foo</span> <span class="o">*</span><span class="n">foo</span> <span class="o">=</span> <span class="n">container_of</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">foo</span><span class="p">,</span> <span class="n">offload</span><span class="p">);</span>
+
+    <span class="p">(...)</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="n">irqreturn_t</span> <span class="n">foo_handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">irq</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="nc">foo</span> <span class="o">*</span><span class="n">foo</span> <span class="o">=</span> <span class="n">arg</span><span class="p">;</span>
+
+    <span class="n">queue_work</span><span class="p">(</span><span class="n">foo</span><span class="o">-&gt;</span><span class="n">wq</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">foo</span><span class="o">-&gt;</span><span class="n">offload</span><span class="p">);</span>
+    <span class="p">(...)</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">foo_probe</span><span class="p">(...)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="nc">foo</span> <span class="o">*</span><span class="n">foo</span><span class="p">;</span>
+
+    <span class="n">foo</span><span class="o">-&gt;</span><span class="n">wq</span> <span class="o">=</span> <span class="n">create_singlethread_workqueue</span><span class="p">(</span><span class="s">&quot;foo-wq&quot;</span><span class="p">);</span>
+    <span class="n">INIT_WORK</span><span class="p">(</span><span class="o">&amp;</span><span class="n">foo</span><span class="o">-&gt;</span><span class="n">offload</span><span class="p">,</span> <span class="n">foo_work</span><span class="p">);</span>
+    <span class="p">(...)</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>对于 hrtimer 或类似的东西，设计模式是相同的，它们将返回一个参数，该参数是指向回调中结构成员的指针。</p>
+<p>container_of() 是在 &lt;linux/kernel.h&gt; 中定义的宏,container_of() 所做的是使用标准 C 中的 offsetof() 宏通过简单的减法从指向成员的指针中获取指向包含结构的指针，这允许类似于面向对象的行为。请注意，包含的成员不能是指针，而是要使其正常工作的实际成员。避免了以这种方式使用指向 struct foo * 实例的全局指针，同时仍将传递给工作函数的参数数量保持为单个指针。</p>
+<ol class="arabic simple" start="3">
+<li><p>总结：</p></li>
+</ol>
+</div>
+<div class="section" id="struct-device">
+<h3>基本设备结构:struct device<a class="headerlink" href="#struct-device" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>编程接口：
+- int device_register(struct device * dev);执行这个函数时，总线驱动发现设备并将设备注册到核心
+- 总线需要初始化以下域：</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>parent;</p></li>
+<li><p>name;</p></li>
+<li><p>bus_id;</p></li>
+<li><p>bus;</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>当设备的引用计数变为 0 时，设备将从内核中移除。可以使用以下命令调整引用计数：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id22">
+<div class="code-block-caption"><span class="caption-text">增加/减少设备引用计数</span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">get_device</span><span class="p">(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">dev</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">put_device</span><span class="p">(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">dev</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>get_device()如果引用还不是 0（如果它已经在被删除的过程中），将返回一个指向传递给它的struct device结构指针。
+- 驱动可以通过以下方式访问设备结构中的锁：</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id23">
+<div class="code-block-caption"><span class="caption-text">访问结构中的锁</span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">lock_device</span><span class="p">(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">dev</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">unlock_device</span><span class="p">(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">dev</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+<ul>
+<li><p>属性：</p>
+<blockquote>
+<div><blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id24">
+<div class="code-block-caption"><span class="caption-text">属性结构</span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">device_attribute</span> <span class="p">{</span>
+      <span class="k">struct</span> <span class="nc">attribute</span>        <span class="n">attr</span><span class="p">;</span>
+      <span class="kt">ssize_t</span> <span class="p">(</span><span class="o">*</span><span class="n">show</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">device_attribute</span> <span class="o">*</span><span class="n">attr</span><span class="p">,</span>
+                      <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">);</span>
+      <span class="kt">ssize_t</span> <span class="p">(</span><span class="o">*</span><span class="n">store</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">device_attribute</span> <span class="o">*</span><span class="n">attr</span><span class="p">,</span>
+                       <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+<p>设备的属性可以由设备驱动程序通过 sysfs 导出。</p>
+<p>正如关于 kobjects、ksets 和 ktypes 的所有你不想知道的内容中所解释的，必须在生成 KOBJ_ADD uevent 之前创建设备属性。实现这一点的唯一方法是定义一个属性组。</p>
+<p>使用名为 DEVICE_ATTR 的宏声明属性：</p>
+</div></blockquote>
+</li>
+</ul>
+</li>
+<li><p>驱动组织框架</p>
+<ul>
+<li><p>总线，设备和驱动间的关系图：</p>
+<blockquote>
+<div><img alt="_images/bus_device_driver_klist.svg" class="align-center" src="_images/bus_device_driver_klist.svg" /></div></blockquote>
+<p>每个设备结构有指向设备驱动的指针，每个设备最多对应一个设备驱动；每个设备驱动结构中维护一个设备结构列表。采用struct klist结构表示列表，struct klist_node代表节点。</p>
+</li>
+<li><p>bus,struct device,device_driver与kset,kobject的组织</p>
+<blockquote>
+<div><img alt="_images/bus_device_driver_kset.svg" class="align-center" src="_images/bus_device_driver_kset.svg" /></div></blockquote>
+<p>每个总线结构维护两个struct kset结构，分别为struct kset <a href="#id5"><span class="problematic" id="id6">*</span></a>devices_kset,struct kset <a href="#id7"><span class="problematic" id="id8">*</span></a>driver_kset;这两个结构将总线中的代表设备和设备驱动的struct kobject结构通过双向链表组织起来。</p>
+</li>
+<li><p>tree /sys/bus -L 2</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id25">
+<div class="code-block-caption"><span class="caption-text">系统中的总线</span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244</pre></div></td><td class="code"><div class="highlight"><pre><span></span>/sys/bus
+├── acpi
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── auxiliary
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── cec
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── clockevents
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── clocksource
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── container
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── cpu
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── dax
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── edac
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── event_source
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── gpio
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── hdaudio
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── hid
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── i2c
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── machinecheck
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── media
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── mei
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── memory
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── mipi-dsi
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── mmc
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── node
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── nvmem
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── pci
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   ├── rescan
+│   ├── resource_alignment
+│   ├── slots
+│   └── uevent
+├── pci_express
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── platform
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── pnp
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── rmi4
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── sdio
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── serial
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── serio
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── snd_seq
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── soundwire
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── spi
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── thunderbolt
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── typec
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── usb
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── wmi
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── workqueue
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+├── xen
+│   ├── devices
+│   ├── drivers
+│   ├── drivers_autoprobe
+│   ├── drivers_probe
+│   └── uevent
+└── xen-backend
+    ├── devices
+    ├── drivers
+    ├── drivers_autoprobe
+    ├── drivers_probe
+    └── uevent
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<p>我们分析属性：</p>
+<blockquote>
+<div><p>static BUS_ATTR_WO(drivers_probe);
+static BUS_ATTR_RW(drivers_autoprobe);</p>
+<p>bus_register函数中创建：</p>
+<div class="literal-block-wrapper docutils container" id="id26">
+<div class="code-block-caption"><span class="caption-text">bus_register函数</span><a class="headerlink" href="#id26" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></div></td><td class="code"><div class="highlight"><pre><span></span> <span class="cm">/**</span>
+<span class="cm"> * bus_register - register a driver-core subsystem</span>
+<span class="cm"> * @bus: bus to register</span>
+<span class="cm"> *</span>
+<span class="cm"> * Once we have that, we register the bus with the kobject</span>
+<span class="cm"> * infrastructure, then register the children subsystems it has:</span>
+<span class="cm"> * the devices and drivers that belong to the subsystem.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="nf">bus_register</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="n">bus</span><span class="p">)</span><span class="o">:</span>
+
+        <span class="n">retval</span> <span class="o">=</span> <span class="n">kobject_set_name</span><span class="p">(</span><span class="o">&amp;</span><span class="n">priv</span><span class="o">-&gt;</span><span class="n">subsys</span><span class="p">.</span><span class="n">kobj</span><span class="p">,</span> <span class="s">&quot;%s&quot;</span><span class="p">,</span> <span class="n">bus</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span> <span class="c1">// /sys/bus/i2c</span>
+        <span class="n">priv</span><span class="o">-&gt;</span><span class="n">devices_kset</span> <span class="o">=</span> <span class="n">kset_create_and_add</span><span class="p">(</span><span class="s">&quot;devices&quot;</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span>
+                                                 <span class="o">&amp;</span><span class="n">priv</span><span class="o">-&gt;</span><span class="n">subsys</span><span class="p">.</span><span class="n">kobj</span><span class="p">);</span>   <span class="c1">// /sys/bus/i2c/devices</span>
+        <span class="n">priv</span><span class="o">-&gt;</span><span class="n">drivers_kset</span> <span class="o">=</span> <span class="n">kset_create_and_add</span><span class="p">(</span><span class="s">&quot;drivers&quot;</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span>
+                                                 <span class="o">&amp;</span><span class="n">priv</span><span class="o">-&gt;</span><span class="n">subsys</span><span class="p">.</span><span class="n">kobj</span><span class="p">);</span>   <span class="c1">// /sys/bus/i2c/drivers</span>
+
+        <span class="n">retval</span> <span class="o">=</span> <span class="n">bus_create_file</span><span class="p">(</span><span class="n">bus</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bus_attr_uevent</span><span class="p">);</span> <span class="c1">// /sys/bus/i2c/uevent：</span>
+
+        <span class="n">retval</span> <span class="o">=</span> <span class="n">add_probe_files</span><span class="p">(</span><span class="n">bus</span><span class="p">);</span>
+           <span class="o">|----</span><span class="n">retval</span> <span class="o">=</span> <span class="n">bus_create_file</span><span class="p">(</span><span class="n">bus</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bus_attr_drivers_probe</span><span class="p">);</span> <span class="c1">// /sys/bus/i2c/drivers_autoprobe: 1：自动适配；</span>
+           <span class="o">|----</span><span class="n">retval</span> <span class="o">=</span> <span class="n">bus_create_file</span><span class="p">(</span><span class="n">bus</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bus_attr_drivers_autoprobe</span><span class="p">);</span> <span class="c1">// /sys/bus/i2c/drivers_probe: 设备名称，为设备重新匹配设备驱动；</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id27">
+<div class="code-block-caption"><span class="caption-text">drivers_autoprobe/drivers_probe具体实现原理</span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">ssize_t</span> <span class="n">drivers_autoprobe_store</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="n">bus</span><span class="p">,</span>
+                                       <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">)</span> <span class="c1">//设置变量 bus-&gt;p-&gt;drivers_autoprobe;</span>
+<span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span>
+                <span class="n">bus</span><span class="o">-&gt;</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">drivers_autoprobe</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">else</span>
+                <span class="n">bus</span><span class="o">-&gt;</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">drivers_autoprobe</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="c1">//如果为1,则在device_add()函数时运行device_initial_probe(dev)进行设备驱动匹配。进而调用__device_attach(dev,true);</span>
+        <span class="k">return</span> <span class="n">count</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">ssize_t</span> <span class="n">drivers_probe_store</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="n">bus</span><span class="p">,</span>
+                                   <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">)</span><span class="c1">//根据输入的值进行遍历；并进行驱动匹配：</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span><span class="n">dev</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">err</span> <span class="o">=</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+
+        <span class="n">dev</span> <span class="o">=</span> <span class="n">bus_find_device_by_name</span><span class="p">(</span><span class="n">bus</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">buf</span><span class="p">);</span><span class="c1">//根据名字获取struct device结构</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">dev</span><span class="p">)</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">ENODEV</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">bus_rescan_devices_helper</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="c1">//如果设备没有匹配的设备驱动：dev-&gt;driver为空，并满足锁等要求，运行device_attach(dev)进行设备与设备驱动的匹配：遍历总线中的设备驱动列表，挨个与设备进行匹配。匹配到一个就返回：__device_attach;</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="n">count</span><span class="p">;</span>
+        <span class="n">put_device</span><span class="p">(</span><span class="n">dev</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">err</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id28">
+<div class="code-block-caption"><span class="caption-text">uevent 具体实现原理</span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">ssize_t</span> <span class="n">bus_uevent_store</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="n">bus</span><span class="p">,</span>
+                                <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">)</span> <span class="c1">// /sys/bus/i2c/uevent</span>
+<span class="p">{</span>
+        <span class="kt">int</span> <span class="n">rc</span><span class="p">;</span>
+
+        <span class="n">rc</span> <span class="o">=</span> <span class="n">kobject_synth_uevent</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bus</span><span class="o">-&gt;</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">subsys</span><span class="p">.</span><span class="n">kobj</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">rc</span> <span class="o">?</span> <span class="nl">rc</span> <span class="p">:</span> <span class="n">count</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="cm">/**</span>
+<span class="cm"> * kobject_synth_uevent - send synthetic uevent with arguments</span>
+<span class="cm"> *</span>
+<span class="cm"> * @kobj: struct kobject for which synthetic uevent is to be generated</span>
+<span class="cm"> * @buf: buffer containing action type and action args, newline is ignored</span>
+<span class="cm"> * @count: length of buffer</span>
+<span class="cm"> *</span>
+<span class="cm"> * Returns 0 if kobject_synthetic_uevent() is completed with success or the</span>
+<span class="cm"> * corresponding error when it fails.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="n">kobject_synth_uevent</span><span class="p">(</span><span class="k">struct</span> <span class="nc">kobject</span> <span class="o">*</span><span class="n">kobj</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="kt">char</span> <span class="o">*</span><span class="n">no_uuid_envp</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;SYNTH_UUID=0&quot;</span><span class="p">,</span> <span class="nb">NULL</span> <span class="p">};</span>
+        <span class="k">enum</span> <span class="n">kobject_action</span> <span class="n">action</span><span class="p">;</span>
+        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">action_args</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">kobj_uevent_env</span> <span class="o">*</span><span class="n">env</span><span class="p">;</span>
+        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">msg</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">*</span><span class="n">devpath</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">kobject_action_type</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">action</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">action_args</span><span class="p">);</span> <span class="c1">//所以uevent取值范围为：static const char *kobject_actions;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;unknown uevent action string&quot;</span><span class="p">;</span>
+                <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">action_args</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">kobject_uevent_env</span><span class="p">(</span><span class="n">kobj</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">no_uuid_envp</span><span class="p">);</span>
+                <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">kobject_action_args</span><span class="p">(</span><span class="n">action_args</span><span class="p">,</span>
+                                <span class="n">count</span> <span class="o">-</span> <span class="p">(</span><span class="n">action_args</span> <span class="o">-</span> <span class="n">buf</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">env</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">r</span> <span class="o">==</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;incorrect uevent action arguments&quot;</span><span class="p">;</span>
+                <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">kobject_uevent_env</span><span class="p">(</span><span class="n">kobj</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">envp</span><span class="p">);</span>
+        <span class="n">kfree</span><span class="p">(</span><span class="n">env</span><span class="p">);</span>
+<span class="nl">out</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">devpath</span> <span class="o">=</span> <span class="n">kobject_get_path</span><span class="p">(</span><span class="n">kobj</span><span class="p">,</span> <span class="n">GFP_KERNEL</span><span class="p">);</span>
+                <span class="n">pr_warn</span><span class="p">(</span><span class="s">&quot;synth uevent: %s: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+                       <span class="n">devpath</span> <span class="o">?:</span> <span class="s">&quot;unknown device&quot;</span><span class="p">,</span>
+                       <span class="n">msg</span> <span class="o">?:</span> <span class="s">&quot;failed to send uevent&quot;</span><span class="p">);</span>
+                <span class="n">kfree</span><span class="p">(</span><span class="n">devpath</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ol class="arabic simple">
+<li><p>drivers_autoprobe 设置说明：</p></li>
+<li><p>drivers_probe 设置说明：</p></li>
+<li><p>uevent 设置说明：</p></li>
+</ol>
+</div></blockquote>
+<ul class="simple">
+<li><p>总线注册：</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="devres">
+<h3>devres-管理设备资源<a class="headerlink" href="#devres" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="struct-device-driver">
+<h3>设备驱动程序: struct device_driver<a class="headerlink" href="#struct-device-driver" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>分配：设备驱动程序是静态分配的结构。尽管驱动程序支持的系统中可能有多个设备，但 struct device_driver 将驱动程序表示为一个整体（而不是特定的设备实例）。</p></li>
+<li><p>初始化：</p></li>
+<li><p>声明：</p></li>
+<li><p>注册：</p></li>
+<li><p>转换总线驱动程序：</p></li>
+<li><p>访问：</p></li>
+<li><p>sysfs:</p></li>
+<li><p>回调：</p></li>
+<li><p>属性：</p></li>
+<li></li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h3>linux 内核设备模型<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id10">
+<h3>平台设备和驱动程序<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>有关平台总线的驱动程序模型接口，请参见 &lt;linux/platform_device.h&gt;：platform_device 和 platform_driver。这种伪总线用于连接具有最少基础设施的总线上的设备，例如用于在许多片上系统处理器上集成外围设备的设备，或一些“传统”PC 互连；而不是像 PCI 或 USB 这样的大型总线指定的。</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>平台设备：平台设备是通常在系统中显示为自治实体的设备。这包括传统的基于端口的设备和外设总线的主机桥，以及集成到片上系统平台的大多数控制器。它们通常的共同点是从 CPU 总线直接寻址。极少情况下，platform_device 会通过其他某种总线的段连接；但它的寄存器仍然是可直接寻址的。平台设备有一个名称，用于驱动程序绑定，以及一个资源列表，例如地址和 IRQ：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id29">
+<div class="code-block-caption"><span class="caption-text">struct platform_device</span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">platform_device</span> <span class="p">{</span>
+        <span class="k">const</span> <span class="kt">char</span>      <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+        <span class="n">u32</span>             <span class="n">id</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">device</span>   <span class="n">dev</span><span class="p">;</span>
+        <span class="n">u32</span>             <span class="n">num_resources</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">resource</span> <span class="o">*</span><span class="n">resource</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>平台驱动程序：    平台驱动程序遵循标准驱动程序模型约定，其中发现/枚举在驱动程序之外处理，并且驱动程序提供probe() 和remove() 方法。它们使用标准约定支持电源管理和关机通知：</p></li>
+</ul>
+<ul>
+<li><p>设备枚举：通常，特定于平台（通常是特定于板）的设置代码将注册平台设备：</p>
+<blockquote>
+<div><blockquote>
+<div></div></blockquote>
+<p>一般规则是只注册那些实际存在的设备，但在某些情况下可能会注册额外的设备。例如，内核可能被配置为与可能未安装在所有板上的外部网络适配器一起使用，或者同样与某些板可能无法连接到任何外围设备的集成控制器一起使用。在某些情况下，引导固件将导出描述在给定板上填充的设备的表。如果没有这些表，系统设置代码设置正确设备的唯一方法通常是为特定目标板构建内核。这种特定于板的内核在嵌入式和定制系统开发中很常见。</p>
+</div></blockquote>
+</li>
+</ul>
+<p>在许多情况下，与平台设备相关的内存和 IRQ 资源不足以让设备的驱动程序工作。板设置代码通常会使用设备的 platform_data 字段提供附加信息以保存附加信息。嵌入式系统经常需要一个或多个用于平台设备的时钟，这些时钟通常会保持关闭，直到它们被主动需要（以节省电力）。系统设置还将这些时钟与设备相关联，以便对 clk_get(&amp;pdev-&gt;dev, clock_name) 的调用根据需要返回它们。</p>
+<ul class="simple">
+<li><p>旧版驱动程序：设备探测</p></li>
+<li><p>设备命名和驱动绑定</p></li>
+</ul>
+<dl class="simple">
+<dt>platform_device.dev.bus_id 是设备的规范名称。它由两个组件构成：</dt><dd><ul class="simple">
+<li><p>platform_device.name …也用于驱动匹配。</p></li>
+<li><p>platform_device.id … 设备实例编号，否则“-1”表示只有一个。</p></li>
+</ul>
+</dd>
+</dl>
+<p>这些是串联的，所以name/id“serial”/0表示bus_id“serial.0”，“serial/3”表示bus_id“serial.3”；两者都将使用名为“serial”的平台驱动程序。而“my_rtc”/-1 将是 bus_id “my_rtc”（无实例 ID）并使用名为“my_rtc”的平台驱动程序。</p>
+<p>驱动程序绑定由驱动程序核心自动执行，在找到设备和驱动程序之间的匹配后调用驱动程序探针（）。如果probe() 成功，则驱动程序和设备照常绑定。有三种不同的方法可以找到这样的匹配：</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>每当注册设备时，都会检查该总线的驱动程序是否匹配。平台设备应在系统引导期间尽早注册。</p></li>
+<li><p>当使用 platform_driver_register() 注册驱动程序时，将检查该总线上的所有未绑定设备是否匹配。驱动程序通常在引导期间稍后注册，或者通过模块加载进行注册。</p></li>
+<li><p>使用 platform_driver_probe() 注册驱动程序的工作方式与使用 platform_driver_register() 类似，但如果其他设备注册，则以后不会探测该驱动程序。（没关系，因为此接口仅适用于非热插拔设备。）</p></li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cpu.html" class="btn btn-neutral float-left" title="cpu管理" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ps.html" class="btn btn-neutral float-right" title="进程管理" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

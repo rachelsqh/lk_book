@@ -1,0 +1,159 @@
+digraph g {
+label = "bus <-> struct device <-> strut device_driver关系"
+graph [
+rankdir = "LR"
+];
+node [
+fontsize = "16"
+shape = "ellipse"
+
+];
+edge [
+];
+
+subgraph cluster_0 {
+"bus_type" [label = "<f0>struct bus_type \{ \l | <f1> ...\n| <f2> struct subsys_private *p;\r|<f3> ...\n| <f4> \}\l",shape = "record"];
+
+"subsys_private" [
+label = "<f0> struct subsys_private \{\l | <f1> struct kset subsys;\r| <f2> struct kset *devices_kset;\r| <f3> ...\n|<f4> struct kset *drivers_kset;\r|<f5> ...\n|<f8> \}\l";
+shape = record;
+];
+
+"bus_type":f2 -> "subsys_private":f0;
+
+
+"kset_device"[
+label = "<f0> struct device: struct kset \{\l|<f1> struct list_head list;\r|<f2> ...\n|<f3>\}\l";
+shape = record;
+];
+
+"kset_driver"[
+label = "<f0> struct device_driver: struct kset \{\l|<f1> struct list_head list;\r|<f2> ...\n|<f3>\}\l";
+shape = record;
+];
+
+"subsys_private":f2 -> "kset_device":f0[dir = none];
+"subsys_private":f4 -> "kset_driver":f0[dir = none];
+
+"list_device"[
+label = "<f0> device list: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>\}\l";
+shape = record;
+];
+
+"list_driver"[
+label = "<f0> driver list: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>\}\l";
+shape = record;
+];
+
+"kset_device":f1 -> "list_device":f0[dir = none];
+"kset_driver":f1 -> "list_driver":f0[dir = none];
+
+"kobject_device"[
+label = "<f0> struct device \-\> \lstruct kobject kobj:\lstruct kobject \{\l|<f1> ...\n| <f2> struct list_head entry;\r|<f3> ...;\r| <f4> \}\l";
+shape = record;
+];
+
+"kobject_driver"[
+label = "<f0> struct device_driver \-\> \lstruct driver_private *p\-\> \lstruct kobject kobj:\lstruct kobject \{\l|<f1> ...\n| <f2> struct list_head entry;\r|<f3> ...;\r| <f4> \}\l";
+shape = record;
+];
+
+#"list_device":f1 -> "kobject_device":f2[dir = "both"];
+#"list_driver":f1 -> "kobject_driver":f2[dir = "both"];
+
+"device":f1 -> "kobject_device":f0[dir = none];
+"device_driver":f4 -> "kobject_driver":f0[dir = none];
+
+
+
+"device" [
+label = "<f0>struct device \{\l|<f1> struct kobject kobj;|<f2> ...\n|<f3> struct bus_type *bus\r|<f4> struct device_driver *driver\r| <f5> ...\n|<f5> \}\l";
+shape = "record";
+];
+
+"device_driver" [
+label = "<f0>struct device_driver \{\l|<f1> ...\n|<f2>struct bus_type *bus\r|<f3> ...\n|<f4>struct driver_private *p;\l|<f5> \}\l";
+shape = "record";
+];
+#"device":f4 -> "device_driver":f0;
+#"device":f1 -> "kobject_device":f0;
+#"device_driver":f4 -> "kobject_driver":f0;
+
+"list_device1"[
+label = "<f0> device c1: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>\}\l";
+shape = record;
+];
+
+"list_driver1"[
+label = "<f0> driver d1: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>}\l";
+shape = record;
+];
+
+"list_device2"[
+label = "<f0> device c2: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>\}\l";
+shape = record;
+];
+
+"list_driver2"[
+label = "<f0> driver d2: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>\}\l";
+shape = record;
+];
+
+"list_devicex"[
+label = "<f0> device cx:...: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>\}\l";
+shape = record;
+];
+
+"list_driverx"[
+label = "<f0> driver dx:...: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>\}\l";
+shape = record;
+];
+
+"list_devicen"[
+label = "<f0> device cn: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>\}\l";
+shape = record;
+];
+
+"list_drivern"[
+label = "<f0> driver dn: struct list_head \{\l| <f1> struct list_head *next;\r| <f2> struct list_head *prev;\r|<f3>\}\l";
+shape = record;
+];
+
+"list_device":f1 -> "list_device1":f0;
+"list_device1":f2 -> "list_device":f3:e;
+
+"list_device1":f1 -> "list_device2":f0;
+"list_device2":f2 -> "list_device1":f3:e;
+
+"list_device2":f1 -> "list_devicex":f0;
+"list_devicex":f2 -> "list_device2":f3:e;
+
+"list_devicex":f1 -> "list_devicen":f0;
+"list_devicen":f2 -> "list_devicex":f3:e;
+
+
+"list_devicen":f1:e -> "list_device":f0:n;
+"list_device":f2:w -> "list_devicen":f3:s;
+
+"list_driver":f1 -> "list_driver1":f0;
+"list_driver1":f2 -> "list_driver":f0:e;
+
+"list_driver1":f1 -> "list_driver2":f0;
+"list_driver2":f2 -> "list_driver1":f3:e;
+
+"list_driver2":f1 -> "list_driverx":f0;
+"list_driverx":f2 -> "list_driver2":f3:e;
+
+"list_driverx":f1 -> "list_drivern":f0;
+"list_drivern":f2 -> "list_driverx":f3:e;
+
+
+"list_drivern":f1:e -> "list_driver":f0:n;
+"list_driver":f2:w -> "list_drivern":f3:s;
+"kobject_device":f2:e -> "list_device":f0:n[dir = none];
+"kobject_driver":f2:e -> "list_driver":f1:w[dir = none];
+}
+
+
+
+}

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux 异常表:extable &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>linux 异常表:extable</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_code_base/kernel_base/extable.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux-extable">
+<h1>linux 异常表:extable<a class="headerlink" href="#linux-extable" title="Permalink to this headline">¶</a></h1>
+<div class="literal-block-wrapper docutils container" id="id43">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id43" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>异常表：用于存储发生pf的地址的处理方式。</p>
+<blockquote>
+<div><p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
+</div></blockquote>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>mutex protecting text section modification (dynamic code patching).</p></li>
+<li><p>some users need to sleep (allocating memory…) while they hold this lock.</p></li>
+<li></li>
+<li><p>Note: Also protects SMP-alternatives modification on x86.</p></li>
+<li></li>
+<li><p>NOT exported to modules - patching kernel text is a really delicate matter.</p></li>
+</ul>
+<p><a href="#id5"><span class="problematic" id="id6">*</span></a>/</p>
+</dd>
+</dl>
+<p>DEFINE_MUTEX(text_mutex);</p>
+<p>extern struct exception_table_entry __start___ex_table[];
+extern struct exception_table_entry __stop___ex_table[];
+<a href="#id7"><span class="problematic" id="id8">``</span></a><a href="#id9"><span class="problematic" id="id10">`</span></a></p>
+<p>我们观察struct exception_table_entry结构：</p>
+<p><a href="#id11"><span class="problematic" id="id12">``</span></a>`
+/*</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The exception table consists of triples of addresses relative to the</p></li>
+<li><p>exception table entry itself. The first address is of an instruction</p></li>
+<li><p>that is allowed to fault, the second is the target at which the program</p></li>
+<li><p>should continue. The third is a handler function to deal with the fault</p></li>
+<li><p>caused by the instruction in the first field.</p></li>
+<li></li>
+<li><p>All the routines below use bits of fixup code that are out of line</p></li>
+<li><p>with the main instruction path.  This means when everything is well,</p></li>
+<li><p>we don’t even have to jump over them.  Further, they do not intrude</p></li>
+<li><p>on our cache or tlb entries.</p></li>
+</ul>
+<p><a href="#id13"><span class="problematic" id="id14">*</span></a>/</p>
+</div></blockquote>
+<dl class="simple">
+<dt>struct exception_table_entry {</dt><dd><p>int insn, fixup, handler;</p>
+</dd>
+</dl>
+<p>};
+struct pt_regs;</p>
+<p>#define ARCH_HAS_RELATIVE_EXTABLE</p>
+<dl>
+<dt>#define swap_ex_entry_fixup(a, b, tmp, delta)                   </dt><dd><dl class="simple">
+<dt>do {                                                    </dt><dd><p>(a)-&gt;fixup = (b)-&gt;fixup + (delta);              (b)-&gt;fixup = (tmp).fixup - (delta);             (a)-&gt;handler = (b)-&gt;handler + (delta);          (b)-&gt;handler = (tmp).handler - (delta);         </p>
+</dd>
+</dl>
+<p>} while (0)</p>
+</dd>
+<dt>enum handler_type {</dt><dd><p>EX_HANDLER_NONE,
+EX_HANDLER_FAULT,
+EX_HANDLER_UACCESS,
+EX_HANDLER_OTHER</p>
+</dd>
+</dl>
+<p>};</p>
+<dl class="simple">
+<dt>extern int fixup_exception(struct pt_regs <a href="#id15"><span class="problematic" id="id16">*</span></a>regs, int trapnr,</dt><dd><p>unsigned long error_code, unsigned long fault_addr);</p>
+</dd>
+</dl>
+<p>extern int fixup_bug(struct pt_regs <a href="#id17"><span class="problematic" id="id18">*</span></a>regs, int trapnr);
+extern enum handler_type ex_get_fault_handler_type(unsigned long ip);
+extern void early_fixup_exception(struct pt_regs <a href="#id19"><span class="problematic" id="id20">*</span></a>regs, int trapnr);</p>
+<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>kernel/vmlinux.ld</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">.</span> <span class="pre">=</span> <span class="pre">ALIGN(16);</span> <span class="pre">__ex_table</span> <span class="pre">:</span> <span class="pre">AT(ADDR(__ex_table)</span> <span class="pre">-</span> <span class="pre">0xffffffff80000000)</span> <span class="pre">{</span> <span class="pre">__start___ex_table</span> <span class="pre">=</span> <span class="pre">.;</span> <span class="pre">KEEP(*(__ex_table))</span> <span class="pre">__stop___ex_table</span> <span class="pre">=</span> <span class="pre">.;</span> <span class="pre">}</span>
+<span class="pre">`</span></code></p>
+<p>操作函数：</p>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a>`
+/* Sort the kernel’s built-in exception table <a href="#id27"><span class="problematic" id="id28">*</span></a>/
+void __init sort_main_extable(void)
+{</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if (main_extable_sort_needed &amp;&amp;</dt><dd><dl class="simple">
+<dt>&amp;__stop___ex_table &gt; &amp;__start___ex_table) {</dt><dd><p>pr_notice(“Sorting __ex_table…n”);
+sort_extable(__start___ex_table, __stop___ex_table);</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>}</p>
+<p>/* Given an address, look for it in the kernel exception table <a href="#id29"><span class="problematic" id="id30">*</span></a>/
+const
+struct exception_table_entry <a href="#id31"><span class="problematic" id="id32">*</span></a>search_kernel_exception_table(unsigned long addr)
+{</p>
+<blockquote>
+<div><dl class="simple">
+<dt>return search_extable(__start___ex_table,</dt><dd><p>__stop___ex_table - __start___ex_table, addr);</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>}</p>
+<p>/* Given an address, look for it in the exception tables. <a href="#id33"><span class="problematic" id="id34">*</span></a>/
+const struct exception_table_entry <a href="#id35"><span class="problematic" id="id36">*</span></a>search_exception_tables(unsigned long addr)
+{</p>
+<blockquote>
+<div><p>const struct exception_table_entry <a href="#id37"><span class="problematic" id="id38">*</span></a>e;</p>
+<p>e = search_kernel_exception_table(addr);
+if (!e)</p>
+<blockquote>
+<div><p>e = search_module_extables(addr);</p>
+</div></blockquote>
+<dl class="simple">
+<dt>if (!e)</dt><dd><p>e = search_bpf_extables(addr);</p>
+</dd>
+</dl>
+<p>return e;</p>
+</div></blockquote>
+<p>}</p>
+<p><a href="#id39"><span class="problematic" id="id40">``</span></a><a href="#id41"><span class="problematic" id="id42">`</span></a></p>
+<p>添加项的时机：模块或系统调用莫个地址处：这个主要用在pf处使用，就是当某个地址访问有问题时本身带的处理方法。</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

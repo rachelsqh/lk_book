@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x86平台板卡资源适配原理 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>x86平台板卡资源适配原理</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_code_base/kernel_mem/x86_hw_resource.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="x86">
+<h1>x86平台板卡资源适配原理<a class="headerlink" href="#x86" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>板卡资源适配：<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>io资源，传统a0000,b0000,c0000,d0000等，可通过查看系统文件：
+- /proc/iomem
+- /proc/ioport</p>
+<p>裸板与主板适配时，需要观察主板资源空闲空间，根据主板资源设置单板资源。进而达到适配的目的；</p>
+<p>针对PCI
+x86主板 &lt;-&gt; pci局部总线 &lt;–&gt; isa板卡
+设置时注意：
+- 程序访问地址：</p>
+<blockquote>
+<div><p>1.基地址 = pci_basex + isa_io/mem_base；
+2.地址限制，如，</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><dl class="simple">
+<dt>pcix空间：</dt><dd><p>base:0x40000,len: 0x100;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>isa空间限制:</dt><dd><p>base:基地址：  0 &lt; base &lt; 0x100;
+len: &lt; pci_len - isa_base;</p>
+</dd>
+</dl>
+</li>
+</ol>
+</div></blockquote>
+</div></blockquote>
+<p>ISA:同理，不过针对CPU域。</p>
+<p>问题处理：
+1. 中断异常导致卡死，故障排除：</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>cat /proc/interrupts,某些版本针对中断抖动不做处理，可能会导致系统卡死的情况，2.6以后一般会出现当某个中断每秒&gt;100000/s(无法确定中断源设备时），内核会强行禁止这个中断，可借此定位问题；</p></li>
+<li><p>如果板卡中断硬件触发方式设置不对时，会导致中断抖动的情况；</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic" start="2">
+<li><p>不能产生中断时，可针对不同操作系统现象，联合调试，一般就是硬件板卡中断引脚链接问题或者硬件与软件信息不一致导致的。</p></li>
+<li><p>x86主板MCE问题：内存的，IDE的，电磁干扰也会导致很多问题。</p>
+<blockquote>
+<div><p>PCI-E走线问题导致的系统崩溃。</p>
+</div></blockquote>
+</li>
+</ol>
+<p>无非问题就这么点事，围着转。</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

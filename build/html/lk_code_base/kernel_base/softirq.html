@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux 软中断：softirq &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>linux 软中断：softirq</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_code_base/kernel_base/softirq.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux-softirq">
+<h1>linux 软中断：softirq<a class="headerlink" href="#linux-softirq" title="Permalink to this headline">¶</a></h1>
+<p>软中断：在硬件中断处理程序结束时调用的的句柄</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/* PLEASE, avoid to allocate new softirqs, if you need not _really_ high</span>
+<span class="cm">     frequency threaded job scheduling. For almost all the purposes</span>
+<span class="cm">     tasklets are more than enough. F.e. all serial device BHs et</span>
+<span class="hll"><span class="cm">     al. should be converted to tasklets, not to softirqs.</span>
+</span><span class="hll"><span class="cm">     */</span>
+</span>     <span class="cm">/* 所有的软中断向量，数字越小优先级越高 */</span>
+     <span class="k">enum</span>
+     <span class="p">{</span>
+             <span class="n">HI_SOFTIRQ</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+             <span class="n">TIMER_SOFTIRQ</span><span class="p">,</span>
+             <span class="n">NET_TX_SOFTIRQ</span><span class="p">,</span>
+             <span class="n">NET_RX_SOFTIRQ</span><span class="p">,</span>
+             <span class="n">BLOCK_SOFTIRQ</span><span class="p">,</span>
+             <span class="n">IRQ_POLL_SOFTIRQ</span><span class="p">,</span>
+             <span class="n">TASKLET_SOFTIRQ</span><span class="p">,</span>
+             <span class="n">SCHED_SOFTIRQ</span><span class="p">,</span>
+             <span class="n">HRTIMER_SOFTIRQ</span><span class="p">,</span>
+             <span class="n">RCU_SOFTIRQ</span><span class="p">,</span>    <span class="cm">/* Preferable RCU should always be the last softirq */</span>
+
+             <span class="n">NR_SOFTIRQS</span>
+     <span class="p">};</span>
+
+     <span class="k">struct</span> <span class="nc">softirq_action</span>
+     <span class="p">{</span>
+             <span class="kt">void</span>    <span class="p">(</span><span class="o">*</span><span class="n">action</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">softirq_action</span> <span class="o">*</span><span class="p">);</span>
+     <span class="p">};</span>
+     <span class="k">static</span> <span class="k">struct</span> <span class="nc">softirq_action</span> <span class="n">softirq_vec</span><span class="p">[</span><span class="n">NR_SOFTIRQS</span><span class="p">]</span> <span class="n">__cacheline_aligned_in_smp</span><span class="p">;</span>
+
+     <span class="n">DEFINE_PER_CPU</span><span class="p">(</span><span class="k">struct</span> <span class="nc">task_struct</span> <span class="o">*</span><span class="p">,</span> <span class="n">ksoftirqd</span><span class="p">);</span>
+
+     <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="k">const</span> <span class="n">softirq_to_name</span><span class="p">[</span><span class="n">NR_SOFTIRQS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+             <span class="s">&quot;HI&quot;</span><span class="p">,</span> <span class="s">&quot;TIMER&quot;</span><span class="p">,</span> <span class="s">&quot;NET_TX&quot;</span><span class="p">,</span> <span class="s">&quot;NET_RX&quot;</span><span class="p">,</span> <span class="s">&quot;BLOCK&quot;</span><span class="p">,</span> <span class="s">&quot;IRQ_POLL&quot;</span><span class="p">,</span>
+             <span class="s">&quot;TASKLET&quot;</span><span class="p">,</span> <span class="s">&quot;SCHED&quot;</span><span class="p">,</span> <span class="s">&quot;HRTIMER&quot;</span><span class="p">,</span> <span class="s">&quot;RCU&quot;</span>
+     <span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>初始化流程：start_kernel–&gt;softirq_init() –&gt;early_initcall(spawn_ksoftirqd)</p>
+<p>可以理解为所有软中断通过softirq_action进行组织，数组的每个成员指向处理某类事件的处理函数。函数在不同的CPU上是可重入的。每个CPU上运行的软中断处理线程负责处理本CPU上产生的事件。处理完挂起的事件后内核线程就调度出去。在特定时机唤醒内核线程。内核线程继续检查是否有挂起的事件，周而复始。这个时机在下文中进一步解释。唤醒则参考wakeup_softirqd函数。可考虑比较不同版本内核处理方式上的差异。此时关注内核线程优先级问题。</p>
+<p>static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;</p>
+<p>DEFINE_PER_CPU(struct task_struct <a href="#id1"><span class="problematic" id="id2">*</span></a>, ksoftirqd);</p>
+<p>1.softirq_init()</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/* Tasklets --- multithreaded analogue of BHs.</span>
+
+<span class="cm">     This API is deprecated. Please consider using threaded IRQs instead:</span>
+<span class="hll"><span class="cm">     https://lore.kernel.org/lkml/20200716081538.2sivhkj4hcyrusem@linutronix.de</span>
+</span><span class="hll">
+</span><span class="cm">     Main feature differing them of generic softirqs: tasklet</span>
+<span class="cm">     is running only on one CPU simultaneously.//与通用软中断不同的主要特点：tasklet只同时在一个 CPU 上运行。</span>
+
+<span class="cm">     Main feature differing them of BHs: different tasklets</span>
+<span class="cm">     may be run simultaneously on different CPUs.//与 BH 不同的主要特征：不同的 tasklet</span>
+<span class="cm">     可以在不同的 CPU 上同时运行。</span>
+
+<span class="cm">     Properties:</span>
+<span class="cm">     * If tasklet_schedule() is called, then tasklet is guaranteed</span>
+<span class="cm">      to be executed on some cpu at least once after this.</span>
+<span class="cm">     * If the tasklet is already scheduled, but its execution is still not</span>
+<span class="cm">       started, it will be executed only once.</span>
+<span class="cm">     * If this tasklet is already running on another CPU (or schedule is called</span>
+<span class="cm">      from tasklet itself), it is rescheduled for later.</span>
+<span class="cm">     * Tasklet is strictly serialized wrt itself, but not</span>
+<span class="cm">      wrt another tasklets. If client needs some intertask synchronization,</span>
+<span class="cm">      he makes it with spinlocks.//Tasklet 是严格序列化的 wrt 本身，但不是 wrt 另一个 tasklets。如果客户端需要一些任务间同步，他会使用自旋锁来实现。</span>
+<span class="cm">     Tasklet shì yángé xùliè huà de wrt</span>
+<span class="cm">     */</span>
+
+     <span class="k">struct</span> <span class="nc">tasklet_struct</span>
+     <span class="p">{</span>
+             <span class="k">struct</span> <span class="nc">tasklet_struct</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+             <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">state</span><span class="p">;</span>
+             <span class="n">atomic_t</span> <span class="n">count</span><span class="p">;</span>
+             <span class="kt">bool</span> <span class="n">use_callback</span><span class="p">;</span>
+             <span class="k">union</span> <span class="p">{</span>
+                     <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">func</span><span class="p">)(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">data</span><span class="p">);</span>
+                     <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">callback</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">tasklet_struct</span> <span class="o">*</span><span class="n">t</span><span class="p">);</span>
+             <span class="p">};</span>
+             <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">data</span><span class="p">;</span>
+     <span class="p">};</span>
+
+     <span class="cm">/*</span>
+<span class="cm">      * Tasklets</span>
+<span class="cm">      */</span>
+     <span class="k">struct</span> <span class="nc">tasklet_head</span> <span class="p">{</span><span class="c1">//tasklet_struct组织方式</span>
+             <span class="k">struct</span> <span class="nc">tasklet_struct</span> <span class="o">*</span><span class="n">head</span><span class="p">;</span>
+             <span class="k">struct</span> <span class="nc">tasklet_struct</span> <span class="o">**</span><span class="n">tail</span><span class="p">;</span>
+     <span class="p">};</span>
+
+     <span class="k">static</span> <span class="nf">DEFINE_PER_CPU</span><span class="p">(</span><span class="k">struct</span> <span class="nc">tasklet_head</span><span class="p">,</span> <span class="n">tasklet_vec</span><span class="p">);</span>
+     <span class="k">static</span> <span class="nf">DEFINE_PER_CPU</span><span class="p">(</span><span class="k">struct</span> <span class="nc">tasklet_head</span><span class="p">,</span> <span class="n">tasklet_hi_vec</span><span class="p">);</span>
+
+     <span class="kt">void</span> <span class="n">__init</span> <span class="n">softirq_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="kt">int</span> <span class="n">cpu</span><span class="p">;</span>
+
+             <span class="n">for_each_possible_cpu</span><span class="p">(</span><span class="n">cpu</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="n">per_cpu</span><span class="p">(</span><span class="n">tasklet_vec</span><span class="p">,</span> <span class="n">cpu</span><span class="p">).</span><span class="n">tail</span> <span class="o">=</span>
+                             <span class="o">&amp;</span><span class="n">per_cpu</span><span class="p">(</span><span class="n">tasklet_vec</span><span class="p">,</span> <span class="n">cpu</span><span class="p">).</span><span class="n">head</span><span class="p">;</span>
+                     <span class="n">per_cpu</span><span class="p">(</span><span class="n">tasklet_hi_vec</span><span class="p">,</span> <span class="n">cpu</span><span class="p">).</span><span class="n">tail</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">per_cpu</span><span class="p">(</span><span class="n">tasklet_hi_vec</span><span class="p">,</span> <span class="n">cpu</span><span class="p">).</span><span class="n">head</span><span class="p">;</span>
+             <span class="p">}</span>
+
+             <span class="n">open_softirq</span><span class="p">(</span><span class="n">TASKLET_SOFTIRQ</span><span class="p">,</span> <span class="n">tasklet_action</span><span class="p">);</span><span class="c1">// softirq_vec[TASKLET_SOFTIRQ] = tasklet_action;初始化tasklet_action,具体操作参考下文描述；</span>
+             <span class="n">open_softirq</span><span class="p">(</span><span class="n">HI_SOFTIRQ</span><span class="p">,</span> <span class="n">tasklet_hi_action</span><span class="p">);</span> <span class="c1">// softirq_vec[HI_SOFTIRQ] = tasklet_hi_action;初始化tasklet_hi_action,具体操作参考下文描述；</span>
+
+
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>spawn_ksoftirqd()：在内核初始化初期为每一个CPU新建内核线程ksoftirqd</p></li>
+</ol>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="k">static</span> <span class="k">struct</span> <span class="nc">smp_hotplug_thread</span> <span class="n">softirq_threads</span> <span class="o">=</span> <span class="p">{</span>
+             <span class="p">.</span><span class="n">store</span>                  <span class="o">=</span> <span class="o">&amp;</span><span class="n">ksoftirqd</span><span class="p">,</span><span class="c1">//每个CPU存储struct task指针</span>
+             <span class="p">.</span><span class="n">thread_should_run</span>      <span class="o">=</span> <span class="n">ksoftirqd_should_run</span><span class="p">,</span> <span class="c1">//判断句柄</span>
+<span class="hll">             <span class="p">.</span><span class="n">thread_fn</span>              <span class="o">=</span> <span class="n">run_ksoftirqd</span><span class="p">,</span><span class="c1">//处理每个CPU上的软中断</span>
+</span><span class="hll">             <span class="p">.</span><span class="n">thread_comm</span>            <span class="o">=</span> <span class="s">&quot;ksoftirqd/%u&quot;</span><span class="p">,</span><span class="c1">//每个CPU运行的处理软中断的内核线程名字格式</span>
+</span>     <span class="p">};</span>
+
+     <span class="k">static</span> <span class="n">__init</span> <span class="kt">int</span> <span class="n">spawn_ksoftirqd</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="n">cpuhp_setup_state_nocalls</span><span class="p">(</span><span class="n">CPUHP_SOFTIRQ_DEAD</span><span class="p">,</span> <span class="s">&quot;softirq:dead&quot;</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span>
+                               <span class="n">takeover_tasklets</span><span class="p">);</span> <span class="c1">//cpu:CPUHP_SOFTIRQ_DEAD状态回调函数。</span>
+             <span class="n">BUG_ON</span><span class="p">(</span><span class="n">smpboot_register_percpu_thread</span><span class="p">(</span><span class="o">&amp;</span><span class="n">softirq_threads</span><span class="p">));</span><span class="c1">//</span>
+
+             <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+     <span class="p">}</span>
+     <span class="n">early_initcall</span><span class="p">(</span><span class="n">spawn_ksoftirqd</span><span class="p">);</span><span class="c1">//新建内核线程时机</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>我们看正常运行系统负责处理软中断的内核线程（当前硬件：八核）：</p>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">每个CPU运行一个处理软中断的线程</span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     root@rachel:/usr/src/linux-source-5.14/kernel# ps -aux|grep ksoft
+     root          12  0.0  0.0      0     0 ?        S     2021   0:21 [ksoftirqd/0]
+     root          18  0.0  0.0      0     0 ?        S     2021   0:03 [ksoftirqd/1]
+<span class="hll">     root          23  0.0  0.0      0     0 ?        S     2021   0:00 [ksoftirqd/2]
+</span><span class="hll">     root          28  0.0  0.0      0     0 ?        S     2021   0:00 [ksoftirqd/3]
+</span>     root          33  0.0  0.0      0     0 ?        S     2021   0:01 [ksoftirqd/4]
+     root          38  0.0  0.0      0     0 ?        S     2021   0:01 [ksoftirqd/5]
+     root          43  0.0  0.0      0     0 ?        S     2021   7:52 [ksoftirqd/6]
+     root          48  0.0  0.0      0     0 ?        S     2021   0:02 [ksoftirqd/7]
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>到目前为止，初始化就完成了，我们看其运行周期：</p>
+<p>软中断运行点：</p>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">ksoftirqd线程唤醒时机</span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/*</span>
+<span class="cm">     * we cannot loop indefinitely here to avoid userspace starvation,</span>
+<span class="cm">     * but we also don&#39;t want to introduce a worst case 1/HZ latency</span>
+<span class="hll"><span class="cm">     * to the pending events, so lets the scheduler to balance</span>
+</span><span class="hll"><span class="cm">     * the softirq load for us.</span>
+</span><span class="cm">     */</span>
+     <span class="k">static</span> <span class="kt">void</span> <span class="n">wakeup_softirqd</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="cm">/* Interrupts are disabled: no need to stop preemption */</span>
+             <span class="k">struct</span> <span class="nc">task_struct</span> <span class="o">*</span><span class="n">tsk</span> <span class="o">=</span> <span class="n">__this_cpu_read</span><span class="p">(</span><span class="n">ksoftirqd</span><span class="p">);</span>
+
+             <span class="k">if</span> <span class="p">(</span><span class="n">tsk</span><span class="p">)</span>
+                     <span class="n">wake_up_process</span><span class="p">(</span><span class="n">tsk</span><span class="p">);</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>__do_softirq –&gt; wakeup_softirqd:具体唤醒时间点:（上状态图)</p>
+<ul class="simple">
+<li><p>具体场景：irq_exit_rcu(void) –&gt;__irq_exit_rcu –&gt;invoke_softirq() –&gt;wakeup_softirqd / __do_softirq_</p></li>
+<li><p>具体场景：irq_exit(void) –&gt;__irq_exit_rcu –&gt;invoke_softirq() –&gt;wakeup_softirqd / __do_softirq_</p></li>
+<li><p>具体场景：raise_softirq_irqoff –&gt; wakeup_softirqd</p></li>
+<li><p>具体场景：raise_softirq –&gt; raise_softirq_irqoff –&gt; wakeup_softirqd</p></li>
+<li><p>具体场景： __local_bh_enable_ip –&gt; wakeup_softirqd</p></li>
+</ul>
+<p>为某类软中断初始化处理句柄：</p>
+<p>open_softirq(NET_TX_SOFTIRQ, net_tx_action);</p>
+<p>每个类型的软中断有一个hook，怎么处理，怎么组织这类事件则在这个hook中处理。</p>
+<p>我们以net_tx_action为例，看下其代码：</p>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text">net_tx_action分析</span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="k">static</span> <span class="n">__latent_entropy</span> <span class="kt">void</span> <span class="n">net_tx_action</span><span class="p">(</span><span class="k">struct</span> <span class="nc">softirq_action</span> <span class="o">*</span><span class="n">h</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="k">struct</span> <span class="nc">softnet_data</span> <span class="o">*</span><span class="n">sd</span> <span class="o">=</span> <span class="n">this_cpu_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">softnet_data</span><span class="p">);</span>
+<span class="hll">
+</span><span class="hll">             <span class="k">if</span> <span class="p">(</span><span class="n">sd</span><span class="o">-&gt;</span><span class="n">completion_queue</span><span class="p">)</span> <span class="p">{</span>
+</span>                     <span class="k">struct</span> <span class="nc">sk_buff</span> <span class="o">*</span><span class="n">clist</span><span class="p">;</span>
+
+                     <span class="n">local_irq_disable</span><span class="p">();</span>
+                     <span class="n">clist</span> <span class="o">=</span> <span class="n">sd</span><span class="o">-&gt;</span><span class="n">completion_queue</span><span class="p">;</span>
+                     <span class="n">sd</span><span class="o">-&gt;</span><span class="n">completion_queue</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+                     <span class="n">local_irq_enable</span><span class="p">();</span>
+
+                     <span class="k">while</span> <span class="p">(</span><span class="n">clist</span><span class="p">)</span> <span class="p">{</span>
+                             <span class="k">struct</span> <span class="nc">sk_buff</span> <span class="o">*</span><span class="n">skb</span> <span class="o">=</span> <span class="n">clist</span><span class="p">;</span>
+
+                             <span class="n">clist</span> <span class="o">=</span> <span class="n">clist</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span>
+
+                             <span class="n">WARN_ON</span><span class="p">(</span><span class="n">refcount_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skb</span><span class="o">-&gt;</span><span class="n">users</span><span class="p">));</span>
+                             <span class="k">if</span> <span class="p">(</span><span class="n">likely</span><span class="p">(</span><span class="n">get_kfree_skb_cb</span><span class="p">(</span><span class="n">skb</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">reason</span> <span class="o">==</span> <span class="n">SKB_REASON_CONSUMED</span><span class="p">))</span>
+                                     <span class="n">trace_consume_skb</span><span class="p">(</span><span class="n">skb</span><span class="p">);</span>
+                             <span class="k">else</span>
+                                     <span class="nf">trace_kfree_skb</span><span class="p">(</span><span class="n">skb</span><span class="p">,</span> <span class="n">net_tx_action</span><span class="p">);</span>
+
+                             <span class="k">if</span> <span class="p">(</span><span class="n">skb</span><span class="o">-&gt;</span><span class="n">fclone</span> <span class="o">!=</span> <span class="n">SKB_FCLONE_UNAVAILABLE</span><span class="p">)</span>
+                                     <span class="n">__kfree_skb</span><span class="p">(</span><span class="n">skb</span><span class="p">);</span>
+                             <span class="k">else</span>
+                                     <span class="nf">__kfree_skb_defer</span><span class="p">(</span><span class="n">skb</span><span class="p">);</span>
+                     <span class="p">}</span>
+             <span class="p">}</span>
+
+             <span class="k">if</span> <span class="p">(</span><span class="n">sd</span><span class="o">-&gt;</span><span class="n">output_queue</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="k">struct</span> <span class="nc">Qdisc</span> <span class="o">*</span><span class="n">head</span><span class="p">;</span>
+
+                     <span class="n">local_irq_disable</span><span class="p">();</span>
+                     <span class="n">head</span> <span class="o">=</span> <span class="n">sd</span><span class="o">-&gt;</span><span class="n">output_queue</span><span class="p">;</span>
+                     <span class="n">sd</span><span class="o">-&gt;</span><span class="n">output_queue</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+                     <span class="n">sd</span><span class="o">-&gt;</span><span class="n">output_queue_tailp</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">sd</span><span class="o">-&gt;</span><span class="n">output_queue</span><span class="p">;</span>
+                     <span class="n">local_irq_enable</span><span class="p">();</span>
+
+                     <span class="n">rcu_read_lock</span><span class="p">();</span>
+
+                     <span class="k">while</span> <span class="p">(</span><span class="n">head</span><span class="p">)</span> <span class="p">{</span>
+                             <span class="k">struct</span> <span class="nc">Qdisc</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="n">head</span><span class="p">;</span>
+                             <span class="n">spinlock_t</span> <span class="o">*</span><span class="n">root_lock</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+
+                             <span class="n">head</span> <span class="o">=</span> <span class="n">head</span><span class="o">-&gt;</span><span class="n">next_sched</span><span class="p">;</span>
+
+                             <span class="cm">/* We need to make sure head-&gt;next_sched is read</span>
+<span class="cm">                              * before clearing __QDISC_STATE_SCHED</span>
+<span class="cm">                              */</span>
+                             <span class="n">smp_mb__before_atomic</span><span class="p">();</span>
+
+                             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">TCQ_F_NOLOCK</span><span class="p">))</span> <span class="p">{</span>
+                                     <span class="n">root_lock</span> <span class="o">=</span> <span class="n">qdisc_lock</span><span class="p">(</span><span class="n">q</span><span class="p">);</span>
+                                     <span class="n">spin_lock</span><span class="p">(</span><span class="n">root_lock</span><span class="p">);</span>
+                             <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">test_bit</span><span class="p">(</span><span class="n">__QDISC_STATE_DEACTIVATED</span><span class="p">,</span>
+                                                  <span class="o">&amp;</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">state</span><span class="p">)))</span> <span class="p">{</span>
+                                     <span class="cm">/* There is a synchronize_net() between</span>
+<span class="cm">                                      * STATE_DEACTIVATED flag being set and</span>
+<span class="cm">                                      * qdisc_reset()/some_qdisc_is_busy() in</span>
+<span class="cm">                                      * dev_deactivate(), so we can safely bail out</span>
+<span class="cm">                                      * early here to avoid data race between</span>
+<span class="cm">                                      * qdisc_deactivate() and some_qdisc_is_busy()</span>
+<span class="cm">                                      * for lockless qdisc.</span>
+<span class="cm">                                      */</span>
+                                     <span class="n">clear_bit</span><span class="p">(</span><span class="n">__QDISC_STATE_SCHED</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">state</span><span class="p">);</span>
+                                     <span class="k">continue</span><span class="p">;</span>
+                             <span class="p">}</span>
+
+                             <span class="n">clear_bit</span><span class="p">(</span><span class="n">__QDISC_STATE_SCHED</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">q</span><span class="o">-&gt;</span><span class="n">state</span><span class="p">);</span>
+                             <span class="n">qdisc_run</span><span class="p">(</span><span class="n">q</span><span class="p">);</span>
+                             <span class="k">if</span> <span class="p">(</span><span class="n">root_lock</span><span class="p">)</span>
+                                     <span class="n">spin_unlock</span><span class="p">(</span><span class="n">root_lock</span><span class="p">);</span>
+                     <span class="p">}</span>
+
+                     <span class="n">rcu_read_unlock</span><span class="p">();</span>
+             <span class="p">}</span>
+
+             <span class="n">xfrm_dev_backlog</span><span class="p">(</span><span class="n">sd</span><span class="p">);</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="id3">
+<h2>句柄注册(上状态图)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>kernel/softirq.c:open_softirq(TASKLET_SOFTIRQ, tasklet_action);// softirq_vec[TASKLET_SOFTIRQ] = tasklet_action;</p></li>
+<li><p>kernel/softirq.c:open_softirq(HI_SOFTIRQ, tasklet_hi_action); // softirq_vec[HI_SOFTIRQ] = tasklet_hi_action;</p></li>
+<li><p>kernel/time/timer.c:2024:      open_softirq(TIMER_SOFTIRQ, run_timer_softirq);</p></li>
+<li><p>kernel/time/hrtimer.c:2165:    open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq);</p></li>
+<li><p>kernel/rcu/tiny.c:222: open_softirq(RCU_SOFTIRQ, rcu_process_callbacks) + kernel/rcu/tree.c:4757:                open_softirq(RCU_SOFTIRQ, rcu_core_si);</p></li>
+<li><p>kernel/sched/fair.c:11578:     open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);</p></li>
+<li><p>net/core/dev.c:11718:       open_softirq(NET_TX_SOFTIRQ, net_tx_action);</p></li>
+<li><p>net/core/dev.c:11719:       open_softirq(NET_RX_SOFTIRQ, net_rx_action);</p></li>
+<li><p>block/blk-mq.c:4018:    open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);</p></li>
+<li><p>lib/irq_poll.c:210:     open_softirq(IRQ_POLL_SOFTIRQ, irq_poll_softirq);</p></li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h2>性能分析与总结<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

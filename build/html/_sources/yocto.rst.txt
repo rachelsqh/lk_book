@@ -1,0 +1,1127 @@
+嵌入式系统定制
+^^^^^^^^^^^^^^
+yocto概述
+
+yocto常用指令
+
+poky源码获取：
+
+git clone git://git.yoctoproject.org/poky
+转至Releases wiki 页面honister，并选择与最新稳定版本或长期支持版本相对应的版本代号（例如）。
+
+
+仿真镜像建立：
+***********
+1. 初始化环境：
+      $	cd build
+      $	source ../poky/oe-init-build-env
+      
+      构建目录为./build
+
+2. 本地配置文件：build/conf/local.conf
+
+3. 开始构建：
+	$ bitbake core-image-sato
+	
+4.运行QEMU镜像：
+	$ runqemu qemux86-64
+
+特定硬件构建
+***********
+展示如何通过将硬件层添加到 Yocto 项目开发环境中来自定义特定硬件的构建。通常，层是包含相关指令集和配置的存储库，这些指令和配置告诉 Yocto 项目要做什么。将相关元数据隔离到功能特定的层有助于模块化开发，并使层元数据的重用变得更容易。按照惯例，层名称以字符串“meta-”开头。
+
+按照以下步骤添加硬件层：
+
+1.查找层：许多硬件层可用。Yocto Project Source Repositories有许多硬件层。此示例添加了 meta-altera硬件层。
+
+2.克隆层：使用 Git 在您的机器上制作层的本地副本。您可以将副本放在之前创建的 Poky 存储库副本的顶层：硬件层现在在构建主机上的 Poky 参考存储库中的其他层旁边可用，meta-altera并且包含支持 Intel 拥有的 Altera 硬件所需的所有元数据。
+
+3.将配置更改为为特定机器构建：文件中的 MACHINE变量 local.conf指定构建的机器。对于此示例，将MACHINE变量设置为cyclone5。使用这些配置： https ://github.com/kraj/meta-altera/blob/master/conf/machine/cyclone5.conf 。
+
+4.将您的层添加到层配置文件：在构建期间使用层之前，您必须将其添加到您的bblayers.conf 文件中，该文件位于 构建目录 conf 目录中。使用命令将层添加到配置文件中：bitbake-layers add-layer
+
+$ cd poky/build
+$ bitbake-layers add-layer ../meta-altera
+NOTE: Starting bitbake server...
+Parsing recipes: 100% |##################################################################| Time: 0:00:32
+Parsing of 918 .bb files complete (0 cached, 918 parsed). 1401 targets,
+123 skipped, 0 masked, 0 errors.
+
+您可以在使用 bitbake-layers 脚本添加图层部分中找到有关添加图层的更多信息 。完成这些步骤已将该meta-altera层添加到您的 Yocto Project 开发环境中，并将其配置为为 cyclone5机器构建。
+
+
+
+创建自己的通用层：
+也许您有需要隔离的应用程序或特定行为集。您可以使用该命令创建自己的通用层 。该工具通过设置具有 配置文件的子目录、包含 配方、许可文件和.bitbake-layers create-layerlayer.confrecipes-exampleexample.bbREADME
+以下命令运行该工具以创建 meta-mylayer在poky目录中命名的层：
+$ cd poky
+$ bitbake-layers create-layer meta-mylayer
+NOTE: Starting bitbake server...
+Add your new layer with 'bitbake-layers add-layer meta-mylayer'
+
+带有子命令的bitbake-layers脚本create-layer简化了创建新通用层的过程。有关 BSP 层的信息，请参阅 Yocto 项目板特定 (BSP) 开发人员指南中的“ BSP 层”部分。为了在 OpenEmbedded 构建系统中使用层，您需要将层添加到bblayers.conf配置文件中。有关详细信息，请参阅“使用 bitbake-layers 脚本添加图层”部分。
+
+
+使用此子命令的脚本操作的默认模式是创建具有以下内容的层：
+
+层优先级为 6。
+
+conf包含layer.conf文件的子目录。
+
+一个recipes-example子目录，其中包含另一个名为 的子目录example，其中包含一个example.bb 配方文件。
+
+A COPYING.MIT，这是层的许可声明。该脚本假定您要使用 MIT 许可证，这是大多数图层的典型许可证，用于图层本身的内容。
+
+一个README文件，它是一个描述新图层内容的文件。
+
+以最简单的形式，您可以使用以下命令形式来创建图层。该命令在当前目录中创建一个名称对应于“your_layer_name”的层：
+
+$ bitbake-layers create-layer your_layer_name
+例如，以下命令meta-scottrif 在您的主目录中创建一个名为的层：
+
+$ cd /usr/home
+$ bitbake-layers create-layer meta-scottrif
+NOTE: Starting bitbake server...
+Add your new layer with 'bitbake-layers add-layer meta-scottrif'
+如果要将图层的优先级设置为默认值“6”以外的值，可以使用该--priority选项，也可以 在脚本创建后编辑BBFILE_PRIORITY值。conf/layer.conf此外，如果您想为示例配方文件指定默认名称以外的名称，您可以使用该--example-recipe-name选项。
+
+查看该命令如何工作的最简单方法是试验该脚本。您还可以通过输入以下内容来阅读使用信息：bitbake-layers create-layer
+
+$ bitbake-layers create-layer --help
+NOTE: Starting bitbake server...
+usage: bitbake-layers create-layer [-h] [--priority PRIORITY]
+                                   [--example-recipe-name EXAMPLERECIPE]
+                                   layerdir
+
+Create a basic layer
+
+positional arguments:
+  layerdir              Layer directory to create
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --priority PRIORITY, -p PRIORITY
+                        Layer directory to create
+  --example-recipe-name EXAMPLERECIPE, -e EXAMPLERECIPE
+                        Filename of the example recipe
+                        
+                        
+3.1.9bitbake-layers使用脚本添加图层
+创建通用图层后，必须将其添加到 bblayers.conf文件中。将层添加到此配置文件会使 OpenEmbedded 构建系统知道您的层，以便它可以搜索元数据。
+
+使用以下命令添加图层：bitbake-layers add-layer
+
+$ bitbake-layers add-layer your_layer_name
+这是一个示例，它meta-scottrif向配置文件添加了一个名为的层。添加图层的命令之后是另一个bitbake-layers显示bblayers.conf文件中图层的命令：
+
+$ bitbake-layers add-layer meta-scottrif
+NOTE: Starting bitbake server...
+Parsing recipes: 100% |##########################################################| Time: 0:00:49
+Parsing of 1441 .bb files complete (0 cached, 1441 parsed). 2055 targets, 56 skipped, 0 masked, 0 errors.
+$ bitbake-layers show-layers
+NOTE: Starting bitbake server...
+layer                 path                                      priority
+==========================================================================
+meta                  /home/scottrif/poky/meta                  5
+meta-poky             /home/scottrif/poky/meta-poky             5
+meta-yocto-bsp        /home/scottrif/poky/meta-yocto-bsp        5
+workspace             /home/scottrif/poky/build/workspace       99
+meta-scottrif         /home/scottrif/poky/build/meta-scottrif   6
+将层添加到此文件使构建系统能够在构建期间定位层。
+
+笔记
+
+在构建期间，OpenEmbedded 构建系统按从列表顶部到底部的顺序查找层。
+
+3.2自定义图像
+您可以自定义图像以满足特定要求。本节介绍了几种方法并为每种方法提供了指导。
+
+3.2.1自定义图像使用local.conf
+自定义图像最简单的方法可能是通过local.conf配置文件添加包。由于仅限于本地使用，这种方式一般只允许你添加包，不如创建自己的自定义镜像灵活。当您以这种方式使用局部变量添加包时，您需要意识到这些变量更改对每个构建都有效，因此会影响所有图像，这可能不是您需要的。
+
+要使用本地配置文件将包添加到您的图像，请使用IMAGE_INSTALL变量和:append运算符：
+
+IMAGE_INSTALL:append = " strace"
+语法的使用很重要；具体来说，就是开引号之后和包名之前的前导空格， strace在这个例子中。这个空间是必需的，因为:append 操作员不添加空间。
+
+此外，如果您想避免订购问题，则必须使用:append而不是运算符。+=这样做的原因是因为这样做会无条件地附加到变量并避免由于在图像配方和.bbclass文件中使用?=. 使用:append确保操作生效。
+
+如其最简单的使用所示，IMAGE_INSTALL:append影响所有图像。可以扩展语法，使变量仅适用于特定图像。这是一个例子：
+
+IMAGE_INSTALL:append:pn-core-image-minimal = " strace"
+此示例仅添加strace到core-image-minimal图像中。
+
+您可以通过CORE_IMAGE_EXTRA_INSTALL变量使用类似的方法添加包 。如果您使用此变量，则只有 core-image-*图像会受到影响。
+
+3.2.2IMAGE_FEATURES使用自定义和自定义图像EXTRA_IMAGE_FEATURES
+自定义图像的另一种方法是使用IMAGE_FEATURES和 EXTRA_IMAGE_FEATURES 变量启用或禁用高级图像功能 。尽管这两个变量的函数几乎相同，但最佳实践要求使用配方中的IMAGE_FEATURES和 文件中的EXTRA_IMAGE_FEATURESlocal.conf，该文件位于 Build Directory中。
+
+要了解这些功能是如何工作的，最好的参考是 meta/classes/image.bbclass。此类列出了可用的 IMAGE_FEATURES，其中大多数映射到包组，而一些（例如debug-tweaks和read-only-rootfs）解析为通用配置设置。
+
+总之，该文件查看IMAGE_FEATURES 变量的内容，然后相应地映射或配置特征。基于此信息，构建系统会自动将适当的包或配置添加到 IMAGE_INSTALL变量中。实际上，您可以通过扩展类或创建自定义类以与专用图像.bb文件一起使用来启用额外功能。
+
+使用本地配置文件中的EXTRA_IMAGE_FEATURES变量。使用单独的区域来启用具有此变量的功能有助于避免覆盖图像配方中使用IMAGE_FEATURES启用的功能。EXTRA_IMAGE_FEATURES的值 被添加到IMAGE_FEATURES内 meta/conf/bitbake.conf。
+
+为了说明如何使用这些变量来修改映像，请考虑一个选择 SSH 服务器的示例。Yocto 项目附带两个可用于图像的 SSH 服务器：Dropbear 和 OpenSSH。Dropbear 是适用于资源受限环境的最小 SSH 服务器，而 OpenSSH 是众所周知的标准 SSH 服务器实现。默认情况下，core-image-sato图像配置为使用 Dropbear。和图像core-image-full-cmdline都core-image-lsb 包括 OpenSSH。该core-image-minimal映像不包含 SSH 服务器。
+
+您可以自定义图像并更改这些默认值。编辑配方中的 IMAGE_FEATURES变量或使用文件中的 EXTRA_IMAGE_FEATURES，local.conf以便将您正在使用的图像配置为包含 ssh-server-dropbear或ssh-server-openssh。
+
+笔记
+
+有关Yocto 项目附带的图像功能的完整列表，请参阅 Yocto 项目参考手册中的“图像功能”部分。
+
+3.2.3使用自定义 .bb 文件自定义图像
+您还可以通过创建自定义配方来自定义图像，该配方将附加软件定义为图像的一部分。以下示例显示了您需要的两行的表单：
+
+IMAGE_INSTALL = "packagegroup-core-x11-base package1 package2"
+inherit core-image
+使用自定义配方定义软件可让您完全控制图像的内容。在IMAGE_INSTALL变量中使用正确的包名称很重要。对于名称，您必须使用 OpenEmbedded 表示法而不是 Debian 表示法（例如 glibc-dev，而不是libc6-dev）。
+
+创建自定义图像的另一种方法是基于现有图像。例如，如果您想创建一个基于 core-image-sato但将附加包添加strace到图像的图像，请将其复制meta/recipes-sato/images/core-image-sato.bb到一个新 .bb的并将以下行添加到副本的末尾：
+
+IMAGE_INSTALL += "strace"
+3.2.4使用自定义包组自定义镜像
+对于复杂的自定义图像，自定义图像的最佳方法是创建一个自定义包组配方，用于构建一个或多个图像。包组配方的一个很好的例子是 meta/recipes-core/packagegroups/packagegroup-base.bb.
+
+如果您检查该配方，您会看到PACKAGES变量列出了要生成的包组包。该 语句设置适当的默认值并自动 为PACKAGES语句中指定的每个包添加、和补充包。inherit packagegroup-dev-dbg-ptest
+
+笔记
+
+该行应该位于配方顶部附近，当然在PACKAGES语句之前。inherit packagegroup
+
+对于您在PACKAGES中指定的每个包，您可以使用RDEPENDS 和RRECOMMENDS条目来提供父任务包应包含的包列表。您可以在packagegroup-base.bb食谱中进一步查看这些示例。
+
+这是一个简短的虚构示例，显示了 中定义的假设包组的相同基本部分packagegroup-custom.bb，其中变量PN是缩写对完整包组名称的引用的标准方法packagegroup-custom：
+
+DESCRIPTION = "My Custom Package Groups"
+
+inherit packagegroup
+
+PACKAGES = "\
+    ${PN}-apps \
+    ${PN}-tools \
+    "
+
+RDEPENDS:${PN}-apps = "\
+    dropbear \
+    portmap \
+    psplash"
+
+RDEPENDS:${PN}-tools = "\
+    oprofile \
+    oprofileui-server \
+    lttng-tools"
+
+RRECOMMENDS:${PN}-tools = "\
+    kernel-module-oprofile"
+在前面的示例中，创建了两个包组包，其中列出了它们的依赖项和推荐的包依赖项： packagegroup-custom-apps和packagegroup-custom-tools. 要使用这些包组包构建映像，您需要添加 packagegroup-custom-apps和/或packagegroup-custom-tools到 IMAGE_INSTALL。有关其他形式的图像依赖关系，请参阅本节的其他区域。
+
+3.2.5自定义镜像主机名
+默认情况下，/etc/hostname镜像中配置的主机名（即 ）与机器名相同。例如，如果 MACHINE等于“qemux86”，则写入的配置主机名/etc/hostname是“qemux86”。
+
+base-files您可以通过使用附加文件或配置文件更改配方中“主机名”变量的值来自定义此名称。在附加文件中使用以下内容：
+
+hostname = "myhostname"
+在配置文件中使用以下内容：
+
+hostname:pn-base-files = "myhostname"
+在某些情况下，更改变量“主机名”的默认值可能很有用。例如，假设您需要对图像进行广泛的测试，并且希望从具有典型默认主机名的现有图像中轻松识别正在测试的图像。在这种情况下，您可以将默认主机名更改为“testme”，这会导致所有图像都使用名称“testme”。一旦测试完成并且您不再需要重新构建映像以进行测试，您可以轻松地重置默认主机名。
+
+另一个有趣的地方是，如果您取消设置变量，则图像在文件系统中将没有默认主机名。这是一个在配置文件中取消设置变量的示例：
+
+hostname:pn-base-files = ""
+文件系统中没有默认主机名适用于使用动态主机名的环境，例如虚拟机。
+
+3.3编写新食谱
+食谱（.bb文件）是 Yocto 项目环境中的基本组件。OpenEmbedded 构建系统构建的每个软件组件都需要一个配方来定义组件。本节介绍如何创建、编写和测试新配方。
+
+笔记
+
+有关对配方有用的变量的信息以及有关配方命名问题的信息，请参阅 Yocto 项目参考手册的“配方”部分。
+
+3.3.1概述
+下图显示了创建新配方的基本流程。本节的其余部分提供了这些步骤的详细信息。
+
+
+3.3.2定位或自动创建基础配方
+您总是可以从头开始编写食谱。但是，有三种选择可以帮助您快速开始使用新食谱：
+
+devtool add：有助于创建有利于开发的配方和环境的命令。
+
+recipetool create：Yocto 项目提供的命令，可根据源文件自动创建基本配方。
+
+现有配方：功能与您需要的配方相似的现有配方的位置和修改。
+
+笔记
+
+有关配方语法的信息，请参阅“配方语法”部分。
+
+3.3.2.1创建基础配方使用devtool add
+该命令使用与自动创建配方相同的逻辑，如下所示。但是，此外，设置一个环境，使您可以轻松地修补源代码并更改配方，这在添加配方以构建要包含在构建中的新软件时通常是必要的。devtool addrecipetool createdevtool add
+
+您可以在 Yocto 项目应用程序开发和可扩展软件开发工具包 (eSDK) 手册中的“仔细查看 devtool add ”部分找到该命令的完整描述。devtool add
+
+3.3.2.2创建基础配方使用recipetool create
+recipetool create在给定一组源代码文件的情况下自动创建基本配方。只要您可以提取或指向源文件，该工具就会构建一个配方并自动将所有预构建信息配置到配方中。例如，假设您有一个使用 Autotools 构建的应用程序。使用创建基本配方 recipetool会生成一个配置了预构建依赖项、许可证要求和校验和的配方。
+
+要运行该工具，您只需要在您的 构建目录中并获取构建环境设置脚本（即 oe-init-build-env）。要获得有关该工具的帮助，请使用以下命令：
+
+$ recipetool -h
+NOTE: Starting bitbake server...
+usage: recipetool [-d] [-q] [--color COLOR] [-h] <subcommand> ...
+
+OpenEmbedded recipe tool
+
+options:
+  -d, --debug     Enable debug output
+  -q, --quiet     Print only errors
+  --color COLOR   Colorize output (where COLOR is auto, always, never)
+  -h, --help      show this help message and exit
+
+subcommands:
+  create          Create a new recipe
+  newappend       Create a bbappend for the specified target in the specified
+                    layer
+  setvar          Set a variable within a recipe
+  appendfile      Create/update a bbappend to replace a target file
+  appendsrcfiles  Create/update a bbappend to add or replace source files
+  appendsrcfile   Create/update a bbappend to add or replace a source file
+Use recipetool <subcommand> --help to get help on a specific command
+运行创建基本配方并将其正确定位在包含源文件的层中。以下是一些语法示例：recipetool create -o OUTFILE
+
+使用此语法基于源生成配方。生成后，配方驻留在现有的源代码层中：
+
+recipetool create -o OUTFILE source
+使用此语法使用从源代码中提取的代码生成配方。提取的代码放置在由EXTERNALSRC定义的自己的层中。
+
+recipetool create -o OUTFILE -x EXTERNALSRC source
+使用此语法基于源生成配方。选项直接recipetool生成调试信息。生成后，配方驻留在现有的源代码层中：
+
+recipetool create -d -o OUTFILE source
+3.3.2.3查找和使用类似配方
+在从头开始编写食谱之前，了解其他人是否已经编写了满足（或接近满足）您需求的食谱通常很有用。Yocto 项目和 OpenEmbedded 社区维护了许多可能适合您正在做的事情的食谱。您可以在OpenEmbedded Layer Index中找到这些配方的一个很好的中心索引 。
+
+从现有配方或骨架配方开始工作是最好的开始方式。以下是这两种方法的一些要点：
+
+找到并修改与您想要执行的操作相近的配方： 当您熟悉当前的配方空间时，此方法有效。对于那些刚接触 Yocto 项目或编写食谱的人来说，这种方法效果不佳。
+
+与此方法相关的一些风险是使用的配方与您尝试使用配方完成的内容完全无关，无法识别您可能必须从头开始添加的配方区域，等等。所有这些风险都源于对现有配方空间的不熟悉。
+
+使用和修改以下骨架配方：如果由于某种原因您不想使用recipetool并且找不到接近满足您需求的现有配方，您可以使用以下结构来提供新配方的基本区域。
+
+DESCRIPTION = ""
+HOMEPAGE = ""
+LICENSE = ""
+SECTION = ""
+DEPENDS = ""
+LIC_FILES_CHKSUM = ""
+
+SRC_URI = ""
+3.3.3存储和命名配方
+一旦你有了你的基本配方，你应该把它放在你自己的层中并适当地命名它。正确定位它可确保 OpenEmbedded 构建系统在您使用 BitBake 处理配方时可以找到它。
+
+存储您的配方： OpenEmbedded 构建系统通过层的conf/layer.conf文件和 BBFILES变量定位您的配方。此变量设置构建系统可以从中找到配方的路径。这是典型的用法：
+
+BBFILES += "${LAYERDIR}/recipes-*/*/*.bb \
+            ${LAYERDIR}/recipes-*/*/*.bbappend"
+因此，您需要确保在图层中找到新配方，以便可以找到它。
+
+您可以在“了解和创建图层”部分中找到有关如何构建图层的更多信息。
+
+命名你的食谱：当你命名你的食谱时，你需要遵循这个命名约定：
+
+basename_version.bb
+使用小写字符并且不要包含保留的后缀 -native, -cross, -initial, 或-dev随便（即，除非字符串适用，否则不要将它们用作配方名称的一部分）。这里有些例子：
+
+cups_1.7.0.bb
+gawk_4.0.2.bb
+irssi_0.8.16-rc1.bb
+3.3.4在配方上运行构建
+创建新配方通常是一个迭代过程，需要使用 BitBake 多次处理配方，以便逐步发现信息并将信息添加到配方文件中。
+
+假设您已经获取了构建环境设置脚本（即 oe-init-build-env）并且您在构建目录中，请使用 BitBake 来处理您的配方。您需要提供的只是 basename上一节中描述的配方：
+
+$ bitbake basename
+在构建期间，OpenEmbedded 构建系统为每个配方 ( ${WORKDIR} ) 创建一个临时工作目录，其中保存提取的源文件、日志文件、中间编译和打包文件等。
+
+每个配方临时工作目录的路径取决于构建它的上下文。找到此路径的最快方法是让 BitBake 通过运行以下命令返回它：
+
+$ bitbake -e basename | grep ^WORKDIR=
+例如，假设一个名为 的源目录顶级文件夹poky、一个位于 的默认构建目录 poky/build和一个qemux86-poky-linux机器目标系统。此外，假设您的食谱名为foo_1.3.0.bb. 在这种情况下，构建系统用于构建包的工作目录如下：
+
+poky/build/tmp/work/qemux86-poky-linux/foo/1.3.0-r0
+在此目录中，您可以找到子目录，例如image、 packages-split和temp。构建之后，您可以检查这些以确定构建的进展情况。
+
+笔记
+
+您可以在配方目录中找到每个任务的日志文件temp （例如poky/build/tmp/work/qemux86-poky-linux/foo/1.3.0-r0/temp）。日志文件被命名log.taskname（例如log.do_configure、 log.do_fetch和log.do_compile）。
+
+您可以在 Yocto 项目概述和概念手册的“ Yocto 项目开发环境”一章中找到有关构建过程的更多信息。
+
+3.3.5获取代码
+您的配方必须做的第一件事是指定如何获取源文件。获取主要通过 SRC_URI变量控制。您的配方必须具有指向源所在位置的SRC_URI变量。有关源位置的图形表示，请参阅 Yocto 项目概述和概念手册中的“源”部分。
+
+do_fetch任务使用SRC_URI变量值中每个条目的前缀来确定使用哪个fetcher来获取源文件。触发 fetcher的是SRC_URI变量。do_patch任务使用获取源后的变量来应用补丁。OpenEmbedded 构建系统使用 FILESOVERRIDES来扫描 SRC_URI 中本地文件的目录位置。
+
+配方中的SRC_URI变量必须为源文件定义每个唯一位置。最好不要在SRC_URI中使用的 URL 中硬编码版本号。与其硬编码这些值，不如使用${PV}，这会导致获取过程使用配方文件名中指定的版本。以这种方式指定版本意味着将配方升级到未来版本就像重命名配方以匹配新版本一样简单。
+
+这是来自配方的一个简单示例， meta/recipes-devtools/strace/strace_5.5.bb其中源来自单个 tarball。注意 PV变量的使用：
+
+SRC_URI = "https://strace.io/files/${PV}/strace-${PV}.tar.xz \
+在SRC_URI中提到的文件，其名称以典型的存档扩展名结尾（例如.tar、.tar.gz、.tar.bz2、.zip等），在 do_unpack任务期间会自动提取。有关指定这些类型文件的另一个示例，请参阅“ Autotooled Package ”部分。
+
+另一种指定来源的方法是来自 SCM。对于 Git 存储库，您必须指定SRCREV并且您应该指定PV以包含带有SRCPV的修订。这是食谱中的一个例子 meta/recipes-kernel/blktrace/blktrace_git.bb：
+
+SRCREV = "d6918c8832793b4205ed3bfede78c2f915c23385"
+
+PR = "r6"
+PV = "1.0.5+git${SRCPV}"
+
+SRC_URI = "git://git.kernel.dk/blktrace.git \
+           file://ldflags.patch"
+如果您的SRC_URI语句包含指向从远程服务器而不是版本控制系统获取的单个文件的 URL，BitBake 会尝试根据您的配方中定义的校验和验证文件，以确保它们在编写配方后没有被篡改或以其他方式修改. 使用了两个校验和： SRC_URI[md5sum]和SRC_URI[sha256sum]。
+
+如果您的SRC_URI变量指向多个 URL（不包括 SCM URL），您需要为每个 URL提供md5和校验和。sha256对于这些情况，您为每个 URL 提供一个名称作为SRC_URI的一部分，然后在随后的校验和语句中引用该名称。这是一个结合文件 git.inc和行的示例git_2.24.1.bb：
+
+SRC_URI = "${KERNELORG_MIRROR}/software/scm/git/git-${PV}.tar.gz;name=tarball \
+           ${KERNELORG_MIRROR}/software/scm/git/git-manpages-${PV}.tar.gz;name=manpages"
+
+SRC_URI[tarball.md5sum] = "166bde96adbbc11c8843d4f8f4f9811b"
+SRC_URI[tarball.sha256sum] = "ad5334956301c86841eb1e5b1bb20884a6bad89a10a6762c958220c7cf64da02"
+SRC_URI[manpages.md5sum] = "31c2272a8979022497ba3d4202df145d"
+SRC_URI[manpages.sha256sum] = "9a7ae3a093bea39770eb96ca3e5b40bff7af0b9f6123f089d7821d0e5b8e1230"
+上游源的下载页面上的其他签名可能会提供 正确的值md5和校验和（例如、、、等）。因为 OpenEmbedded 构建系统只处理and ，所以您应该手动验证您找到的所有签名。sha256md5sha1sha256GPGsha256summd5sum
+
+如果在您尝试构建配方时未指定SRC_URI校验和，或者您提供了不正确的校验和，则构建将针对每个缺失或不正确的校验和产生错误。作为错误消息的一部分，构建系统提供与获取的文件对应的校验和字符串。获得正确的校验和后，您可以将它们复制并粘贴到您的配方中，然后再次运行构建以继续。
+
+笔记
+
+如前所述，如果上游源提供了用于验证下载源代码的签名，您应该在设置配方中的校验和值并继续构建之前手动验证这些签名。
+
+最后一个例子有点复杂，来自 meta/recipes-sato/rxvt-unicode/rxvt-unicode_9.20.bb配方。该示例的SRC_URI语句将多个文件标识为配方的源文件：tarball、补丁文件、桌面文件和图标。
+
+SRC_URI = "http://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-${PV}.tar.bz2 \
+           file://xwc.patch \
+           file://rxvt.desktop \
+           file://rxvt.png"
+当您使用file://URI 协议指定本地文件时，构建系统会从本地机器获取文件。该路径与FILESPATH变量相关，并按特定顺序搜索特定目录： ${BP}、 ${BPN}和 files. 假定这些目录是配方或附加文件所在目录的子目录。有关指定这些类型文件的另一个示例，请参阅“单个 .c 文件包 (Hello World!) ”部分。
+
+前面的示例还指定了一个补丁文件。补丁文件是名称通常以.patch或.diff但可以以压缩后缀（例如diff.gzand patch.bz2）结尾的文件。构建系统会自动应用补丁，如“补丁代码”部分所述。
+
+
+3.3.6解包代码
+在构建过程中， do_unpack任务解包源代码，其中${S} 指向解包位置。
+
+${如果您从上游源归档 tarball 中获取源文件，并且 tarball 的内部结构与名为BPN }-${PV的顶级子目录的通用约定相匹配 }，那么您不需要设置S。但是，如果SRC_URI指定从不使用此约定的存档或从 Git 或 Subversion 等 SCM 获取源，则您的配方需要定义S。
+
+如果使用 BitBake 处理您的配方成功解压缩源文件，您需要确保 指向的目录${S} 与源的结构匹配。
+
+3.3.7补丁代码
+有时需要在获取代码后对其进行修补。在SRC_URI中提到的任何以这些后缀.patch或 .diff压缩版本结尾的文件（例如diff.gz，被视为补丁 。do_patch任务会自动应用这些补丁。
+
+构建系统应该能够使用“-p1”选项应用补丁（即路径中的一个目录级别将被剥离）。如果您的补丁需要剥离更多目录级别，请使用补丁的SRC_URI条目中的“striplevel”选项指定级别数。或者，如果您的补丁需要应用在补丁文件中未指定的特定子目录中，请使用条目中的“patchdir”选项。
+
+与在 SRC_URI中使用引用的所有本地文件一样，您应该将补丁文件放在配方旁边的目录中，或者与配方的基本名称（ BP和 BPN）或“文件”file://命名相同。
+
+3.3.8许可
+您的配方需要同时具有 LICENSE和 LIC_FILES_CHKSUM 变量：
+
+LICENSE：此变量指定软件的许可证。如果您不知道您正在构建的软件的分发许可证，您应该转到源代码并查找该信息。包含此信息的典型文件包括COPYING、 LICENSE和READMEfiles。您还可以在源文件顶部附近找到信息。例如，给定一个根据 GNU 通用公共许可证第 2 版获得许可的软件，您可以按如下方式设置LICENSE ：
+
+LICENSE = "GPLv2"
+只要您不使用空格，您在LICENSE中指定的许可证可以具有任何名称，因为空格用作许可证名称之间的分隔符。对于标准许可证，请使用 中的 文件名meta/files/common-licenses/或.meta/conf/licenses.conf
+
+LIC_FILES_CHKSUM：OpenEmbedded 构建系统使用此变量来确保许可证文本没有更改。如果有，则构建会产生错误，它使您有机会找出并纠正问题。
+
+您需要为软件指定所有适用的许可文件。在配置步骤结束时，构建过程将比较文件的校验和以确保文本没有更改。任何差异都会导致包含当前校验和的消息出错。有关如何设置 LIC_FILES_CHKSUM变量的更多说明和示例，请参阅“跟踪许可证更改”部分。
+
+要确定正确的校验和字符串，您可以在LIC_FILES_CHKSUM变量中列出具有不正确 md5 字符串的相应文件，尝试构建软件，然后记下将报告正确 md5 字符串的结果错误消息。有关更多信息，请参阅“获取代码”部分。
+
+这是一个假设软件有一个COPYING文件的例子：
+
+LIC_FILES_CHKSUM = "file://COPYING;md5=xxx"
+当您尝试构建软件时，构建系统将产生错误并为您提供正确的字符串，您可以将其替换到配方文件中以进行后续构建。
+
+3.3.9依赖
+大多数软件包都有一个它们需要的其他软件包的简短列表，称为依赖项。这些依赖分为两大类：构建时依赖，在构建软件时需要；和运行时依赖项，它们需要安装在目标上才能运行软件。
+
+在配方中，您使用 DEPENDS变量指定构建时依赖项。尽管存在细微差别，但DEPENDS中指定的项目应该是其他食谱的名称。显式指定所有构建时依赖项很重要。
+
+另一个考虑因素是配置脚本可能会自动检查可选依赖项并在找到这些依赖项时启用相应的功能。如果您希望制作更普遍有用的配方（例如，在层中发布配方供其他人使用），而不是硬禁用功能，您可以使用 PACKAGECONFIG变量来允许功能和相应的依赖项启用并且很容易被配方的其他用户禁用。
+
+与构建时依赖项类似，您可以通过变量 RDEPENDS指定运行时依赖项，该变量是特定于包的。所有特定于包的变量都需要将包的名称添加到末尾作为覆盖。由于 recipe 的主包与 recipe 同名，并且可以通过 ${PN}变量找到 recipe 的名称，因此您可以通过设置来指定主包的依赖 项RDEPENDS:${PN}。如果包名为${PN}-tools，那么您将设置RDEPENDS:${PN}-tools，依此类推。
+
+一些运行时依赖项将在打包时自动设置。这些依赖项包括任何共享库依赖项（即，如果一个包“example”包含“libexample”而另一个包“mypackage”包含链接到“libexample”的二进制文件，那么 OpenEmbedded 构建系统将自动将运行时依赖项添加到“mypackage” “例子”）。有关详细信息，请参阅 Yocto 项目概述和概念手册中的“自动添加的运行时依赖项”部分。
+
+3.3.10配置配方
+大多数软件都提供了一些在编译前设置构建时配置选项的方法。通常，通过运行带有选项的配置脚本或修改构建配置文件来设置这些选项。
+
+笔记
+
+从 Yocto 项目 1.7 版开始，一些打包二进制配置脚本的核心配方现在禁用这些脚本，因为这些脚本以前需要容易出错的路径替换。现在使用的 OpenEmbedded 构建系统pkg-config更加健壮。您可以在 Yocto 项目参考手册的“禁用二进制配置脚本*-config”部分中找到禁用的脚本列表。
+
+构建时配置的主要部分是关于检查构建时依赖关系并可能启用可选功能。您需要在配方的DEPENDS值中为您正在构建的软件指定任何构建时依赖 项，就满足这些依赖项的其他配方而言。您通常可以找到软件文档中描述的构建时或运行时依赖项。
+
+以下列表根据您的软件的构建方式提供了需要注意的配置项：
+
+Autotools：如果您的源文件有configure.ac文件，那么您的软件是使用 Autotools 构建的。如果是这种情况，您只需要修改配置。
+
+使用 Autotools 时，您的配方需要继承 autotools类，并且您的配方不必包含 do_configure任务。但是，您可能仍需要进行一些调整。例如，您可以设置 EXTRA_OECONF或 PACKAGECONFIG_CONFARGS 以传递特定于配方的任何所需配置选项。
+
+CMake：如果您的源文件有CMakeLists.txt文件，那么您的软件是使用 CMake 构建的。如果是这种情况，您只需要修改配置。
+
+当您使用 CMake 时，您的配方需要继承 cmake类，并且您的配方不必包含 do_configure任务。您可以通过设置 EXTRA_OECMAKE来进行一些调整，以传递特定于配方的任何所需配置选项。
+
+笔记
+
+如果您需要安装一个或多个由您正在构建的应用程序提供的自定义 CMake 工具链文件，请将这些文件安装${D}${datadir}/cmake/Modules到do_install.
+
+其他：如果您的源文件没有configure.acor CMakeLists.txt文件，那么您的软件是使用 Autotools 或 CMake 以外的其他方法构建的。如果是这种情况，您通常需要在您的配方中提供一个 do_configure任务，当然，除非没有什么可配置的。
+
+即使您的软件不是由 Autotools 或 CMake 构建的，您仍然可能不需要处理任何配置问题。您需要确定配置是否甚至是必需的步骤。您可能需要修改用于构建的 Makefile 或某些配置文件以指定必要的构建选项。或者，您可能需要使用适当的选项运行提供的自定义配置脚本。
+
+对于涉及自定义配置脚本的情况，您将运行 并查找需要设置的选项。./configure --help
+
+配置成功后，最好查看 log.do_configure文件以确保已启用适当的选项，并且无需将其他构建时依赖项添加到DEPENDS中。例如，如果配置脚本报告它发现了DEPENDS中未提及的内容，或者它没有找到某些所需的可选功能所需的内容，那么您需要将这些内容添加到DEPENDS中。查看日志还可能显示您不想要的正在检查、启用或两者兼有的项目，或者未找到DEPENDS中的项目，在这种情况下，您需要查看根据需要将额外选项传递给配置脚本。有关特定于您正在构建的软件的配置选项的参考信息，您可以查阅其中的 命令输出或查阅软件的上游文档。./configure --help${S}
+
+3.3.11使用标头与设备接口
+如果您的配方构建的应用程序需要与某些设备进行通信或需要将 API 导入自定义内核，您将需要提供适当的头文件。在任何情况下，您都不应修改现有 meta/recipes-kernel/linux-libc-headers/linux-libc-headers.inc文件。这些标头用于构建libc，不得与自定义或特定于机器的标头信息相冲突。如果您 libc通过修改的标头进行自定义，那么所有其他使用的应用程序都会 libc受到影响。
+
+笔记
+
+切勿复制和自定义libc头文件（即 meta/recipes-kernel/linux-libc-headers/linux-libc-headers.inc）。
+
+与设备或自定义内核接口的正确方法是使用单独的包，该包为驱动程序或其他独特接口提供额外的头文件。这样做时，您的应用程序还负责创建对该特定提供程序的依赖。
+
+考虑以下：
+
+从不修改linux-libc-headers.inc. 将该文件视为libc系统的一部分，而不是您用来直接访问内核的文件。您应该libc通过特定的libc 调用访问。
+
+必须直接与设备通信的应用程序应该自己提供必要的标头，或者建立对特定于该驱动程序的特殊标头包的依赖。
+
+例如，假设您要修改现有的标头以添加 I/O 控制或网络支持。如果少量程序使用修改，则提供唯一版本的标头很容易并且影响很小。这样做时，请记住上一个列表中的指南。
+
+笔记
+
+如果由于某种原因您的更改需要修改 的行为libc，以及随后系统上所有其他应用程序的行为，请使用 a.bbappend 修改linux-kernel-headers.inc文件。但是，请注意不要使更改特定于机器。
+
+考虑一种情况，您的内核较旧并且您需要较旧的 libcABI。您的配方安装的头文件应该仍然是标准的主线内核，而不是您自己的自定义内核。
+
+当您使用自定义内核头文件时，您需要从 STAGING_KERNEL_DIR获取它们，这是构建树外模块所需的内核头文件的目录。您的食谱还需要以下内容：
+
+do_configure[depends] += "virtual/kernel:do_shared_workdir"
+3.3.12编译
+在构建期间，do_compile任务在获取、解压缩和配置源之后发生。如果配方成功通过do_compile ，则无需执行任何操作。
+
+但是，如果编译步骤失败，则需要诊断失败。以下是一些导致失败的常见问题。
+
+笔记
+
+对于检测到配置文件路径不正确或找不到库/头文件的情况，请确保您使用的是更健壮的pkg-config. 有关更多信息，请参见“配置配方”部分中的注释。
+
+并行构建失败：这些失败表现为间歇性错误，或者错误报告应该由构建过程的其他部分创建的文件或目录无法找到。即使经过检查，文件或目录在构建失败后确实存在，也会发生这种类型的故障，因为构建过程的那部分发生的顺序错误。
+
+要解决此问题，您需要满足 Makefile 中缺少的依赖项或生成 Makefile 的任何脚本，或者（作为一种解决方法）将PARALLEL_MAKE设置为空字符串：
+
+PARALLEL_MAKE = ""
+有关并行 Makefile 问题的信息，请参阅“调试并行 Make Races ”部分。
+
+主机路径使用不当：此故障适用于或仅适用于为目标构建的配方nativesdk。如果编译过程在为目标进行交叉编译时使用了来自主机系统的不正确的头文件、库或其他文件，则会发生故障。
+
+要解决此问题，请检查log.do_compile文件以识别正在使用的主机路径（例如/usr/include、/usr/lib等），然后添加配置选项、应用补丁或两者都做。
+
+找不到所需的库/头文件：如果缺少构建时依赖项，因为它尚未在 DEPENDS中声明，或者因为依赖项存在但构建过程用于查找文件的路径不正确且配置步骤没有检测到它，编译过程可能会失败。对于这些失败中的任何一个，编译过程都会指出找不到文件。在这些情况下，您需要返回并向配置脚本添加其他选项，并可能向DEPENDS添加其他构建时依赖项。
+
+有时，需要对源应用补丁以确保使用正确的路径。如果您需要指定路径以查找从其他配方暂存到 sysroot 中的文件，请使用 OpenEmbedded 构建系统提供的变量（例如 STAGING_BINDIR、STAGING_INCDIR、STAGING_DATADIR等）。
+
+3.3.13安装
+在 期间do_install，该任务将构建的文件及其层次结构复制到将反映它们在目标设备上的位置的位置。安装过程将文件从 ${S}、 ${B}和 ${WORKDIR} 目录复制到${D} 目录以创建应该出现在目标系统上的结构。
+
+您的软件的构建方式会影响您必须执行的操作以确保正确安装您的软件。以下列表描述了安装时必须执行的操作，具体取决于正在构建的软件使用的构建系统类型：
+
+Autotools 和 CMake：如果您的配方正在构建的软件使用 Autotools 或 CMake，则 OpenEmbedded 构建系统了解如何安装软件。因此，您不必将 do_install任务作为食谱的一部分。您只需要确保构建的安装部分没有问题即可完成。但是，如果您希望安装尚未由 安装的其他文件，则应 使用安装命令的功能来执行此操作，如此列表后面的“手动”项目符号项中所述。make installdo_install:append
+
+其他（使用 ）：您需要 在配方中定义一个函数。该函数应该调用 并且可能还需要传入目标目录。您如何通过该路径取决于正在运行的编写方式（例如、 、等）。make installdo_installoe_runmake installMakefileDESTDIR=${D}PREFIX=${D}INSTALLROOT=${D}
+
+有关使用 的示例配方，请参阅“基于 Makefile 的包”部分。make install
+
+手册：您需要do_install在配方中定义一个功能。该函数必须首先用于在D下创建目录 。目录存在后，您的函数可以使用手动将构建的软件安装到目录中。install -d${}install
+
+install您可以在 https://www.gnu.org/software/coreutils/manual/html_node/install-invocation.html找到更多信息。
+
+对于不使用 Autotools 或 CMake 的场景，您需要跟踪安装并诊断和修复任何问题，直到一切安装正确。您需要查看 的默认位置 ${D}，即${WORKDIR}/image，以确保您的文件已正确安装。
+
+笔记
+
+在安装过程中，您可能需要修改一些已安装的文件以适应目标布局。例如，您可能需要将 initscript 中的硬编码路径替换为构建系统提供的变量值，例如替换/usr/bin/为${bindir}. 如果您确实在 期间进行了此类修改do_install，请务必在复制之后而不是在复制之前修改目标文件。复制后修改确保构建系统可以do_install在需要时重新执行。
+
+oe_runmake install，可以直接运行，也可以由 autotools和 cmake类间接运行，并行运行。有时，Makefile 可能缺少目标之间的依赖关系，从而导致竞争条件。如果您在 期间遇到间歇性故障 ，您可以通过在配方中添加以下内容来禁用并行 Makefile 安装来解决这些问题：make installdo_install
+
+PARALLEL_MAKEINST = ""
+有关其他信息，请参阅PARALLEL_MAKEINST。
+
+如果您需要安装一个或多个由您正在构建的应用程序提供的自定义 CMake 工具链文件，请${D}${datadir}/cmake/Modules在 do_install期间安装这些文件。
+
+3.3.14开启系统服务
+如果你想安装一个服务，这是一个通常在启动时启动并在后台运行的进程，那么你必须在你的配方中包含一些额外的定义。
+
+如果您正在添加服务并且未安装服务初始化脚本或服务文件本身，则必须使用do_install:append函数在您的配方中提供该安装。如果您的食谱已经有一个do_install功能，请在接近尾声时更新该功能，而不是添加额外的do_install:append 功能。
+
+当您为您的服务创建安装时，您需要完成通常由. 换句话说，确保您的安装安排输出类似于它在目标系统上的安排方式。make install
+
+OpenEmbedded 构建系统支持以两种不同的方式启动服务：
+
+SysVinit： SysVinit 是一个系统和服务管理器，它管理用于控制系统最基本功能的初始化系统。init 程序是 Linux 内核在系统启动时启动的第一个程序。Init 然后控制所有其他程序的启动、运行和关闭。
+
+要使用 SysVinit 启用服务，您的配方需要继承 update-rc.d 类。该类有助于在目标上安全地安装包。
+
+您需要在配方中设置 INITSCRIPT_PACKAGES、 INITSCRIPT_NAME和 INITSCRIPT_PARAMS 变量。
+
+systemd：系统管理守护进程 (systemd) 旨在取代 SysVinit 并提供增强的服务管理。有关 systemd 的更多信息，请参阅位于 https://freedesktop.org/wiki/Software/systemd/的 systemd 主页。
+
+要使用 systemd 启用服务，您的配方需要继承 systemd类。有关详细信息，请参阅systemd.bbclass位于您的源目录 部分中的文件。
+
+3.3.15包装
+成功的打包是 OpenEmbedded 构建系统执行的自动化过程和您需要采取的一些特定步骤的组合。以下列表描述了该过程：
+
+拆分文件：该do_package任务将配方生成的文件拆分为逻辑组件。即使是生成单个二进制文件的软件也可能仍然有调试符号、文档和其他应该拆分的逻辑组件。该do_package 任务确保文件被正确拆分和打包。
+
+运行 QA Checks： insane类在包生成过程中添加了一个步骤，以便 OpenEmbedded 构建系统生成输出质量保证检查。此步骤执行一系列检查，以确保构建的输出没有运行时出现的常见问题。有关这些检查的信息，请参阅 Yocto 项目参考手册中的 insane类和“ QA 错误和警告消息”一章。
+
+手工检查你的包：在你构建你的软件之后，你需要确保你的包是正确的。检查 ${WORKDIR}/packages-split 目录并确保文件在您期望的位置。如果发现问题，可以根据需要设置 PACKAGES、 FILES、 do_install(:append)等。
+
+将应用程序拆分为多个包：如果您需要将一个应用程序拆分为多个包，请参阅“将应用程序拆分为多个包”部分以获取示例。
+
+安装安装后脚本：有关如何安装安装后脚本的示例，请参阅“安装后脚本”部分。
+
+标记包体系结构：根据您的配方正在构建的内容和配置方式，将生成的包标记为特定于特定机器或将它们标记为根本不特定于特定机器或体系结构可能很重要.
+
+默认情况下，包适用于与目标机器具有相同架构的任何机器。当配方生成特定于机器的包时（例如，将 MACHINE值传递到配置脚本或仅对特定机器应用补丁），您应该通过在配方中添加以下内容来标记它们：
+
+PACKAGE_ARCH = "${MACHINE_ARCH}"
+另一方面，如果配方生成的包根本不包含任何特定于目标机器或体系结构的包（例如，仅打包脚本文件或配置文件的配方），您应该使用 allarch类通过添加这是你的食谱：
+
+inherit allarch
+在进行配方的前几个构建时，确保包架构正确并不重要。但是，重要的是要确保您的配方正确重建（或不重建）以响应配置更改，并确保您在目标机器上安装了适当的软件包，特别是如果您运行单独的构建以获取更多比一台目标机器。
+
+3.3.16配方之间共享文件
+配方通常需要使用构建主机上其他配方提供的文件。例如，链接到公共库的应用程序需要访问库本身及其关联的标头。完成此访问的方法是使用文件填充 sysroot。每个配方在其工作目录中有两个 sysroot，一个用于目标文件 ( recipe-sysroot)，一个用于构建主机的本地文件 ( recipe-sysroot-native)。
+
+笔记
+
+您可以在 Yocto 项目中找到有关填充 sysroot 的文件的术语“暂存”（例如STAGING_DIR 变量）。
+
+配方不应该直接填充 sysroot（即将文件写入 sysroot）。相反，应该在D目录中的do_install任务期间将文件安装到标准位置 。此限制的原因是，几乎所有填充 sysroot 的文件都在清单中进行编目，以确保以后可以在修改或删除配方时删除这些文件。因此，sysroot 能够不受陈旧文件的影响。${}
+
+do_install任务安装的文件子集被SYSROOT_DIRS变量定义 的do_populate_sysroot任务用于自动填充 sysroot。可以修改填充 sysroot 的目录列表。以下示例显示了如何将目录添加到配方中的目录列表中：/opt
+
+SYSROOT_DIRS += "/opt"
+笔记
+
+/sysroot-only将由生成不包含在目标文件系统中的工件的配方使用，允许它们共享这些工件而无需使用DEPLOY_DIR。
+
+有关do_populate_sysroot 任务及其相关函数的更完整描述，请参阅 暂存类。
+
+3.3.17使用虚拟提供者
+在构建之前，如果您知道几个不同的配方提供相同的功能，您可以使用虚拟提供者（即virtual/*）作为实际提供者的占位符。实际的提供者是在构建时确定的。
+
+使用虚拟提供程序的常见场景是内核配方。假设您有三个内核配方，其 PN值映射到kernel-big、 kernel-mid和kernel-small。此外，这些配方中的每一个都以某种方式使用PROVIDES 语句，该语句基本上将自己标识为能够提供 virtual/kernel. 这是通过 内核类的一种方法：
+
+PROVIDES += "virtual/kernel"
+任何继承内核类的配方都将使用PROVIDES语句，该语句将该配方标识为能够提供该virtual/kernel项目。
+
+现在到了实际构建映像的时候了，您需要一个内核配方，但是哪一个呢？您可以使用PREFERRED_PROVIDER变量配置您的构建以调用所需的内核配方。例如，考虑x86-base.inc包含文件，它是一个机器（即MACHINE）配置文件。这个包含文件是所有基于 x86 的机器都使用linux-yocto内核的原因。以下是包含文件中的相关行：
+
+PREFERRED_PROVIDER_virtual/kernel ??= "linux-yocto"
+PREFERRED_VERSION_linux-yocto ??= "4.15%"
+当您使用虚拟提供程序时，您不必将配方名称“硬编码”为构建依赖项。您可以使用 DEPENDS变量来说明构建依赖于virtual/kernel例如：
+
+DEPENDS = "virtual/kernel"
+virtual/kernel在构建期间，OpenEmbedded 构建系统根据PREFERRED_PROVIDER变量选择依赖项所需的正确配方。如果您想使用本节开头提到的小内核，请按如下方式配置您的构建：
+
+PREFERRED_PROVIDER_virtual/kernel ??= "kernel-small"
+笔记
+
+任何提供最终未通过 PREFERRED_PROVIDER 选择的项目的配方都不会被构建。阻止构建这些配方通常是所需的行为，因为该机制的目的是在互斥的替代提供者之间进行选择。virtual/*
+
+下面列出了虚拟提供者的具体示例：
+
+virtual/kernel：提供构建内核映像时要使用的内核配方的名称。
+
+virtual/bootloader：提供构建映像时要使用的引导加载程序的名称。
+
+virtual/libgbm: 提供gbm.pc。
+
+virtual/egl: 提供egl.pc和可能wayland-egl.pc。
+
+virtual/libgl: 提供gl.pc（即 libGL）。
+
+virtual/libgles1: 提供glesv1_cm.pc（即 libGLESv1_CM）。
+
+virtual/libgles2: 提供glesv2.pc（即 libGLESv2）。
+
+笔记
+
+虚拟提供程序仅适用于使用 PROVIDES 和 DEPENDS 指定的构建 时间依赖项。它们不适用于使用RPROVIDES和RDEPENDS指定的运行时依赖项。
+
+3.3.18正确版本控制预发布配方
+有时，当配方升级到最终版本时，配方的名称可能会导致版本控制问题。例如，考虑 “存储和命名配方”部分irssi_0.8.16-rc1.bb中示例配方列表中的配方文件。此配方处于候选发布阶段（即“rc1”）。当配方发布时，配方文件名变为. 版本从到的变化被构建系统和包管理器视为降低，因此生成的包将不会正确触发升级。irssi_0.8.16.bb0.8.16-rc10.8.16
+
+为了确保正确比较版本，建议的约定是将配方中的PV设置为“previous_version+current_version”。您可以使用附加变量，以便可以在其他地方使用当前版本。这是一个例子：
+
+REALPV = "0.8.16-rc1"
+PV = "0.8.15+${REALPV}"
+3.3.19安装后脚本
+安装后脚本在目标上安装包后或在图像创建过程中当包包含在图像中时立即运行。要将安装后脚本添加到包，请将 pkg_postinst:PACKAGENAME()函数添加到配方文件 ( .bb) 并将PACKAGENAME替换为要附加到postinst脚本的包的名称。要将安装后脚本应用于配方的主包（通常是必需的），请指定 ${PN}代替 PACKAGENAME。
+
+安装后功能具有以下结构：
+
+pkg_postinst:PACKAGENAME() {
+    # Commands to carry out
+}
+在创建根文件系统时调用安装后函数中定义的脚本。如果脚本成功，则该包被标记为已安装。
+
+笔记
+
+在目标上运行的任何 RPM 安装后脚本都应返回 0 退出代码。RPM 不允许这些脚本的非零退出代码，并且 RPM 包管理器将导致包在目标上安装失败。
+
+有时有必要将安装后脚本的执行延迟到第一次启动。例如，脚本可能需要在设备本身上执行。要将脚本执行延迟到启动时，您必须明确标记后安装以推迟到目标。您可以使用pkg_postinst_ontarget()或 从调用。任何脚本失败（包括出口 1）都会在do_rootfs任务期间触发错误 。postinst_intercept delay_to_first_bootpkg_postinst()pkg_postinst()
+
+如果您有使用pkg_postinst函数的配方，并且它们需要在根文件系统构建期间使用具有依赖关系的非标准本机工具，则需要在配方中使用 PACKAGE_WRITE_DEPS 变量来列出这些工具。如果您不使用此变量，则可能会缺少这些工具，并且安装后脚本的执行会延迟到第一次启动。将脚本推迟到第一次引导对于只读根文件系统来说是不可取的，也是不可能的。
+
+笔记
+
+pkg_preinst分别通过、pkg_prerm和对安装前、卸载前和卸载后脚本提供同等支持pkg_postrm。这些脚本的工作方式与它们的运行方式完全相同， pkg_postinst只是它们在不同的时间运行。此外，由于它们运行时，它们不适用于在图像创建时运行，例如pkg_postinst.
+
+3.3.20测试
+完成配方的最后一步是确保您构建的软件运行正常。要完成运行时测试，请将构建的输出包添加到您的映像并在目标上测试它们。
+
+有关如何通过添加特定包来自定义图像的信息，请参阅“自定义图像”部分。
+
+3.3.21示例
+为了帮助总结如何编写配方，本节提供了一些给定各种场景的示例：
+
+使用本地文件的食谱
+
+使用自动工具包
+
+使用基于 Makefile 的包
+
+将应用程序拆分为多个包
+
+将二进制文件添加到图像
+
+3.3.21.1单个 .c 文件包（Hello World！）
+从本地存储的单个文件（例如，在 下files）构建应用程序需要一个配方，该配方具有在 SRC_URI变量中列出的文件。此外，您需要手动编写 do_compile和do_install任务。S变量定义包含源代码的目录，在本例中设置为 WORKDIR - BitBake 用于构建的目录。
+
+SUMMARY = "Simple helloworld application"
+SECTION = "examples"
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
+
+SRC_URI = "file://helloworld.c"
+
+S = "${WORKDIR}"
+
+do_compile() {
+    ${CC} ${LDFLAGS} helloworld.c -o helloworld
+}
+
+do_install() {
+    install -d ${D}${bindir}
+    install -m 0755 helloworld ${D}${bindir}
+}
+默认情况下，helloworld会构建helloworld-dbg、 和 helloworld-dev包。有关如何自定义打包过程的信息，请参阅“将应用程序拆分为多个包”部分。
+
+3.3.21.2 自动工具包
+autoconf使用 Autotools 的应用程序，例如automake 需要具有SRC_URI中列出的源存档的配方，并且还继承 autotools类，该类包含构建基于 Autotool 的应用程序所需的所有步骤的定义。构建的结果会自动打包。而且，如果应用程序使用 NLS 进行本地化，则会生成带有本地信息的包（每种语言一个包）。下面是一个例子： ( hello_2.3.bb)
+
+SUMMARY = "GNU Helloworld application"
+SECTION = "examples"
+LICENSE = "GPLv2+"
+LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
+
+SRC_URI = "${GNU_MIRROR}/hello/hello-${PV}.tar.gz"
+
+inherit autotools gettext
+变量LIC_FILES_CHKSUM用于跟踪源许可证更改，如Yocto 项目概述和概念手册中的“跟踪许可证更改”部分所述。您可以使用与上一个示例类似的方式快速创建基于 Autotool 的配方。
+
+3.3.21.3基于 Makefile 的包
+使用 GNU 的应用程序还需要在SRC_URImake中列出源存档的配方。您不需要添加 步骤，因为默认情况下 BitBake 会启动命令来编译应用程序。如果您需要其他选项，您应该将它们存储在 EXTRA_OEMAKE或 PACKAGECONFIG_CONFARGS 变量中。BitBake 将这些选项传递给 GNU 调用。请注意，仍然需要一个任务。否则，BitBake 默认运行一个空任务。do_compilemakemakemakedo_installdo_install
+
+某些应用程序可能需要将额外的参数传递给编译器。例如，应用程序可能需要额外的标头路径。您可以通过添加到CFLAGS变量来完成此操作。以下示例显示了这一点：
+
+CFLAGS:prepend = "-I ${S}/include "
+在以下示例中，mtd-utils是一个基于 makefile 的包：
+
+SUMMARY = "Tools for managing memory technology devices"
+SECTION = "base"
+DEPENDS = "zlib lzo e2fsprogs util-linux"
+HOMEPAGE = "http://www.linux-mtd.infradead.org/"
+LICENSE = "GPLv2+"
+LIC_FILES_CHKSUM = "file://COPYING;md5=0636e73ff0215e8d672dc4c32c317bb3 \
+    file://include/common.h;beginline=1;endline=17;md5=ba05b07912a44ea2bf81ce409380049c"
+
+# Use the latest version at 26 Oct, 2013
+SRCREV = "9f107132a6a073cce37434ca9cda6917dd8d866b"
+SRC_URI = "git://git.infradead.org/mtd-utils.git \
+    file://add-exclusion-to-mkfs-jffs2-git-2.patch \
+    "
+
+PV = "1.5.1+git${SRCPV}"
+
+S = "${WORKDIR}/git"
+
+EXTRA_OEMAKE = "'CC=${CC}' 'RANLIB=${RANLIB}' 'AR=${AR}' 'CFLAGS=${CFLAGS} -I${S}/include -DWITHOUT_XATTR' 'BUILDDIR=${S}'"
+
+do_install () {
+    oe_runmake install DESTDIR=${D} SBINDIR=${sbindir} MANDIR=${mandir} INCLUDEDIR=${includedir}
+}
+
+PACKAGES =+ "mtd-utils-jffs2 mtd-utils-ubifs mtd-utils-misc"
+
+FILES:mtd-utils-jffs2 = "${sbindir}/mkfs.jffs2 ${sbindir}/jffs2dump ${sbindir}/jffs2reader ${sbindir}/sumtool"
+FILES:mtd-utils-ubifs = "${sbindir}/mkfs.ubifs ${sbindir}/ubi*"
+FILES:mtd-utils-misc = "${sbindir}/nftl* ${sbindir}/ftl* ${sbindir}/rfd* ${sbindir}/doc* ${sbindir}/serve_image ${sbindir}/recv_image"
+
+PARALLEL_MAKE = ""
+
+BBCLASSEXTEND = "native"
+3.3.21.4将一个应用拆分成多个包
+您可以使用变量PACKAGES和FILES将应用程序拆分为多个包。
+
+以下是使用libxpm配方的示例。默认情况下，这个秘籍会生成一个包含库和一些二进制文件的包。您可以修改配方以将二进制文件拆分为单独的包：
+
+require xorg-lib-common.inc
+
+SUMMARY = "Xpm: X Pixmap extension library"
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://COPYING;md5=51f4270b012ecd4ab1a164f5f4ed6cf7"
+DEPENDS += "libxext libsm libxt"
+PE = "1"
+
+XORG_PN = "libXpm"
+
+PACKAGES =+ "sxpm cxpm"
+FILES:cxpm = "${bindir}/cxpm"
+FILES:sxpm = "${bindir}/sxpm"
+在前面的示例中，我们希望将sxpm和cxpm 二进制文件放在单独的包中。由于默认情况下bindir会打包到主PN包中，因此我们在PACKAGES变量前面添加了额外的包名称，以便将其他包名称添加到列表的开头。这导致额外的FILES:*变量包含定义哪些文件和目录进入哪些包的信息。较早的软件包包含的文件会被较晚的软件包跳过。因此，主PN包不包括上面列出的文件。
+
+3.3.21.5打包外部生成的二进制文件
+有时，您需要将预编译的二进制文件添加到图像中。例如，假设有由公司的特定部门创建的专有代码的二进制文件。您所在的公司需要将这些二进制文件用作您正在使用 OpenEmbedded 构建系统构建的映像的一部分。由于您只有二进制文件而不是源代码，因此您不能使用期望获取 SRC_URI中指定的源然后编译它的典型配方。
+
+一种方法是打包二进制文件，然后将它们安装为映像的一部分。一般来说，打包二进制文件并不是一个好主意，因为除其他外，它可能会阻碍重现构建的能力，并可能导致未来与 ABI 的兼容性问题。然而，有时你别无选择。
+
+最简单的解决方案是创建一个使用 bin_package类的配方，并确保您使用默认位置来构建工件。在大多数情况下，bin_package类处理“跳过”配置和编译步骤以及设置从适当区域获取包的内容。特别是，这个类同时设置noexec了do_configure 和do_compile任务，设置FILES:${PN}为“/”以便它拾取所有文件，并设置一个 do_install任务，该任务有效地将所有文件从 复制${S}到${D}. bin_package 类在提取文件时运行良好${S} 已经按照应该在目标上布置的方式布置。有关这些变量的更多信息，请参阅 Yocto 项目参考手册的变量词汇表中的 FILES、 PN、 S和 D变量。
+
+笔记
+
+即使对于以二进制形式分发的组件，使用DEPENDS也是一个好主意，并且对于共享库通常是必需的。对于共享库，在DEPENDS中列出库依赖项可确保当其他配方链接到该库时，这些库在暂存 sysroot 中可用，这可能是成功链接所必需的。
+
+使用DEPENDS还允许自动添加包之间的运行时依赖项。有关更多信息，请参阅 Yocto 项目概述和概念手册中的“自动添加的运行时依赖项”部分。
+
+如果您不能使用bin_package类，则需要确保您正在执行以下操作：
+
+创建一个配方，其中 do_configure和 do_compile任务什么都不做：通常只在配方中不定义这些任务就足够了，因为默认实现什么都不做，除非在 ${S}中找到 Makefile 。
+
+如果${S}可能包含 Makefile，或者如果您继承了一些替换do_configure并do_compile使用自定义版本的类，那么您可以使用 [noexec] 标志将任务转换为无操作，如下所示：
+
+do_configure[noexec] = "1"
+do_compile[noexec] = "1"
+与 删除任务不同，使用标志保留从 do_fetch、 do_unpack和 do_patch任务到 do_install任务的依赖链。
+
+确保您的do_install任务正确安装了二进制文件。
+
+确保您设置FILES （通常是 FILES:${PN}）指向您已安装的文件，这当然取决于您安装它们的位置以及这些文件是否位于与默认位置不同的位置。
+
+笔记
+
+如果启用了图像预链接（例如，图像预链接在默认情况下位于USER_CLASSES 中），预链接将更改生成的图像中的二进制文件，这通常会引起人们的注意。删除该类以确保在必要时准确保留二进制文件。
+
+3.3.22遵循配方风格指南
+在编写食谱时，最好遵循现有的风格指南。OpenEmbedded Styleguide wiki 页面提供了首选配方风格的粗略指南。
+
+现有食谱通常会偏离这种风格。但是，至少以一致的风格为目标是一个好主意。一些做法，例如=在分配中省略运算符周围的空格或以不稳定的方式排序配方组件，被广泛认为是糟糕的风格。
+
+3.3.23配方语法
+了解配方文件语法对于编写配方很重要。以下列表概述了构成 BitBake 配方文件的基本项目。有关更完整的 BitBake 语法说明，请参阅 BitBake 用户手册的“语法和运算符”一章。
+
+变量分配和操作：变量分配允许将值分配给变量。赋值可以是静态文本，也可以包含其他变量的内容。除了赋值之外，还支持追加和前置操作。
+
+以下示例显示了您可以在配方中使用变量的一些方法：
+
+S = "${WORKDIR}/postfix-${PV}"
+CFLAGS += "-DNO_ASM"
+SRC_URI:append = " file://fixup.patch"
+函数：函数提供了一系列要执行的动作。您通常使用函数来覆盖任务函数的默认实现或补充默认函数（即附加或添加到现有函数）。标准函数使用shshell 语法，但也可以访问 OpenEmbedded 变量和内部方法。
+
+这是sed配方中的示例函数：
+
+do_install () {
+    autotools_do_install
+    install -d ${D}${base_bindir}
+    mv ${D}${bindir}/sed ${D}${base_bindir}/sed
+    rmdir ${D}${bindir}/
+}
+只要新功能不替换或补充默认功能，也可以实现在现有任务之间调用的新功能。你可以用 Python 而不是 shell 来实现函数。大多数食谱中都没有这两种选择。
+
+关键字： BitBake 食谱只使用几个关键字。您可以使用关键字来包含常用函数 ( inherit)、从其他文件加载部分配方 (include和require) 并将变量导出到环境 ( export)。
+
+以下示例显示了其中一些关键字的使用：
+
+export POSTCONF = "${STAGING_BINDIR}/postconf"
+inherit autoconf
+require otherfile.inc
+注释 (#)：任何以井号字符 () 开头的#行都被视为注释行并被忽略：
+
+# This is a comment
+下一个列表总结了配方语法中最重要和最常用的部分。有关这些语法部分的更多信息，您可以参考 BitBake 用户手册中的 语法和运算符一章。
+
+续行 (\)：使用反斜杠 ( \) 字符将语句拆分为多行。将斜杠字符放在要在下一行继续的行的末尾：
+
+VAR = "A really long \
+       line"
+笔记
+
+斜线字符后不能有任何字符，包括空格或制表符。
+
+使用变量 (${VARNAME})：使用${VARNAME}语法访问变量的内容：
+
+SRC_URI = "${SOURCEFORGE_MIRROR}/libpng/zlib-${PV}.tar.gz"
+笔记
+
+重要的是要了解以这种形式表示的变量的值不会自动替换。这些表达式的扩展稍后会按需进行（例如，通常在执行引用变量的函数时）。此行为可确保这些值最适合最终使用它们的上下文。在极少数情况下您确实需要立即扩展变量表达式，您可以在进行赋值时使用 := 运算符而不是 =，但通常不需要这样做。
+
+引用所有赋值（“值”）："value"在所有变量赋值（例如）中的值周围使用双引号。下面是一个例子：
+
+VAR1 = "${OTHERVAR}"
+VAR2 = "The version is ${PV}"
+条件赋值 (?=)：条件赋值用于​​为变量赋值，但仅限于当前未设置变量时。使用问号后跟等号 ( ?=) 进行用于条件赋值的“软”赋值。通常，“软”分配在local.conf文件中用于允许来自外部环境的变量。
+
+这是一个示例，VAR1如果当前为空，则设置为“新值”。但是，如果VAR1已经设置，则保持不变：
+
+VAR1 ?= "New value"
+在下一个示例中，VAR1剩下的值为“原始值”：
+
+VAR1 = "Original value"
+VAR1 ?= "New value"
+附加 (+=)：使用加号字符后跟等号 ( +=) 将值附加到现有变量。
+
+笔记
+
+此运算符在变量的现有内容和新内容之间添加一个空格。
+
+这是一个例子：
+
+SRC_URI += "file://fix-makefile.patch"
+前置 (=+)：使用等号后跟加号 ( =+) 将值前置到现有变量中。
+
+笔记
+
+此运算符在变量的新内容和现有内容之间添加一个空格。
+
+这是一个例子：
+
+VAR =+ "Starts"
+附加 (:append)：使用:append运算符将​​值附加到现有变量。此运算符不会添加任何额外的空间。此外，运算符是在所有+=, 和=+ 运算符都已应用且所有=赋值发生后应用的。
+
+以下示例显示了显式添加到开头的空格，以确保附加值不会与现有值合并：
+
+SRC_URI:append = " file://fix-makefile.patch"
+您还可以将:append运算符与覆盖一起使用，这会导致仅对指定的目标或机器执行操作：
+
+SRC_URI:append:sh4 = " file://fix-makefile.patch"
+前置 (:prepend)：使用:prepend运算符将​​值前置到现有变量。此运算符不会添加任何额外的空间。此外，运算符是在所有+=, 和=+运算符都已应用且所有= 赋值发生后应用的。
+
+以下示例显示了显式添加到末尾的空格，以确保前置值不与现有值合并：
+
+CFLAGS:prepend = "-I${S}/myincludes "
+您还可以将 :prepend运算符与覆盖一起使用，这会导致仅对指定的目标或机器执行操作：
+
+CFLAGS:prepend:sh4 = "-I${S}/myincludes "
+覆盖：您可以使用覆盖来有条件地设置值，通常基于配方的构建方式。例如，要将任何目标MACHINE的KBRANCH变量的值设置为“standard/base” ，除了应该设置为“standard/arm-versatile-926ejs”的 qemuarm，您可以执行以下操作：
+
+KBRANCH = "standard/base"
+KBRANCH:qemuarm = "standard/arm-versatile-926ejs"
+覆盖也用于在其他情况下分隔变量的替代值。例如，在设置特定于由配方生成的单个包的变量（例如 FILES和 RDEPENDS ）时，您应该始终使用指定包名称的覆盖。
+
+缩进：使用空格而不是制表符进行缩进。对于 shell 函数，目前两者都有效。但是，Yocto 项目的政策决定是在 shell 函数中使用选项卡。意识到某些层的策略是使用空格进行所有缩进。
+
+使用 Python 进行复杂操作：对于更高级的处理，可以在变量分配期间使用 Python 代码（例如，搜索和替换变量）。
+
+${@python_code}您使用变量赋值的语法来指示 Python 代码：
+
+SRC_URI = "ftp://ftp.info-zip.org/pub/infozip/src/zip${@d.getVar('PV',1).replace('.', '')}.tgz
+Shell 函数语法：在描述要执行的操作列表时，就像在编写 shell 脚本一样编写 shell 函数。您应该确保您的脚本适用于泛型sh，并且它不需要任何bash或其他特定于 shell 的功能。相同的考虑适用于您可能希望使用的各种系统实用程序（例如sed、grep、等）。awk如果有疑问，您应该检查多个实现——包括来自 BusyBox 的那些。
+
+          
+          
+3.4添加新机器
+将新机器添加到 Yocto 项目是一个简单的过程。本节介绍如何添加与 Yocto 项目已支持的机器类似的机器。
+
+笔记
+
+虽然在 Yocto 项目的能力范围之内，但添加一个全新的架构可能需要更改gcc/更改glibc 站点信息，这超出了本手册的范围。
+
+有关显示如何添加新机器的完整示例，请参阅Yocto 项目板支持包 (BSP) 开发人员指南中的“使用 bitbake-layers 脚本创建新的 BSP 层”部分。
+
+3.4.1添加机器配置文件
+要添加新机器，您需要将新机器配置文件添加到图层conf/machine目录。此配置文件提供有关您要添加的设备的详细信息。
+
+OpenEmbedded 构建系统使用机器配置文件的根名称来引用新机器。例如，给定一个名为 的机器配置文件crownbay.conf，构建系统将机器识别为“crownbay”。
+
+您必须在机器配置文件中设置或从较低级别的配置文件中包含的最重要的变量如下：
+
+TARGET_ARCH（例如“手臂”）
+
+PREFERRED_PROVIDER_virtual/kernel
+
+MACHINE_FEATURES（例如“apm screen wifi”）
+
+您可能还需要这些变量：
+
+SERIAL_CONSOLES（例如“115200;ttyS0 115200;ttyS1”）
+
+KERNEL_IMAGETYPE（例如“zImage”）
+
+IMAGE_FSTYPES（例如“tar.gz jffs2”）
+
+您可以在参考部分找到有关这些变量的完整详细信息。您可以利用.conf. meta-yocto-bsp/conf/machine/
+
+3.4.2为机器添加内核
+OpenEmbedded 构建系统需要能够为机器构建内核。您需要为此机器创建一个新的内核配方，或者扩展现有的内核配方。您可以在 Source Directory 中找到几个meta/recipes-kernel/linux可以用作参考的内核配方示例。
+
+如果您正在创建一个新的内核配方，则正常的配方编写规则适用于设置SRC_URI。因此，您需要指定任何必要的补丁并将S设置为指向源代码。您需要创建一个do_configure任务，用一个defconfig文件配置解压后的内核。您可以通过使用 命令来完成此操作，或者更常见的是，通过复制合适的文件然后运行​​. 通过使用 并可能使用其中的一些文件，大多数其他功能都是集中的，并且类的默认值通常可以很好地工作。make defconfigdefconfigmake oldconfiginherit kernellinux-*.inc
+
+如果您要扩展现有的内核配方，通常只需添加一个合适的defconfig文件。该文件需要添加到与defconfig给定内核配方中用于其他机器的文件类似的位置。一种可能的方法是在SRC_URI中列出文件并将机器添加到 COMPATIBLE_MACHINE中的表达式中：
+
+COMPATIBLE_MACHINE = '(qemux86|qemumips)'
+有关defconfig文件的更多信息，请参阅 Yocto Project Linux 内核开发手册中的“更改配置”部分。
+
+3.4.3添加 Formfactor 配置文件
+外形配置文件提供有关正在为其构建映像的目标硬件的信息，以及构建系统无法从其他来源（例如内核）获得的信息。包含在外形配置文件中的一些信息示例包括帧缓冲区方向、系统是否有键盘、键盘相对于屏幕的位置以及屏幕分辨率。
+
+在大多数情况下，构建系统使用合理的默认值。但是，如果需要自定义，则需要machconfig在目录中创建一个文件meta/recipes-bsp/formfactor/files。此目录包含特定机器的目录，例如qemuarm和 qemux86。有关可用设置和默认设置的信息，请参阅meta/recipes-bsp/formfactor/files/config同一区域中的文件。
+
+以下是“qemuarm”机器的示例：
+
+HAVE_TOUCHSCREEN=1
+HAVE_KEYBOARD=1
+DISPLAY_CAN_ROTATE=0
+DISPLAY_ORIENTATION=0
+#DISPLAY_WIDTH_PIXELS=640
+#DISPLAY_HEIGHT_PIXELS=480
+#DISPLAY_BPP=16
+DISPLAY_DPI=150
+DISPLAY_SUBPIXEL_ORDER=vrgb
+3.5升级配方
+随着时间的推移，上游开发人员会发布由层配方构建的软件的新版本。建议使配方与上游版本保持同步。
+
+虽然有多种方法可以升级配方，但您可以考虑先检查配方的升级状态。您可以使用该命令执行此操作。有关详细信息，请参阅 Yocto 项目参考手册中的“检查配方的升级状态”部分。devtool check-upgrade-status
+
+本节的其余部分描述了升级配方的三种方法。您可以使用自动升级助手 (AUH) 来设置自动版本升级。或者，您可以使用 设置半自动版本升级。最后，您可以通过编辑配方本身来手动升级配方。devtool upgrade
+
+3.5.1使用自动升级助手（AUH）
+AUH 实用程序与 OpenEmbedded 构建系统结合使用，以便根据上游发布的新版本自动生成配方升级。当您想要创建一个自动执行升级的服务并有选择地向您发送一封包含结果的电子邮件时，请使用 AUH。
+
+AUH 允许您一次更新多个配方。您还可以选择使用图像执行构建和集成测试，并将结果保存到您的硬盘驱动器，并选择将结果电子邮件发送给配方维护者。最后，AUH 在层的树中为对配方所做的更改创建带有适当提交消息的 Git 提交。
+
+笔记
+
+在某些情况下，您不应使用 AUH 来升级配方，而应使用其中一个或手动升级您的配方：devtool upgrade
+
+当 AUH 无法完成升级序列时。这种情况通常是因为配方携带的自定义补丁无法自动重新定位到新版本。在这种情况下， 允许您手动解决冲突。devtool upgrade
+
+出于任何原因，您希望更全面地控制升级过程。例如，当您想要特殊安排进行测试时。
+
+以下步骤描述了如何设置 AUH 实用程序：
+
+确保开发主机已设置：您需要确保您的开发主机已设置为使用 Yocto 项目。有关如何设置主机的信息，请参阅“准备构建主机”部分。
+
+确保已配置 Git： AUH 实用程序需要配置 Git，因为 AUH 使用 Git 来保存升级。因此，您必须配置 Git 用户和电子邮件。以下命令显示您的配置：
+
+$ git config --list
+如果您没有配置用户和电子邮件，您可以使用以下命令来执行此操作：
+
+$ git config --global user.name some_name
+$ git config --global user.email username@domain.com
+克隆 AUH 存储库：要使用 AUH，您必须将存储库克隆到您的开发主机上。以下命令使用 Git 在您的系统上创建存储库的本地副本：
+
+$ git clone  git://git.yoctoproject.org/auto-upgrade-helper
+Cloning into 'auto-upgrade-helper'... remote: Counting objects: 768, done.
+remote: Compressing objects: 100% (300/300), done.
+remote: Total 768 (delta 499), reused 703 (delta 434)
+Receiving objects: 100% (768/768), 191.47 KiB | 98.00 KiB/s, done.
+Resolving deltas: 100% (499/499), done.
+Checking connectivity... done.
+AUH 不属于OpenEmbedded-Core (OE-Core)或 Poky存储库。
+
+创建专用构建目录：运行 oe-init-build-env 脚本以创建一个新的构建目录，您专门用于运行 AUH 实用程序：
+
+$ cd poky
+$ source oe-init-build-env your_AUH_build_directory
+不建议重新使用现有的构建目录及其配置，因为现有设置可能会导致 AUH 失败或行为异常。
+
+在您的本地配置文件中进行配置：local.conf您刚刚为 AUH 创建的构建目录中的文件中需要几个设置。进行以下配置：
+
+如果要启用可选的Build History，则需要 conf/local.conf文件中的以下行：
+
+INHERIT =+ "buildhistory"
+BUILDHISTORY_COMMIT = "1"
+使用此配置并成功升级，构建历史“diff”文件会出现在 upgrade-helper/work/recipe/buildhistory-diff.txt构建目录中的文件中。
+
+如果要通过可选的 testimage 类启用测试，则需要在conf/local.conf文件中设置以下内容：
+
+INHERIT += "testimage"
+笔记
+
+如果您的发行版默认没有启用 ptest，而 Poky 会这样做，您需要在local.conf文件中添加以下内容：
+
+DISTRO_FEATURES:append = " ptest"
+可选地启动 vncserver：如果您在没有 X11 会话的服务器中运行，则需要启动 vncserver：
+
+$ vncserver :1
+$ export DISPLAY=:1
+创建和编辑 AUH 配置文件：您需要 upgrade-helper/upgrade-helper.conf在构建目录中有配置文件。您可以在AUH 源存储库中找到示例配置文件 。
+
+通读示例文件并根据需要进行配置。例如，如果您local.conf如前所述启用了构建历史记录，则必须在upgrade-helper.conf.
+
+此外，如果您使用的是maintainers.incPoky 提供的默认文件，meta-yocto并且您没有在 upgrade-helper.conf配置中设置“maintainers_whitelist”或“global_maintainer_override”，并且在 AUH 命令行上指定“-e all”，该实用程序会自动向所有默认维护者发送电子邮件。请避免这种情况。
+
+下一组示例描述了如何使用 AUH：
+
+升级特定配方：要升级特定配方，请使用以下表格：
+
+$ upgrade-helper.py recipe_name
+例如，此命令升级xmodmap配方：
+
+$ upgrade-helper.py xmodmap
+将特定配方升级到特定版本：要将特定配方升级到特定版本，请使用以下表格：
+
+$ upgrade-helper.py recipe_name -t version
+例如，此命令将xmodmap配方升级到版本 1.2.3：
+
+$ upgrade-helper.py xmodmap -t 1.2.3
+将所有食谱升级到最新版本并禁止电子邮件通知：要将所有食谱升级到最新版本并禁止电子邮件通知，请使用以下命令：
+
+$ upgrade-helper.py all
+将所有配方升级到最新版本并发送电子邮件通知：要将所有配方升级到其最新版本并将每个尝试配方的电子邮件消息和状态电子邮件发送给维护者，请使用以下命令：
+
+$ upgrade-helper.py -e all
+运行 AUH 实用程序后，您可以在 AUH 构建目录中找到结果：
+
+${BUILDDIR}/upgrade-helper/timestamp
+AUH 实用程序还根据层树中的成功升级尝试创建配方更新提交。
+
+您可以通过使用 cron 作业轻松设置定期运行 AUH 实用程序。有关示例，请参阅随实用程序分发的 weekjob.sh 文件。          
+                   
+                        
+                        
+                        
+                        
+
+
+
+
+
+编程参考：https://docs.yoctoproject.org/

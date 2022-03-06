@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bpf 内核辅助函数定义原理 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>bpf 内核辅助函数定义原理</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/lk_code_base/kernel_base/trace/bpf_hdef.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="bpf">
+<h1>bpf 内核辅助函数定义原理<a class="headerlink" href="#bpf" title="Permalink to this headline">¶</a></h1>
+<dl>
+<dt>#define BPF_CALL_x(x, name, …)                                               </dt><dd><p>static __always_inline                                                 u64 ____##name(__BPF_MAP(x, __BPF_DECL_ARGS, __BPF_V, __VA_ARGS__));   typedef u64 (<a href="#id1"><span class="problematic" id="id2">*</span></a>btf_##name)(__BPF_MAP(x, __BPF_DECL_ARGS, __BPF_V, __VA_ARGS__)); u64 name(__BPF_REG(x, __BPF_DECL_REGS, __BPF_N, __VA_ARGS__));         u64 name(__BPF_REG(x, __BPF_DECL_REGS, __BPF_N, __VA_ARGS__))          {                                                                      </p>
+<blockquote>
+<div><p>return ((btf_##name)____##name)(__BPF_MAP(x,__BPF_CAST,__BPF_N,__VA_ARGS__));</p>
+</div></blockquote>
+<p>}                                                                      static __always_inline                                                 u64 ____##name(__BPF_MAP(x, __BPF_DECL_ARGS, __BPF_V, __VA_ARGS__))</p>
+</dd>
+</dl>
+<p>#define BPF_CALL_0(name, …)   BPF_CALL_x(0, name, __VA_ARGS__)</p>
+<p>eg:
+BPF_CALL_2(bpf_map_lookup_elem, struct bpf_map <a href="#id3"><span class="problematic" id="id4">*</span></a>, map, void <a href="#id5"><span class="problematic" id="id6">*</span></a>, key)</p>
+<p>所以其实是定义的内联函数。为什么内核模块编译的时候只能用这些函数？我的理解是不是有很大的问题？
+BPF技术虽然强大，但是为了保证内核的处理安全和及时响应，内核对于BPF 技术也给予了诸多限制，如下是几个重点限制：</p>
+<ul class="simple">
+<li><p>eBPF 程序不能调用任意的内核参数，只限于内核模块中列出的 BPF Helper 函数，函数支持列表也随着内核的演进在不断增加</p></li>
+<li><p>eBPF程序不允许包含无法到达的指令，防止加载无效代码，延迟程序的终止</p></li>
+<li><p>eBPF 程序中循环次数限制且必须在有限时间内结束</p></li>
+<li><p>eBPF 堆栈大小被限制在 MAXBPFSTACK，截止到内核 Linux 5.8 版本，被设置为 512。目前没有计划增加这个限制，解决方法是改用 BPF Map，它的大小是无限的。</p></li>
+<li><p>eBPF 字节码大小最初被限制为 4096 条指令，截止到内核 Linux 5.8 版本， 当前已将放宽至 100 万指令（ BPF_COMPLEXITY_LIMIT_INSNS），对于无权限的BPF程序，仍然保留4096条限制 ( BPF_MAXINSNS )</p></li>
+</ul>
+<p>更多相关信息可以查看这里。随着技术的发展和演进，限制也在逐步放宽或者提供了对应的解决方案。</p>
+<p>如何实现函数限制？</p>
+<p>demo:/usr/src/bpf_trace_kprobe_demo:</p>
+<p>#include &lt;linux/skbuff.h&gt;
+#include &lt;linux/netdevice.h&gt;
+#include &lt;uapi/linux/bpf.h&gt;
+#include &lt;linux/version.h&gt;
+#include &lt;bpf/bpf_helpers.h&gt;
+#include &lt;bpf/bpf_tracing.h&gt;</p>
+<dl>
+<dt>#define _(P)                                                                   </dt><dd><dl class="simple">
+<dt>({                                                                     </dt><dd><p>typeof(P) val = 0;                                             bpf_probe_read_kernel(&amp;val, sizeof(val), &amp;(P));                val;                                                           </p>
+</dd>
+</dl>
+<p>})</p>
+</dd>
+<dt>/* kprobe is NOT a stable ABI</dt><dd><ul class="simple">
+<li><p>kernel functions can be removed, renamed or completely change semantics.</p></li>
+<li><p>Number of arguments and their positions can change, etc.</p></li>
+<li><p>In such case this bpf+kprobe example will no longer be meaningful</p></li>
+</ul>
+<p><a href="#id7"><span class="problematic" id="id8">*</span></a>/</p>
+</dd>
+</dl>
+<p>SEC(“kprobe/__netif_receive_skb_core”)
+int bpf_prog1(struct pt_regs <a href="#id9"><span class="problematic" id="id10">*</span></a>ctx)
+{</p>
+<blockquote>
+<div><dl>
+<dt>/* attaches to kprobe __netif_receive_skb_core,</dt><dd><ul class="simple">
+<li><p>looks for packets on loobpack device and prints them</p></li>
+</ul>
+<p><a href="#id11"><span class="problematic" id="id12">*</span></a>/</p>
+</dd>
+</dl>
+<p>char devname[IFNAMSIZ];
+struct net_device <a href="#id13"><span class="problematic" id="id14">*</span></a>dev;
+struct sk_buff <a href="#id15"><span class="problematic" id="id16">*</span></a>skb;
+int len;</p>
+<p>/* non-portable! works for the given kernel only <a href="#id17"><span class="problematic" id="id18">*</span></a>/
+bpf_probe_read_kernel(&amp;skb, sizeof(skb), (void <a href="#id19"><span class="problematic" id="id20">*</span></a>)PT_REGS_PARM1(ctx));
+dev = _(skb-&gt;dev);
+len = _(skb-&gt;len);</p>
+<p>bpf_probe_read_kernel(devname, sizeof(devname), dev-&gt;name);</p>
+<dl class="simple">
+<dt>if (devname[0] == ‘l’ &amp;&amp; devname[1] == ‘o’) {</dt><dd><p>char fmt[] = “skb %p len %dn”;
+/* using bpf_trace_printk() for DEBUG ONLY <a href="#id21"><span class="problematic" id="id22">*</span></a>/
+bpf_trace_printk(fmt, sizeof(fmt), skb, len);</p>
+</dd>
+</dl>
+<p>}</p>
+<p>return 0;</p>
+</div></blockquote>
+<p>}</p>
+<p>char _license[] SEC(“license”) = “GPL”;
+u32 _version SEC(“version”) = LINUX_VERSION_CODE;</p>
+<p>生成的内核模块只是架构：readelf -a ..</p>
+<p><a class="reference external" href="mailto:root&#37;&#52;&#48;rachel">root<span>&#64;</span>rachel</a>:/usr/src/bpf_trace_kprobe_demo# readelf -a trace_kprobe_kern.o
+ELF 头：</p>
+<blockquote>
+<div><p>Magic：  7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+类别:                              ELF64
+数据:                              2 补码，小端序 (little endian)
+Version:                           1 (current)
+OS/ABI:                            UNIX - System V
+ABI 版本:                          0
+类型:                              REL (可重定位文件)
+系统架构:                          Linux BPF
+版本:                              0x1
+入口点地址：              0x0
+程序头起点：              0 (bytes into file)
+Start of section headers:          616 (bytes into file)
+标志：             0x0
+Size of this header:               64 (bytes)
+Size of program headers:           0 (bytes)
+Number of program headers:         0
+Size of section headers:           64 (bytes)
+Number of section headers:         9
+Section header string table index: 1</p>
+</div></blockquote>
+<p>nm ….:
+0000000000000000 T bpf_prog
+0000000000000000 D _license
+0000000000000000 T prog</p>
+<p>另外一个demo:
+<a class="reference external" href="mailto:root&#37;&#52;&#48;rachel">root<span>&#64;</span>rachel</a>:/usr/src/bpf_kprobe_bac# nm trace_kprobe_kern.o
+0000000000000000 D _license
+0000000000000000 T prog</p>
+<p>所以我们发现了什么？对的那个宏定义还是有什么不对的地方。</p>
+<p>code:</p>
+<p>#include &lt;bpf/bpf_tracing.h&gt;
+#include “vmlinux.h”
+#include &lt;bpf/bpf_helpers.h&gt;
+#ifndef SEC
+#define SEC(NAME) __attribute__((section(NAME),used))
+#endif
+SEC(“kprobe/do_unlinkat”)
+int prog(struct pt_regs <a href="#id23"><span class="problematic" id="id24">*</span></a>ctx)
+{</p>
+<blockquote>
+<div><p>char file_name[] = “comm = %sn”;
+char buf_comm[16];
+bpf_get_current_comm(buf_comm,sizeof(buf_comm));</p>
+<p>bpf_trace_printk(file_name,sizeof(file_name),buf_comm);
+return 0;</p>
+</div></blockquote>
+<p>}</p>
+<p>char _license[] SEC(“license”) = “GPL”;</p>
+<p>llvm-objdump -d trace_kprobe_kern.o</p>
+<p>trace_kprobe_kern.o:    file format elf64-bpf</p>
+<p>Disassembly of section kprobe/do_unlinkat:</p>
+<dl>
+<dt>0000000000000000 &lt;prog&gt;:</dt><dd><blockquote>
+<div><p>0:       b7 01 00 00 73 0a 00 00 r1 = 2675
+1:       6b 1a f8 ff 00 00 00 00 <a href="#id25"><span class="problematic" id="id26">*</span></a>(u16 <a href="#id27"><span class="problematic" id="id28">*</span></a>)(r10 - 8) = r1
+2:       18 01 00 00 63 6f 6d 6d 00 00 00 00 20 3d 20 25 r1 = 2675205388142210915 ll
+4:       7b 1a f0 ff 00 00 00 00 <a href="#id29"><span class="problematic" id="id30">*</span></a>(u64 <a href="#id31"><span class="problematic" id="id32">*</span></a>)(r10 - 16) = r1
+5:       b7 01 00 00 00 00 00 00 r1 = 0
+6:       73 1a fa ff 00 00 00 00 <a href="#id33"><span class="problematic" id="id34">*</span></a>(u8 <a href="#id35"><span class="problematic" id="id36">*</span></a>)(r10 - 6) = r1
+7:       bf a6 00 00 00 00 00 00 r6 = r10
+8:       07 06 00 00 e0 ff ff ff r6 += -32
+9:       bf 61 00 00 00 00 00 00 r1 = r6</p>
+</div></blockquote>
+<p>10:       b7 02 00 00 10 00 00 00 r2 = 16
+11:       85 00 00 00 10 00 00 00 call 16
+12:       bf a1 00 00 00 00 00 00 r1 = r10
+13:       07 01 00 00 f0 ff ff ff r1 += -16
+14:       b7 02 00 00 0b 00 00 00 r2 = 11
+15:       bf 63 00 00 00 00 00 00 r3 = r6
+16:       85 00 00 00 06 00 00 00 call 6
+17:       b7 00 00 00 00 00 00 00 r0 = 0
+18:       95 00 00 00 00 00 00 00 exit</p>
+</dd>
+</dl>
+<p>我们现在补充bpf汇编的语法：
+原始的BPF又称之为class BPF(cBPF), BPF与eBPF类似于i386与amd64的关系, 最初的BPF只能用于套接字的过滤,内核源码树中tools/bpf/bpf_asm可以用于编写这种原始的BPF程序,</p>
+<p>eBPF虚拟机
+eBPF虚拟机是一个RISC指令, 带有寄存器的虚拟机, 内部有11个64位寄存器, 一个程序计数器(PC), 以及一个512字节的固定大小的栈. 9个通用寄存器可以读写, 一个是只能读的栈指针寄存器(SP), 以及一个隐含的程序计数器, 我们只能根据PC进行固定偏移的跳转. 虚拟机寄存器总是64位的(就算是32位物理机也是这样的), 并且支持32位子寄存器寻址(寄存器高32位自动设置为0)</p>
+<p>r0: 保存函数调用和当前程序退出的返回值
+r1~r5: 作为函数调用参数, 当程序开始运行时, r1包含一个指向context参数的指针
+r6~r9: 在内核函数调用之间得到保留
+r10: 只读的指向512字节栈的栈指针</p>
+<p>注意内核地址与BPF地址对应。</p>
+<p>先补充BPF汇编。后面补充虚拟机。</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

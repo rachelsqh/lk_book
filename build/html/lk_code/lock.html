@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>linux 内核竞争处理 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="linux 内核hook" href="hook.html" />
+    <link rel="prev" title="linux 内核通知/通信机制" href="notifier.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">linux 内核基础代码分析</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="base_arch.html">linux 内核代码目录结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module.html">linux 内核模块原理分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notifier.html">linux 内核通知/通信机制</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">linux 内核竞争处理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hook.html">linux 内核hook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kexec.html">kexec总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="struct.html">linux 内核基础算法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="umh.html">第一个应用进程及umh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extable.html">异常表:extable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jump_label.html">jump_label</a></li>
+<li class="toctree-l2"><a class="reference internal" href="syscall.html">linux 系统调用原理</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cpu.html">cpu管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../yocto_kernel.html">yocto uboot与内核</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../uboot.html">uboot理解</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../uboot.html#id1">uboot配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">linux 内核基础代码分析</a> &raquo;</li>
+      <li>linux 内核竞争处理</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/lk_code/lock.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="linux">
+<h1>linux 内核竞争处理<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://www.kernel.org/doc/html/latest/locking/locktypes.html">https://www.kernel.org/doc/html/latest/locking/locktypes.html</a></p>
+<p>内核提供了多种锁定原语，可分为三类：</p>
+<ul class="simple">
+<li><p>睡眠锁</p></li>
+</ul>
+<p>只能在抢占式任务上下文中获取休眠锁。尽管实现允许来自其他上下文的 try_lock()，但有必要仔细评估 unlock() 以及 try_lock() 的安全性。此外，还需要评估这些原语的调试版本。简而言之，除非没有其他选择，否则不要从其他上下文获取休眠锁。</p>
+<dl>
+<dt>睡锁类型：</dt><dd><ul class="simple">
+<li><p>mutex</p></li>
+<li><p>rt_mutex</p></li>
+</ul>
+<p>互斥锁，RT 互斥体是支持优先级继承 (PI) 的互斥体。</p>
+</dd>
+</dl>
+<p>由于抢占和中断禁用部分，PI 对非 PREEMPT_RT 内核有限制。</p>
+<p>PI 显然不能抢占禁用抢占或禁用中断的代码区域，即使在 PREEMPT_RT 内核上也是如此。相反，PREEMPT_RT 内核在可抢占任务上下文中执行大多数此类代码区域，尤其是中断处理程序和软中断。这种转换允许通过 RT 互斥锁实现 spinlock_t 和 rwlock_t。</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>semaphore</p></li>
+</ul>
+<p>semaphore 是一个计数信号量实现。信号量通常用于序列化和等待，但新的用例应该使用单独的序列化和等待机制，例如互斥锁和完成。</p>
+<ul class="simple">
+<li><p>rw_semaphore</p></li>
+</ul>
+<p>rw_semaphore 是一个多读单写锁机制。在非 PREEMPT_RT 内核上，实现是公平的，从而防止写入器饥饿。rw_semaphore 默认符合严格的所有者语义，但存在允许读者进行非所有者释放的特殊用途接口。这些接口独立于内核配置工作。</p>
+</div></blockquote>
+<p>rw_semaphore 和 PREEMPT_RT
+PREEMPT_RT 内核将 rw_semaphore 映射到一个单独的基于 rt_mutex 的实现，从而改变了公平性：</p>
+<p>因为 rw_semaphore writer 不能将其优先级授予多个 reader，所以抢占的低优先级 reader 将继续持有其锁，因此即使是高优先级 writers 也会挨饿。相反，因为读者可以将他们的优先级授予写者，所以被抢占的低优先级写者的优先级将被提升，直到它释放锁，从而防止写者饿死读者</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ww_mutex：</p></li>
+<li><p>percpu_rw_semaphore</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>在 PREEMPT_RT 内核上，这些锁类型被转换为休眠锁：</dt><dd><ul class="simple">
+<li><p>local_lock</p></li>
+<li><p>spinlock_t</p></li>
+<li><p>rwlock_t</p></li>
+</ul>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>基于CPU的锁
+- local_lock
+在非 PREEMPT_RT 内核上，local_lock 函数是抢占和中断禁用原语的包装器。与其他锁定机制相反，禁用抢占或中断是纯 CPU 本地并发控制机制，不适合 CPU 间并发控制。</p></li>
+<li><p>自旋锁
+- raw_spinlock_t
+- bit spinlocks</p></li>
+</ul>
+<dl class="simple">
+<dt>在非 PREEMPT_RT 内核上，这些锁类型也是旋转锁：</dt><dd><ul class="simple">
+<li><p>spinlock_t</p></li>
+<li><p>rwlock_t</p></li>
+</ul>
+</dd>
+<dt>旋转锁隐式禁用抢占，锁定/解锁功能可以具有应用进一步保护的后缀：</dt><dd><ul class="simple">
+<li><p>_bh()：禁用/启用下半部分（软中断）</p></li>
+<li><p>_irq()：禁用/启用中断</p></li>
+<li><p>_irqsave/restore()：保存和禁用/恢复中断禁用状态</p></li>
+</ul>
+</dd>
+</dl>
+<p>。。。。。。</p>
+<p>总结：</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="notifier.html" class="btn btn-neutral float-left" title="linux 内核通知/通信机制" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hook.html" class="btn btn-neutral float-right" title="linux 内核hook" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

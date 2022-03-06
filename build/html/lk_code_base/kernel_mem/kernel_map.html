@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内核内存布局 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sec.html">linux 内核安全</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>内核内存布局</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lk_code_base/kernel_mem/kernel_map.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="id1">
+<h1>内核内存布局<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>systemap:这个里面是符号与地址对应关系。</p>
+</div>
+<div class="section" id="vmlinux">
+<h1>vmlinux内核内存布局<a class="headerlink" href="#vmlinux" title="Permalink to this headline">¶</a></h1>
+<p>img</p>
+<p>其中的赋值并不占用空间，这些参数在其他地方存储，此处只是对其中的值进行赋值。
+我们再重新看链接脚本的作用：</p>
+</div>
+<div class="section" id="id2">
+<h1>内核的加载<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h1>
+<p>内核加载完成后参考如上，也就是说跳转到startup64时就已经完成内核的整个定位了。我们看说明：</p>
+<blockquote>
+<div><blockquote>
+<div><ul class="simple">
+<li><p>At this point the CPU runs in 64bit mode CS.L = 1 CS.D = 0,</p></li>
+<li><p>and someone has loaded an identity mapped page table</p></li>
+<li><p>for us.  These identity mapped page tables map all of the</p></li>
+<li><p>kernel pages and possibly all of memory.</p></li>
+<li></li>
+<li><p>%rsi holds a physical pointer to real_mode_data.</p></li>
+<li></li>
+<li><p>We come here either directly from a 64bit bootloader, or from</p></li>
+<li><p>arch/x86/boot/compressed/head_64.S.</p></li>
+<li></li>
+<li><p>We only come here initially at boot nothing else comes here.</p></li>
+<li></li>
+<li><p>Since we may be loaded at an address different from what we were</p></li>
+<li><p>compiled to run at we first fixup the physical addresses in our page</p></li>
+<li><p>tables and then reload them.</p></li>
+</ul>
+<p><a href="#id3"><span class="problematic" id="id4">*</span></a>/</p>
+</div></blockquote>
+<p>/* Set up the stack for verify_cpu(), similar to initial_stack below <a href="#id5"><span class="problematic" id="id6">*</span></a>/</p>
+</div></blockquote>
+<p>此时 CPU 运行在 64 位模式 CS.L = 1 CS.D = 0，并且有人为我们加载了身份映射页表。 这些身份映射页表映射所有内核页面，可能还映射所有内存。 %rsi 拥有一个指向 real_mode_data 的物理指针。我们可以直接从 64 位引导加载程序或从 arch/x86/boot/compressed/head_64.S 来。 我们最初只是在启动时来到这里，没有其他东西来到这里。 由于我们可能被加载到与我们编译运行的地址不同的地址，我们首先修复页表中的物理地址，然后重新加载它们。</p>
+<p>从这个位置往下看的时候记得所有的映射已经做好了</p>
+<blockquote>
+<div><p>leaq    (__end_init_task - FRAME_SIZE)(%rip), %rsp //栈：用的init_task的__end_init_task,空出了FRAME_SIZE的空间，这一块是在数据段中已经存在</p>
+<p>leaq    _text(%rip), %rdi   //相对寻址，rdi 指向_text地址
+pushq   %rsi
+call    startup_64_setup_env //加载GDT和IDT，加载了数据段：CS，SS。。。。。</p>
+<p>popq    %rsi</p>
+<p>/* Now switch to __KERNEL_CS so IRET works reliably <a href="#id7"><span class="problematic" id="id8">*</span></a>/
+pushq   $__KERNEL_CS
+leaq    .Lon_kernel_cs(%rip), %rax
+pushq   %rax
+lretq   // 跳转：rsp - sizeof(rax) : rsp,即__KERNEL_CS –&gt; CS,rax –&gt; IP，此时GDT，IDT的加载才起作用，加载的32位寄存器</p>
+</div></blockquote>
+<p>//从此以后寻址就进入偏移了。</p>
+<dl>
+<dt>.Lon_kernel_cs:</dt><dd><blockquote>
+<div><p>UNWIND_HINT_EMPTY //调试用，编译内核时由objtool使用</p>
+<dl class="simple">
+<dt>/* Sanitize CPU configuration</dt><dd><ul class="simple">
+<li><p>This is a common code for verification whether CPU supports</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<ul class="simple">
+<li><p>long mode and SSE or not. It is not called directly instead this</p></li>
+<li><p>file is included at various places and compiled in that context.</p></li>
+<li><p>This file is expected to run in 32bit code.  Currently:</p></li>
+<li></li>
+<li><p>arch/x86/boot/compressed/head_64.S: Boot cpu verification</p></li>
+<li><p>arch/x86/kernel/trampoline_64.S: secondary processor verification</p></li>
+<li><p>arch/x86/kernel/head_32.S: processor startup</p></li>
+<li></li>
+<li><p>verify_cpu, returns the status of longmode and SSE in register %eax.</p></li>
+<li><p>0: Success    1: Failure</p></li>
+<li></li>
+<li><p>On Intel, the XD_DISABLE flag will be cleared as a side-effect.</p></li>
+<li></li>
+<li><p>The caller needs to check for the error code and take the action</p></li>
+<li><p>appropriately. Either display a message or halt.</p></li>
+</ul>
+<dl>
+<dt><a href="#id9"><span class="problematic" id="id10">*</span></a>/</dt><dd><p><a href="#id11"><span class="problematic" id="id12">*</span></a>/
+call verify_cpu//校验</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Perform pagetable fixups. Additionally, if SME is active, encrypt</p></li>
+<li><p>the kernel and retrieve the modifier (SME encryption mask if SME</p></li>
+<li><p>is active) to be added to the initial pgdir entry that will be</p></li>
+<li><p>programmed into CR3.</p></li>
+</ul>
+<p><a href="#id13"><span class="problematic" id="id14">*</span></a>/</p>
+</dd>
+</dl>
+<p>leaq    _text(%rip), %rdi
+pushq   %rsi
+call    __startup_64//这个处理一些冲定位的问题，非常难理解，用设问题，页表建立？</p>
+<p>popq    %rsi</p>
+<p>/* Form the CR3 value being sure to include the CR3 modifier <a href="#id15"><span class="problematic" id="id16">*</span></a>/
+addq    $(early_top_pgt - __START_KERNEL_map), %rax //rax = sme_get_me_mask(); rax += $(early_top_pgt - __START_KERNEL_map);我们假设没有开启复杂功能，则sme_get_me_mask() = 0; 此处rax = $(early_top_pgt - __START_KERNEL_map)
+jmp 1f</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>SYM_CODE_END(startup_64)</p>
+<p>1:</p>
+<blockquote>
+<div><p>/* Enable PAE mode, PGE and LA57 <a href="#id17"><span class="problematic" id="id18">*</span></a>/
+movl    $(X86_CR4_PAE | X86_CR4_PGE), %ecx</p>
+</div></blockquote>
+<dl class="simple">
+<dt>#ifdef CONFIG_X86_5LEVEL</dt><dd><p>testl   $1, __pgtable_l5_enabled(%rip)
+jz      1f
+orl     $X86_CR4_LA57, %ecx</p>
+</dd>
+</dl>
+<p>1:
+#endif</p>
+<blockquote>
+<div><p>movq    %rcx, %cr4  //设置页管理</p>
+<p>/* Setup early boot stage 4-/5-level pagetables. <a href="#id19"><span class="problematic" id="id20">*</span></a>/
+addq    phys_base(%rip), %rax  //phys_base:__startup_64中进行值设置</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>For SEV guests: Verify that the C-bit is correct. A malicious</p></li>
+<li><p>hypervisor could lie about the C-bit position to perform a ROP</p></li>
+<li><p>attack on the guest by writing to the unencrypted stack and wait for</p></li>
+<li><p>the next RET instruction.</p></li>
+<li><p>%rsi carries pointer to realmode data and is callee-clobbered. Save</p></li>
+<li><p>and restore it.</p></li>
+</ul>
+<p><a href="#id21"><span class="problematic" id="id22">*</span></a>/</p>
+</dd>
+</dl>
+<p>pushq   %rsi
+movq    %rax, %rdi
+call    sev_verify_cbit
+popq    %rsi</p>
+<p>/* Switch to new page-table <a href="#id23"><span class="problematic" id="id24">*</span></a>/
+movq    %rax, %cr3 //设置CR3</p>
+<p>/* Ensure I am executing from virtual addresses <a href="#id25"><span class="problematic" id="id26">*</span></a>/
+movq    $1f, %rax //设置地址
+ANNOTATE_RETPOLINE_SAFE
+jmp     <a href="#id27"><span class="problematic" id="id28">*</span></a>%rax  //指针形式访问。对指针还是模糊</p>
+</div></blockquote>
+<dl>
+<dt>1:</dt><dd><p>UNWIND_HINT_EMPTY</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>We must switch to a new descriptor in kernel space for the GDT</p></li>
+<li><p>because soon the kernel won’t have access anymore to the userspace</p></li>
+<li><p>addresses where we’re currently running on. We have to do that here</p></li>
+<li><p>because in 32bit we couldn’t load a 64bit linear address.</p></li>
+</ul>
+<p><a href="#id29"><span class="problematic" id="id30">*</span></a>/</p>
+</dd>
+</dl>
+<p>lgdt    early_gdt_descr(%rip)  //加载64位GDT？</p>
+<p>/* set up data segments <a href="#id31"><span class="problematic" id="id32">*</span></a>/
+xorl %eax,%eax
+movl %eax,%ds
+movl %eax,%ss
+movl %eax,%es</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>We don’t really need to load %fs or %gs, but load them anyway</p></li>
+<li><p>to kill any stale realmode selectors.  This allows execution</p></li>
+<li><p>under VT hardware.</p></li>
+</ul>
+<p><a href="#id33"><span class="problematic" id="id34">*</span></a>/</p>
+</dd>
+</dl>
+<p>movl %eax,%fs
+movl %eax,%gs</p>
+<dl>
+<dt>/* Set up %gs.</dt><dd><ul class="simple">
+<li></li>
+<li><p>The base of %gs always points to fixed_percpu_data. If the</p></li>
+<li><p>stack protector canary is enabled, it is located at %gs:40.</p></li>
+<li><p>Note that, on SMP, the boot cpu uses init data section until</p></li>
+<li><p>the per cpu areas are set up.</p></li>
+</ul>
+<p><a href="#id35"><span class="problematic" id="id36">*</span></a>/</p>
+</dd>
+</dl>
+<p>movl    $MSR_GS_BASE,%ecx
+movl    initial_gs(%rip),%eax  //所以gs主要作用：percpu?
+movl    initial_gs+4(%rip),%edx
+wrmsr</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Setup a boot time stack - Any secondary CPU will have lost its stack</p></li>
+<li><p>by now because the cr3-switch above unmaps the real-mode stack</p></li>
+</ul>
+<p><a href="#id37"><span class="problematic" id="id38">*</span></a>/</p>
+</dd>
+</dl>
+<p>movq initial_stack(%rip), %rsp//这个有些难理解</p>
+<p>/* Setup and Load IDT <a href="#id39"><span class="problematic" id="id40">*</span></a>/
+pushq   %rsi
+call    early_setup_idt //重新加载idt
+popq    %rsi</p>
+<p>/* Check if nx is implemented <a href="#id41"><span class="problematic" id="id42">*</span></a>/
+movl    $0x80000001, %eax
+cpuid
+movl    %edx,%edi</p>
+<p>/* Setup EFER (Extended Feature Enable Register) <em>/
+movl    $MSR_EFER, %ecx
+rdmsr
+btsl    $_EFER_SCE, %eax        /</em> Enable System Call <em>/
+btl     $20,%edi                /</em> No Execute supported? <a href="#id43"><span class="problematic" id="id44">*</span></a>/
+jnc     1f
+btsl    $_EFER_NX, %eax
+btsq    $_PAGE_BIT_NX,early_pmd_flags(%rip)</p>
+</dd>
+</dl>
+<p>1:      wrmsr                           /* Make changes effective <a href="#id45"><span class="problematic" id="id46">*</span></a>/</p>
+<blockquote>
+<div><p>/* Setup cr0 <em>/
+movl    $CR0_STATE, %eax
+/</em> Make changes effective <a href="#id47"><span class="problematic" id="id48">*</span></a>/
+movq    %rax, %cr0</p>
+<p>/* zero EFLAGS after setting rsp <a href="#id49"><span class="problematic" id="id50">*</span></a>/
+pushq $0
+popfq</p>
+<dl class="simple">
+<dt>/* rsi is pointer to real mode structure with interesting info.</dt><dd><p>pass it to C <a href="#id51"><span class="problematic" id="id52">*</span></a>/</p>
+</dd>
+</dl>
+<p>movq    %rsi, %rdi</p>
+</div></blockquote>
+<dl>
+<dt>.Ljump_to_C_code:</dt><dd><dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Jump to run C code and to be on a real kernel address.</p></li>
+<li><p>Since we are running on identity-mapped space we have to jump</p></li>
+<li><p>to the full 64bit address, this is only possible as indirect</p></li>
+<li><p>jump.  In addition we need to ensure %cs is set so we make this</p></li>
+<li><p>a far return.</p></li>
+<li></li>
+<li><p>Note: do not change to far jump indirect with 64bit offset.</p></li>
+<li></li>
+<li><p>AMD does not support far jump indirect with 64bit offset.</p></li>
+<li><p>AMD64 Architecture Programmer’s Manual, Volume 3: states only</p></li>
+<li><p>JMP FAR mem16:16 FF /5 Far jump indirect,</p></li>
+<li><p>with the target specified by a far pointer in memory.</p></li>
+<li><p>JMP FAR mem16:32 FF /5 Far jump indirect,</p></li>
+<li><p>with the target specified by a far pointer in memory.</p></li>
+<li></li>
+<li><p>Intel64 does support 64bit offset.</p></li>
+<li><p>Software Developer Manual Vol 2: states:</p></li>
+<li><p>FF /5 JMP m16:16 Jump far, absolute indirect,</p></li>
+<li><p>address given in m16:16</p></li>
+<li><p>FF /5 JMP m16:32 Jump far, absolute indirect,</p></li>
+<li><p>address given in m16:32.</p></li>
+<li><p>REX.W + FF /5 JMP m16:64 Jump far, absolute indirect,</p></li>
+<li><p>address given in m16:64.</p></li>
+</ul>
+<p><a href="#id53"><span class="problematic" id="id54">*</span></a>/</p>
+</dd>
+</dl>
+<p>pushq   $.Lafter_lret   # put return address on stack for unwinder
+xorl    %ebp, %ebp      # clear frame pointer
+movq    initial_code(%rip), %rax
+pushq   $__KERNEL_CS    # set correct cs
+pushq   %rax            # target address in negative space
+lretq</p>
+</dd>
+</dl>
+<p>.Lafter_lret:</p>
+<p>之里面最困难理解的就是 __startup_64()：</p>
+<hr class="docutils" />
+<hr class="docutils" />
+<dl class="simple">
+<dt>unsigned long __attribute__((__section__(“.head.text”))) __startup_64(unsigned long physaddr, //这个函数真的看得迷迷糊糊,这是一个黑洞，非常重要，内核内存映像最后一个黑洞。</dt><dd><p>struct boot_params <a href="#id55"><span class="problematic" id="id56">*</span></a>bp)</p>
+</dd>
+</dl>
+<dl>
+<dt>{</dt><dd><p>unsigned long vaddr, vaddr_end;
+unsigned long load_delta, <a href="#id57"><span class="problematic" id="id58">*</span></a>p;
+unsigned long pgtable_flags;
+pgdval_t <a href="#id59"><span class="problematic" id="id60">*</span></a>pgd;
+p4dval_t <a href="#id61"><span class="problematic" id="id62">*</span></a>p4d;
+pudval_t <a href="#id63"><span class="problematic" id="id64">*</span></a>pud;
+pmdval_t <a href="#id65"><span class="problematic" id="id66">*</span></a>pmd, pmd_entry;
+pteval_t <a href="#id67"><span class="problematic" id="id68">*</span></a>mask_ptr;
+bool la57;
+int i;
+unsigned int <a href="#id69"><span class="problematic" id="id70">*</span></a>next_pgt_ptr;</p>
+<p>la57 = check_la57_support(physaddr);</p>
+<dl class="simple">
+<dt>if (physaddr &gt;&gt; (0 ? 52<span class="classifier">46))</span></dt><dd><p>for (;;);</p>
+</dd>
+</dl>
+<p>load_delta = physaddr - (unsigned long)(_text - (0xffffffff80000000UL));
+if (load_delta &amp; ~(~(((1UL) &lt;&lt; 21)-1)))</p>
+<blockquote>
+<div><p>for (;;);</p>
+</div></blockquote>
+<p>sme_enable(bp);
+load_delta += sme_get_me_mask();</p>
+<p>pgd = fixup_pointer(&amp;early_top_pgt, physaddr);
+p = pgd + ((((0xffffffff80000000UL)) &gt;&gt; 39) &amp; (512 - 1));</p>
+<dl class="simple">
+<dt>if (la57)</dt><dd><p><a href="#id71"><span class="problematic" id="id72">*</span></a>p = (unsigned long)level4_kernel_pgt;</p>
+</dd>
+<dt>else</dt><dd><p><a href="#id73"><span class="problematic" id="id74">*</span></a>p = (unsigned long)level3_kernel_pgt;</p>
+</dd>
+</dl>
+<p><a href="#id75"><span class="problematic" id="id76">*</span></a>p += ((((pteval_t)(1)) &lt;&lt; 0)|(((pteval_t)(1)) &lt;&lt; 1)|(((pteval_t)(1)) &lt;&lt; 2)|(((pteval_t)(1)) &lt;&lt; 5)| 0|(((pteval_t)(1)) &lt;&lt; 6)| 0| 0) - (0xffffffff80000000UL) + load_delta;</p>
+<dl class="simple">
+<dt>if (la57) {</dt><dd><p>p4d = fixup_pointer(&amp;level4_kernel_pgt, physaddr);
+p4d[511] += load_delta;</p>
+</dd>
+</dl>
+<p>}</p>
+<p>pud = fixup_pointer(&amp;level3_kernel_pgt, physaddr);
+pud[510] += load_delta;
+pud[511] += load_delta;</p>
+<p>pmd = fixup_pointer(level2_fixmap_pgt, physaddr);
+for (i = 507; i &gt; 507 - 2; i–)</p>
+<blockquote>
+<div><p>pmd[i] += load_delta;</p>
+</div></blockquote>
+</dd>
+<dt># 202 “arch/x86/kernel/head64.c”</dt><dd><p>next_pgt_ptr = fixup_pointer(&amp;next_early_pgt, physaddr);
+pud = fixup_pointer(early_dynamic_pgts[(<a href="#id77"><span class="problematic" id="id78">*</span></a>next_pgt_ptr)++], physaddr);
+pmd = fixup_pointer(early_dynamic_pgts[(<a href="#id79"><span class="problematic" id="id80">*</span></a>next_pgt_ptr)++], physaddr);</p>
+<p>pgtable_flags = ((((pteval_t)(1)) &lt;&lt; 0)|(((pteval_t)(1)) &lt;&lt; 1)| 0|(((pteval_t)(1)) &lt;&lt; 5)| 0|(((pteval_t)(1)) &lt;&lt; 6)| 0| 0) + sme_get_me_mask();</p>
+<dl>
+<dt>if (la57) {</dt><dd><p>p4d = fixup_pointer(early_dynamic_pgts[(<a href="#id81"><span class="problematic" id="id82">*</span></a>next_pgt_ptr)++],
+physaddr);</p>
+<p>i = (physaddr &gt;&gt; 39) % 512;
+pgd[i + 0] = (pgdval_t)p4d + pgtable_flags;
+pgd[i + 1] = (pgdval_t)p4d + pgtable_flags;</p>
+<p>i = physaddr &gt;&gt; 39;
+p4d[(i + 0) % 1] = (pgdval_t)pud + pgtable_flags;
+p4d[(i + 1) % 1] = (pgdval_t)pud + pgtable_flags;</p>
+</dd>
+<dt>} else {</dt><dd><p>i = (physaddr &gt;&gt; 39) % 512;
+pgd[i + 0] = (pgdval_t)pud + pgtable_flags;
+pgd[i + 1] = (pgdval_t)pud + pgtable_flags;</p>
+</dd>
+</dl>
+<p>}</p>
+<p>i = physaddr &gt;&gt; 30;</p>
+<p>pud[(i + 0) % 512] = (pudval_t)pmd + pgtable_flags;
+pud[(i + 1) % 512] = (pudval_t)pmd + pgtable_flags;</p>
+<p>pmd_entry = ((((pteval_t)(1)) &lt;&lt; 0)|(((pteval_t)(1)) &lt;&lt; 1)| 0|(((pteval_t)(1)) &lt;&lt; 5)| 0|(((pteval_t)(1)) &lt;&lt; 6)|(((pteval_t)(1)) &lt;&lt; 7)|(((pteval_t)(1)) &lt;&lt; 8)) &amp; ~(((pteval_t)(1)) &lt;&lt; 8);</p>
+<p>mask_ptr = fixup_pointer(&amp;__supported_pte_mask, physaddr);
+pmd_entry &amp;= <a href="#id83"><span class="problematic" id="id84">*</span></a>mask_ptr;
+pmd_entry += sme_get_me_mask();
+pmd_entry += physaddr;</p>
+<dl class="simple">
+<dt>for (i = 0; i &lt; (((_end - _text) + (((1UL) &lt;&lt; 21)) - 1) / (((1UL) &lt;&lt; 21))); i++) {</dt><dd><p>int idx = i + (physaddr &gt;&gt; 21);
+pmd[idx % 512] = pmd_entry + i * ((1UL) &lt;&lt; 21);</p>
+</dd>
+</dl>
+<p>}</p>
+</dd>
+<dt># 258 “arch/x86/kernel/head64.c”</dt><dd><p>pmd = fixup_pointer(level2_kernel_pgt, physaddr);</p>
+<dl class="simple">
+<dt>for (i = 0; i &lt; pmd_index((unsigned long)_text); i++)</dt><dd><p>pmd[i] &amp;= ~(((pteval_t)(1)) &lt;&lt; 0);</p>
+</dd>
+<dt>for (; i &lt;= pmd_index((unsigned long)_end); i++)</dt><dd><dl class="simple">
+<dt>if (pmd[i] &amp; (((pteval_t)(1)) &lt;&lt; 0))</dt><dd><p>pmd[i] += load_delta;</p>
+</dd>
+</dl>
+</dd>
+<dt>for (; i &lt; 512; i++)</dt><dd><p>pmd[i] &amp;= ~(((pteval_t)(1)) &lt;&lt; 0);</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p><a href="#id85"><span class="problematic" id="id86">*</span></a>fixup_long(&amp;phys_base, physaddr) += load_delta - sme_get_me_mask();</p>
+<p>sme_encrypt_kernel(bp);</p>
+<dl>
+<dt>if (mem_encrypt_active()) {</dt><dd><p>vaddr = (unsigned long)__start_bss_decrypted;
+vaddr_end = (unsigned long)__end_bss_decrypted;
+for (; vaddr &lt; vaddr_end; vaddr += ((1UL) &lt;&lt; 21)) {</p>
+<blockquote>
+<div><p>i = pmd_index(vaddr);
+pmd[i] -= sme_get_me_mask();</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+</dl>
+<p>}</p>
+<p>return sme_get_me_mask();
+}</p>
+<p>#if 0
+/*</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>In asm, there are two kinds of code: normal C-type callable functions and</p></li>
+<li><p>the rest.  The normal callable functions can be called by other code, and</p></li>
+<li><p>don’t do anything unusual with the stack.  Such normal callable functions</p></li>
+<li><p>are annotated with the ENTRY/ENDPROC macros.  Most asm code falls in this</p></li>
+<li><p>category.  In this case, no special debugging annotations are needed because</p></li>
+<li><p>objtool can automatically generate the ORC data for the ORC unwinder to read</p></li>
+<li><p>at runtime.</p></li>
+<li></li>
+<li><p>Anything which doesn’t fall into the above category, such as syscall and</p></li>
+<li><p>interrupt handlers, tends to not be called directly by other functions, and</p></li>
+<li><p>often does unusual non-C-function-type things with the stack pointer.  Such</p></li>
+<li><p>code needs to be annotated such that objtool can understand it.  The</p></li>
+<li><p>following CFI hint macros are for this type of code.</p></li>
+<li></li>
+<li><p>These macros provide hints to objtool about the state of the stack at each</p></li>
+<li><p>instruction.  Objtool starts from the hints and follows the code flow,</p></li>
+<li><p>making automatic CFI adjustments when it sees pushes and pops, filling out</p></li>
+<li><p>the debuginfo as necessary.  It will also warn if it sees any</p></li>
+<li><p>inconsistencies.</p></li>
+</ul>
+<p><a href="#id87"><span class="problematic" id="id88">*</span></a>/</p>
+</div></blockquote>
+<p>.macro UNWIND_HINT sp_reg:req sp_offset=0 type:req end=0
+.Lunwind_hint_ip_&#64;:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>.pushsection .discard.unwind_hints  //就是在这个节中加入这么一段信息</dt><dd><p>/* struct unwind_hint <a href="#id89"><span class="problematic" id="id90">*</span></a>/
+.long .Lunwind_hint_ip_&#64; - .
+.short sp_offset
+.byte sp_reg
+.byte type
+.byte end
+.balign 4</p>
+</dd>
+</dl>
+<p>.popsection</p>
+</div></blockquote>
+<p>.endm</p>
+<dl class="simple">
+<dt>.macro UNWIND_HINT_EMPTY</dt><dd><p>UNWIND_HINT sp_reg=ORC_REG_UNDEFINED type=UNWIND_HINT_TYPE_CALL end=1  //针对ORC专门来一段</p>
+</dd>
+</dl>
+<p>.endm</p>
+<p>#endif//end</p>
+<hr class="docutils" />
+<p>x86_64_start_kernel()</p>
+</div>
+<div class="section" id="build-bug-on-define-build-bug-on-condition-void-sizeof-char-1-2-condition">
+<h1>BUILD_BUG_ON():条件成立则编译错误：#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))<a class="headerlink" href="#build-bug-on-define-build-bug-on-condition-void-sizeof-char-1-2-condition" title="Permalink to this headline">¶</a></h1>
+<p>#define CFI_STARTPROC           .cfi_startproc
+#define CFI_ENDPROC             .cfi_endproc</p>
+<hr class="docutils" />
+<p>请记住，我们删除early_top_pgt了函数中的所有条目，reset_early_page_table并且只保留了内核高映射。</p>
+<p>该x86_64_start_kernel函数的最后一步是调用：</p>
+<p>x86_64_start_reservations(real_mode_data);</p>
+<p>带有real_mode_dataas 参数的函数。在x86_64_start_reservations与函数相同的源代码文件中定义的x86_64_start_kernel函数和外观：</p>
+<p>start_kernel()
+让我们看一下reserve_ebda_region功能。它从检查是否启用半虚拟化开始：if(paravirt_enabled) //这个理解很差</p>
+<p>–&gt; setup_arch -&gt;
+early_reserve_memory()://内存管理框架第一步：</p>
+</div>
+<div class="section" id="memblock-c-111-struct-memblock-memblock-initdata-memblock">
+<h1>memblock.c:111:struct memblock memblock __initdata_memblock = {<a class="headerlink" href="#memblock-c-111-struct-memblock-memblock-initdata-memblock" title="Permalink to this headline">¶</a></h1>
+<p>__init属性
+#define __init      __section(.init.text) __cold notrace</p>
+<p>初始化过程完成后，内核将通过调用free_initmem函数释放这些部分。另请注意，它__init是用两个属性定义的：__cold和notrace。第一个cold属性的目的是标记该函数很少使用，编译器必须优化该函数的大小。第二个notrace定义为：
+#define notrace __attribute__((no_instrument_function))</p>
+<p>在start_kernel函数的定义中，您还可以看到__visible扩展为：
+#define __visible __attribute__((externally_visible))</p>
+<p>char <a href="#id91"><span class="problematic" id="id92">*</span></a>command_line;
+char <a href="#id93"><span class="problematic" id="id94">*</span></a>after_dashes;
+第一个表示指向内核命令行的指针，第二个将包含函数的结果，该parse_args函数解析带有表单参数的输入字符串name=value，查找特定关键字并调用正确的处理程序。我们此时不会详细介绍这两个变量的相关细节，但会在下一部分中看到。在下一步中，我们可以看到对该set_task_stack_end_magic函数的调用。此函数获取地址init_task并将STACK_END_MAGIC( 0x57AC6E9D) 设置为它的金丝雀。init_task表示初始任务结构：</p>
+<ul class="simple">
+<li><p>初始化进程标志 -PF_KTHREAD这意味着 - 内核线程；</p></li>
+<li><p>可运行任务列表；</p></li>
+<li><p>进程地址空间；</p></li>
+<li><p>初始化进程堆栈到&amp;init_thread_infowhich is init_thread_union.thread_infoand initthread_unionhas type -thread_union其中包含thread_info和进程堆栈：</p></li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="vmlinux-lds-init-task">
+<h1>vmlinux.lds:init_task定义详细分析<a class="headerlink" href="#vmlinux-lds-init-task" title="Permalink to this headline">¶</a></h1>
+<p>在debug_object_early_init函数之后，我们可以看到函数的调用，boot_init_stack_canary其中填充了gcc 特性task_struct-&gt;canary的canary值。-fstack-protector此功能取决于CONFIG_CC_STACKPROTECTOR配置选项，如果禁用此选项，则不boot_init_stack_canary执行任何操作，否则它会根据随机池和TSC生成随机数：</p>
+<hr class="docutils" />
+<p>CPU</p>
+<p>memblock_reserve(__pa_symbol(_text), (unsigned long)__bss_stop - (unsigned long)_text);
+在我们得到_text符号的物理地址后，memblock_reserve就可以从_text到__bss_stop - _text.</p>
+<p>所以这块是物理地址统计记录。</p>
+<hr class="docutils" />
+<p>initrd –&gt;内存中：
+early_reserve_initrd</p>
+<p>u64 ramdisk_image = get_ramdisk_image();
+u64 ramdisk_size  = get_ramdisk_size();
+u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);</p>
+<p>所有这些参数均取自boot_params</p>
+<p>最后为初始 ramdisk 保留计算出的地址的内存块：</p>
+<p>memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);</p>
+<p>void __init early_trap_init(void)
+{</p>
+<blockquote>
+<div><p>set_intr_gate_ist(X86_TRAP_DB, &amp;debug, DEBUG_STACK);
+set_system_intr_gate_ist(X86_TRAP_BP, &amp;int3, DEBUG_STACK);
+load_idt(&amp;idt_descr);</p>
+</div></blockquote>
+<p>}</p>
+<p>我们已经set_intr_gate在前面关于中断的部分中看到了实现。这里有两个相似的函数set_intr_gate_ist和set_system_intr_gate_ist。这两个函数都接受三个参数：</p>
+<ul class="simple">
+<li><p>中断号；</p></li>
+<li><p>中断/异常处理程序的基地址；</p></li>
+<li><p>第三个参数是 - Interrupt Stack Table。IST是 TSS 中的一个新机制，也是TSSx86_64的一部分。内核模式下的每个活动线程都有自己的内核堆栈，以千字节为单位。当一个线程在用户空间时，这个内核栈是空的。16</p></li>
+</ul>
+<p>除了每个线程的堆栈之外，还有几个与每个 CPU 相关的专用堆栈。您可以在 linux 内核文档 - Kernel stacks中阅读有关这些堆栈的所有信息。x86_64提供允许special在任何事件期间切换到新堆栈的功能，例如不可屏蔽的中断等……并且此功能的名称是 - Interrupt Stack Table。每个 CPU最多可以有 7IST个条目，每个条目都指向专用堆栈。在我们的例子中，这是DEBUG_STACK.
+？？？（所以这是GDT？）</p>
+<p>set_intr_gate_ist并且set_system_intr_gate_ist按照相同的原理工作，set_intr_gate只有一个区别。这两个函数都检查中断号并_set_gate在内部调用：</p>
+<p>BUG_ON((unsigned)n &gt; 0xFF);
+_set_gate(n, GATE_INTERRUPT, addr, 0, ist, __KERNEL_CS);</p>
+<p>输入/输出端口；
+设备内存。
+我们已经outb/inb在关于 linux 内核启动过程的部分看到了第一种方法（说明） 。第二种方法是将 I/O 物理地址映射到虚拟地址。当 CPU 访问物理地址时，它可能指的是物理 RAM 的一部分，它可以映射到 I/O 设备的内存上。所以ioremap用来将设备内存映射到内核地址空间。</p>
+<p>正如我上面写的，下一个函数是early_ioremap_init将 I/O 内存重新映射到内核地址空间，以便它可以访问它。我们需要为早期初始化代码初始化早期 ioremap，该代码需要在正常映射函数ioremap可用之前临时映射 I/O 或内存区域。该函数的实现在arch/x86/mm/ioremap.c中。在开始时，early_ioremap_init我们可以看到pmd指针pmd_t类型的定义（显示页面中间目录条目typedef struct { pmdval_t pmd; } pmd_t;where pmdval_tis unsigned long）并检查是否fixmap以正确的方式对齐：</p>
+<p>early_ioremap_init分析</p>
+<p>ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
+initrd此代码获取稍后将在do_mount_root函数中安装的根设备的主要和次要编号。设备的主要编号标识与设备关联的驱动程序。驱动程序控制的设备上引用的次要编号。请注意，old_decode_dev它从boot_params_structure. 正如我们可以从 x86 linux 内核启动协议中看到的：</p>
+<ul class="simple">
+<li><p>/proc/ioports - 提供当前注册的端口区域列表，用于与设备进行输入或输出通信；</p></li>
+<li><p>/proc/iomem - 为每个物理设备提供系统内存的当前映射。</p></li>
+</ul>
+<p>如您所见，地址范围以其所有者以十六进制表示法显示。Linux 内核提供了用于以通用方式管理任何资源的 API。全局资源（例如 PIC 或 I/O 端口）可以分为子集 - 与任何硬件总线插槽相关。主要结构resource：</p>
+<dl class="simple">
+<dt>struct resource {</dt><dd><p>resource_size_t start;
+resource_size_t end;
+const char <a href="#id95"><span class="problematic" id="id96">*</span></a>name;
+unsigned long flags;
+struct resource <a href="#id97"><span class="problematic" id="id98">*</span></a>parent, <a href="#id99"><span class="problematic" id="id100">*</span></a>sibling, <a href="#id101"><span class="problematic" id="id102">*</span></a>child;</p>
+</dd>
+</dl>
+<p>};
+呈现系统资源的树状子集的抽象。这个结构提供了资源覆盖的地址范围从start到end（resource_size_tisphys_addr_t或u64for ）、资源（您在输出中看到这些名称）和资源（在include/linux/ioport.h中定义的所有资源标志）的地址范围。最后一个是指向结构的三个指针。这些指针启用树状结构：x86_64name/proc/iomemflagsresource</p>
+<p>每个资源子集都有根范围资源。因为iomem它被iomem_resource定义为：</p>
+<dl class="simple">
+<dt>struct resource iomem_resource = {</dt><dd><p>.name   = “PCI mem”,
+.start  = 0,
+.end    = -1,
+.flags  = IORESOURCE_MEM,</p>
+</dd>
+</dl>
+<p>};
+EXPORT_SYMBOL(iomem_resource);</p>
+<p>void __init e820__memory_setup(void)
+{</p>
+<blockquote>
+<div><p>char <a href="#id103"><span class="problematic" id="id104">*</span></a>who;</p>
+<p>/* This is a firmware interface ABI - make sure we don’t break it: <a href="#id105"><span class="problematic" id="id106">*</span></a>/
+BUILD_BUG_ON(sizeof(struct boot_e820_entry) != 20);</p>
+<p>who = x86_init.resources.memory_setup();</p>
+<p>memcpy(e820_table_kexec, e820_table, sizeof(<a href="#id107"><span class="problematic" id="id108">*</span></a>e820_table_kexec));
+memcpy(e820_table_firmware, e820_table, sizeof(<a href="#id109"><span class="problematic" id="id110">*</span></a>e820_table_firmware));</p>
+<p>pr_info(“BIOS-provided physical RAM map:n”);
+e820__print_table(who);</p>
+</div></blockquote>
+<p>}</p>
+<p>early_param宏有两个参数：</p>
+<ul class="simple">
+<li><p>命令行参数名称；</p></li>
+<li><p>如果传递给定参数，将调用该函数。</p></li>
+</ul>
+<dl class="simple">
+<dt>#define early_param(str, fn) </dt><dd><p>__setup_param(str, fn, fn, 1)</p>
+</dd>
+<dt>#define __setup_param(str, unique_id, fn, early)                </dt><dd><dl class="simple">
+<dt>static const char __setup_str_##unique_id[] __initconst </dt><dd><p>__aligned(1) = str; </p>
+</dd>
+<dt>static struct obs_kernel_param __setup_##unique_id      </dt><dd><p>__used __section(.init.setup)                   __attribute__((aligned((sizeof(long)))))        = { __setup_str_##unique_id, fn, early }</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>该宏定义__setup_str_*_id变量（其中*取决于给定的函数名称）并将其分配给给定的命令行参数名称。在下一行中，我们可以看到__setup_*变量类型的定义obs_kernel_param及其初始化。obs_kernel_param结构定义为：</p>
+<dl class="simple">
+<dt>struct obs_kernel_param {</dt><dd><p>const char <a href="#id111"><span class="problematic" id="id112">*</span></a>str;
+int (<a href="#id113"><span class="problematic" id="id114">*</span></a>setup_func)(char <a href="#id115"><span class="problematic" id="id116">*</span></a>);
+int early;</p>
+</dd>
+</dl>
+<p>};</p>
+<p>并包含三个字段：</p>
+<ul class="simple">
+<li><p>内核参数的名称；</p></li>
+<li><p>设置某些东西的函数取决于参数；</p></li>
+<li><p>字段确定参数是早期 (1) 还是非 (0)。</p></li>
+</ul>
+<p>请注意，__set_param宏用__section(.init.setup)属性定义。这意味着所有内容都__setup_str_*将放置在该.init.setup部分中，此外，正如我们在include/asm-generic/vmlinux.lds.h中看到的那样，它们将放置在__setup_startand之间__setup_end：</p>
+<dl class="simple">
+<dt>#define INIT_SETUP(initsetup_align)                </dt><dd><p>. = ALIGN(initsetup_align);        VMLINUX_SYMBOL(__setup_start) = .; <a href="#id117"><span class="problematic" id="id118">*</span></a>(.init.setup)                     VMLINUX_SYMBOL(__setup_end) = .;</p>
+</dd>
+<dt>现在我们知道了参数是如何定义的，让我们回到parse_early_param实现：</dt><dd><p>void __init parse_early_param(void)</p>
+</dd>
+</dl>
+<dl>
+<dt>{</dt><dd><p>static int done __initdata;
+static char tmp_cmdline[COMMAND_LINE_SIZE] __initdata;</p>
+<dl class="simple">
+<dt>if (done)</dt><dd><p>return;</p>
+</dd>
+</dl>
+<p>/* All fall through to do_early_param. <a href="#id119"><span class="problematic" id="id120">*</span></a>/
+strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+parse_early_options(tmp_cmdline);
+done = 1;</p>
+</dd>
+</dl>
+<p>}</p>
+<hr class="docutils" />
+<p>pci</p>
+<hr class="docutils" />
+<p>setup_log_buf</p>
+<hr class="docutils" />
+<p>dma_contiguous_reserve</p>
+<hr class="docutils" />
+<p>kmemleak
+cma
+————————————————————-
+x86_init.paging.pagetable_init
+#define native_pagetable_init        paging_init
+————————————————————–
+vsyscall</p>
+<p>其他</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="setup-per-cpu-areas">
+<h1>setup_per_cpu_areas<a class="headerlink" href="#setup-per-cpu-areas" title="Permalink to this headline">¶</a></h1>
+<p>build_all_zonelists</p>
+<p>cat /sys/devices/system/node/node0/numastat</p>
+<p>每一个node都是由struct pglist_datalinux 内核中的。每个节点都被分成许多特殊的块，称为 - zones。每个区域都由zone structlinux 内核中的 提供，并且具有以下类型之一：</p>
+<hr class="docutils" />
+<p>在我们开始深入研究 linux 内核调度程序初始化过程之前，我们必须做几件事。首先是mm/page_alloc.cpage_alloc_init中的函数。这个函数看起来很简单：</p>
+<hr class="docutils" />
+<p>jump_label_init</p>
+<p>我们看一下idr_init_cache函数的实现：</p>
+<p>时钟源的作用：间隔，计数？</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

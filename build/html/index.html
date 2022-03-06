@@ -40,7 +40,7 @@
 <li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pm.html">电源管理框架</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpu.html">cpu管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ps.html">进程管理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mem.html">内存管理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fs.html">文件系统</a></li>
@@ -714,25 +714,18 @@
 <li class="toctree-l2"><a class="reference internal" href="cpu.html#id1">CPU状态</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动管理框架</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#acpi">ACPI协议</a></li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#id2">开源固件</a></li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#id3">设备树</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="driver.html#dtbdtbo">编译出来的dtb和dtbo文件的编码格式是完全一致的，它们仅仅只是后缀不一样</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="driver.html#id36">设备节点的例子如下图：</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#linux">linux设备架构：</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id2">驱动的绑定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id3">总线类型</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id4">设备驱动程序设计模式</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#struct-device">基本设备结构:struct device</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#devres">devres-管理设备资源</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#struct-device-driver">设备驱动程序: struct device_driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id9">linux 内核设备模型</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id10">平台设备和驱动程序</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="driver.html#cpu-ethernetunit-address-cpu-node-name-unit-address">在上图中：cpu 和 ethernet依靠不同的unit-address 分辨不同的CPU；可见，node-name相同的情况下，可以通过不同的unit-address定义不同的设备节点。</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#arm">ARM资源管理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#x86">X86资源管理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#id65">内核资源扫描与自举</a></li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#id66">设备组织架构</a></li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#linux">linux设备架构：</a></li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#id395">开源固件和设备树</a></li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#id400">ACPI设备树</a></li>
-<li class="toctree-l2"><a class="reference internal" href="driver.html#pc">PC总线设备</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ps.html">进程管理</a><ul>

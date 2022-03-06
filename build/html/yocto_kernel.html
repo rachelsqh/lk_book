@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>yocto uboot与内核模块、内核开发总结 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="uboot理解" href="uboot.html" />
+    <link rel="prev" title="linux 内核安全" href="sec.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="x86_kernel_base.html">linux X86内核基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pm.html">电源管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpu.html">cpu管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动管理框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ps.html">进程管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mem.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fs.html">文件系统</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sec.html">linux 内核安全</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">yocto uboot与内核模块、内核开发总结</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#kernel">kernel相关指令</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#linux">linux 内核模块编译：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">linux 内核开发</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dot.html">dot画图</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>yocto uboot与内核模块、内核开发总结</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/yocto_kernel.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="yocto-uboot">
+<h1>yocto uboot与内核模块、内核开发总结<a class="headerlink" href="#yocto-uboot" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p>文档手册：<a class="reference external" href="https://docs.yoctoproject.org/">https://docs.yoctoproject.org/</a></p></li>
+</ul>
+<p>以qemuarm64为例进行说明
+uboot相关指令
+<strong>*********</strong>
+- uboot编译、部署指令：</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">u-boot编译、部署</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span> <span class="n">bitbake</span> <span class="o">-</span><span class="n">c</span> <span class="n">compile</span> <span class="o">-</span><span class="n">f</span> <span class="n">u</span><span class="o">-</span><span class="n">boot</span>
+<span class="n">$</span> <span class="n">bitbake</span> <span class="o">-</span><span class="n">c</span> <span class="n">deploy</span> <span class="o">-</span><span class="n">f</span> <span class="n">u</span><span class="o">-</span><span class="n">boot</span>        <span class="c1">//部署编译生成的u-boot镜像到deploy</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>uboot配置：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">u-boot配置</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">bitbake</span> <span class="o">-</span><span class="n">c</span> <span class="n">menuconfig</span> <span class="n">u</span><span class="o">-</span><span class="n">boot</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>编译指令</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">u-boot编译</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">bitbake</span> <span class="n">u</span><span class="o">-</span><span class="n">boot</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="kernel">
+<h2>kernel相关指令<a class="headerlink" href="#kernel" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">编译、部署、配置内核</span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">bitbake</span> <span class="o">-</span><span class="n">c</span> <span class="n">compile</span> <span class="o">-</span><span class="n">f</span> <span class="n">virtual</span><span class="o">/</span><span class="n">kernel</span>       <span class="c1">//编译内核</span>
+<span class="n">bitbake</span> <span class="o">-</span><span class="n">c</span> <span class="n">deploy</span> <span class="o">-</span><span class="n">f</span> <span class="n">virtual</span><span class="o">/</span><span class="n">kernel</span>        <span class="c1">//部署内核镜像到deploy目录</span>
+<span class="n">bitbake</span> <span class="o">-</span><span class="n">c</span> <span class="n">menuconfig</span> <span class="n">virtual</span><span class="o">/</span><span class="n">kernel</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="linux">
+<h2>linux 内核模块编译：<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>基本流程：
+1.新建layer;
+2.添加内核模块代码，创建对应的bb文件；
+3.田间layer;
+4.bitbake <a href="#id1"><span class="problematic" id="id2">*</span></a>.bb;</p></li>
+<li><p>实际操作：</p></li>
+</ul>
+<p>1.新建layer：</p>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">新建layer:k_mod_sample</span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td><td class="code"><div class="highlight"><pre><span></span>$bitbake-layer create-layer k_mod_sample
+$tree k_mod_sample
+k_mod_sample/
+|-- COPYING.MIT
+|-- README
+|-- conf
+|   `-- layer.conf
+`-- recipes-example
+    `-- example
+        `-- example_0.1.bb
+
+3 directories, 4 files
+</pre></div>
+</td></tr></table></div>
+</div>
+<dl>
+<dt>2.放入内核代码，创建对应bb文件：</dt><dd><ol class="loweralpha">
+<li><p>放入内核代码</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">代码文件放置</span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$cd</span> <span class="n">k_mod_sample</span>
+<span class="n">$rm</span> <span class="o">-</span><span class="n">rf</span> <span class="n">recipes</span><span class="o">-</span><span class="n">example</span>
+<span class="n">$mkdir</span> <span class="n">recipes</span><span class="o">-</span><span class="n">ksample</span>
+<span class="n">$cd</span> <span class="n">recipes</span><span class="o">-</span><span class="n">ksample</span>
+<span class="n">$mkdir</span> <span class="n">ksample</span>
+<span class="n">$cd</span> <span class="n">ksample</span>
+<span class="n">$cp</span> <span class="o">-</span><span class="n">rf</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">k_mod_sample</span> <span class="n">files</span>
+<span class="n">$cp</span> <span class="n">poky</span><span class="o">/</span><span class="n">meta</span><span class="o">-</span><span class="n">skeleton</span><span class="o">/</span><span class="n">recipes</span><span class="o">-</span><span class="n">kernel</span><span class="o">/</span><span class="n">hello</span><span class="o">-</span><span class="n">mod</span><span class="o">/</span><span class="n">hello</span><span class="o">-</span><span class="n">mod_0</span><span class="mf">.1</span><span class="p">.</span><span class="n">bb</span> <span class="n">ksample_0</span><span class="mf">.1</span><span class="p">.</span><span class="n">bb</span>
+<span class="n">$cp</span> <span class="n">poky</span><span class="o">/</span><span class="n">meta</span><span class="o">-</span><span class="n">skeleton</span><span class="o">/</span><span class="n">recipes</span><span class="o">-</span><span class="n">kernel</span><span class="o">/</span><span class="n">hello</span><span class="o">-</span><span class="n">mod</span><span class="o">/</span><span class="n">files</span><span class="o">/</span><span class="n">COPYING</span> <span class="n">files</span><span class="o">/</span>
+<span class="n">$cp</span> <span class="n">poky</span><span class="o">/</span><span class="n">meta</span><span class="o">-</span><span class="n">skeleton</span><span class="o">/</span><span class="n">recipes</span><span class="o">-</span><span class="n">kernel</span><span class="o">/</span><span class="n">hello</span><span class="o">-</span><span class="n">mod</span><span class="o">/</span><span class="n">files</span><span class="o">/</span><span class="n">Makefile</span> <span class="n">files</span><span class="o">/</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>修改files/Makefile文件</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text">修改后的Makefile</span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td><td class="code"><div class="highlight"><pre><span></span>  <span class="n">$cat</span> <span class="n">files</span><span class="o">/</span><span class="nl">Makefile</span><span class="p">:</span>
+
+     <span class="n">obj</span><span class="o">-</span><span class="nl">m</span> <span class="p">:</span><span class="o">=</span> <span class="n">k_mod_sample</span><span class="p">.</span><span class="n">o</span>
+     <span class="nl">SRC</span> <span class="p">:</span><span class="o">=</span> <span class="n">$</span><span class="p">(</span><span class="n">shell</span> <span class="n">pwd</span><span class="p">)</span>
+     <span class="nl">all</span><span class="p">:</span>
+             <span class="n">$</span><span class="p">(</span><span class="n">MAKE</span><span class="p">)</span> <span class="o">-</span><span class="n">C</span> <span class="n">$</span><span class="p">(</span><span class="n">KERNEL_SRC</span><span class="p">)</span> <span class="n">M</span><span class="o">=</span><span class="n">$</span><span class="p">(</span><span class="n">SRC</span><span class="p">)</span> <span class="n">modules</span>
+     <span class="nl">modules_install</span><span class="p">:</span>
+             <span class="n">$</span><span class="p">(</span><span class="n">MAKE</span><span class="p">)</span> <span class="o">-</span><span class="n">C</span> <span class="n">$</span><span class="p">(</span><span class="n">KERNEL_SRC</span><span class="p">)</span> <span class="n">M</span><span class="o">=</span><span class="n">$</span><span class="p">(</span><span class="n">SRC</span><span class="p">)</span> <span class="n">modules_install</span>
+     <span class="nl">clean</span><span class="p">:</span>
+             <span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="o">*</span><span class="p">.</span><span class="n">o</span> <span class="o">*~</span> <span class="n">core</span> <span class="p">.</span><span class="n">depend</span> <span class="p">.</span><span class="o">*</span><span class="p">.</span><span class="n">cmd</span> <span class="o">*</span><span class="p">.</span><span class="n">ko</span> <span class="o">*</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="n">c</span>
+             <span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">Module</span><span class="p">.</span><span class="n">markers</span> <span class="n">Module</span><span class="p">.</span><span class="n">symvers</span> <span class="n">modules</span><span class="p">.</span><span class="n">order</span>
+             <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="p">.</span><span class="n">tmp_versions</span> <span class="n">Modules</span><span class="p">.</span><span class="n">symvers</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>修改files/ksample_0.1.bb后内容为：</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text">修改后的ksample_0.1.bb</span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$cat</span> <span class="n">files</span><span class="o">/</span><span class="n">ksample_0</span><span class="mf">.1</span><span class="p">.</span><span class="n">bb</span>
+<span class="n">SUMMARY</span> <span class="o">=</span> <span class="s">&quot;Example of how to build an external Linux kernel module&quot;</span>
+<span class="n">DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;${SUMMARY}&quot;</span>
+<span class="n">LICENSE</span> <span class="o">=</span> <span class="s">&quot;GPLv2&quot;</span>
+<span class="n">LIC_FILES_CHKSUM</span> <span class="o">=</span> <span class="s">&quot;file://COPYING;md5=12f884d2ae1ff87c09e5b7ccc2c4ca7e&quot;</span>
+
+
+<span class="n">inherit</span> <span class="n">module</span>
+<span class="n">SRC_URI</span> <span class="o">=</span> <span class="s">&quot;file://k_mod_sample.c \</span>
+<span class="s">         file://Makefile \</span>
+<span class="s">        file://COPYING \</span>
+<span class="s">       &quot;</span>
+<span class="n">S</span> <span class="o">=</span> <span class="s">&quot;${WORKDIR}&quot;</span>
+
+<span class="cp"># The inherit of module.bbclass will automatically name module packages with</span>
+<span class="cp"># &quot;kernel-module-&quot; prefix as required by the oe-core build environment.</span>
+
+<span class="n">RPROVIDES_$</span><span class="p">{</span><span class="n">PN</span><span class="p">}</span> <span class="o">+=</span> <span class="s">&quot;kernel-module-k_mod_sample&quot;</span>
+
+<span class="n">KERNEL_MODULE_AUTOLOAD</span> <span class="o">+=</span> <span class="s">&quot;k_mod_sample&quot;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+</dd>
+</dl>
+<ol class="arabic simple" start="3">
+<li><p>添加层：</p></li>
+</ol>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">添加层k_mod_sample</span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$bitbake</span><span class="o">-</span><span class="n">layer</span> <span class="n">add</span><span class="o">-</span><span class="n">layer</span> <span class="n">k_mod_sample</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>编译模块：</p></li>
+</ol>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text">编译</span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">$</span> <span class="n">bitbake</span> <span class="n">ksample</span>
+<span class="n">$</span> <span class="n">find</span> <span class="o">-</span><span class="n">name</span> <span class="n">k_mod_sample</span><span class="p">.</span><span class="n">ko</span>
+<span class="n">$</span> <span class="p">.</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">work</span><span class="o">/</span><span class="n">qemuarm64</span><span class="o">-</span><span class="n">poky</span><span class="o">-</span><span class="n">linux</span><span class="o">/</span><span class="n">ksample</span><span class="o">/</span><span class="mf">0.1</span><span class="o">-</span><span class="n">r0</span><span class="o">/</span><span class="n">k_mod_sample</span><span class="p">.</span><span class="n">ko</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>linux 内核开发<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>参考：<a class="reference external" href="https://docs.yoctoproject.org/kernel-dev/common.html">https://docs.yoctoproject.org/kernel-dev/common.html</a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sec.html" class="btn btn-neutral float-left" title="linux 内核安全" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="uboot.html" class="btn btn-neutral float-right" title="uboot理解" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

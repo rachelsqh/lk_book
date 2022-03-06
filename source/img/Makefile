@@ -14,7 +14,9 @@ all:
 	dot -Tsvg fs/ps_fs.dot -o fs/ps_fs.svg
 	#dot -Tsvg fs/fs_fun.dot -o fs/fs_fun.svg
 	dot -Tsvg kernel_mem_map.dot -o kernel_mem_map.svg
-	dot -Tsvg kernel_boot.dot -o kernel_boot.svg
+	#dot -Tsvg kernel_boot.dot -o kernel_boot.svg
+	dot -Tsvg bus_device_driver_kset.dot -o bus_device_driver_kset.svg
+	dot -Tsvg bus_device_driver_klist.dot -o bus_device_driver_klist.svg
 clean:
 	rm -rf *.svg
 	rm -rf fs/*.svg
