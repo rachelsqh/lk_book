@@ -8,38 +8,61 @@ digraph G {
 	shape = "ellipse"
 	];
 	label = "module loade"
+
 	
 	subgraph cluster_0 {
 		label = "load_module:分配和加载模块";
+		color = black;
 		
 		a0[label = "module_sig_check",shape = rect];
-		a0_notes[label = "module_sig_check:\l
+		a0_note[label = "module_sig_check:\l
 				  以MODULE_SIG_STRING开始的节：如\"~Module signature appended ~\"\l",shape = note];
+		a0:e -> a0_note:w[dir = none,style=dashed];
+		
 		a1[label = "elf_validity_check(info)",shape = rect];
-		a1_notes[label = "elf_validity_check(info):\l
+		a1_note[label = "elf_validity_check(info):\l
 				  模块ELF格式有效性检查;\l",shape = note];
+		a1:e -> a1_note:w[dir = none,style=dashed];		  
+		a0:s -> a1:n;
+				  
+				  
 		
 		a2[label = "setup_load_info",shape = rect];
-		a2_notes[label = "setup_load_info(info,flags):\l
-				  解析内核模块文件，根据节信息初始化info结构;\l",shape = note];	
+		a2_note[label = "setup_load_info(info,flags):\l
+				  解析内核模块文件，根据节信息初始化info结构;\l",shape = note];
+				  
+		a2:e -> a2_note:w[dir = none,style=dashed];		  
+		a1:s -> a2:n;		  
+				  
+				  	
 		a3[label = "blacklisted(info->name))",shape = rect];
-		a3_notes[label = "blacklisted:\l
+		a3_note[label = "blacklisted:\l
 				  模块是否在黑名单中:module_blacklist结构;\l",shape = note];
+				  
+		a3:e -> a3_note:w[dir = none,style=dashed];		  
+		a2:s -> a3:n;			  
+				  
+				  
+				  
 	
 		a4[label = "rewrite_section_headers(info,flags)",shape = rect];
-		a4_notes[label = "rewrite_section_headers(info,flags):\l
+		a4_note[label = "rewrite_section_headers(info,flags):\l
 				  info->sechdrs[i].sh_addr = info->hdr + info->sechdrs[i].->sh_offset:将文件内便宜修改为hdr内偏移，并获取内存地址\l
 				  跟踪但不保留：\l
 			          info->sechdrs[info->index.vers].sh_flags &= ~(unsigned long)SHF_ALLOC\l
 		                  info->sechdrs[info->index.info].sh_flags &= ~(unsigned long)SHF_ALLOC\l",shape = rect];
 		
-		a5[label = "check_modstruct_vesion(info,info->mod)\l",shape = rect];
-		a5_notes[label = "check_modstruct_version(info,info->mod)\l
-				   查询符号:module_layout版本;\l
-				   ",shape = note];
+		a4:e -> a4_note:w[dir = none,style=dashed];		  
+		a3:s -> a4:n;			  
+				
+
 		
+		a5[label = "check_modstruct_vesion(info,info->mod):校验符号版本:module_layout版本\l",shape = rect];
+	  
+		a4:s -> a5:n;			  
+						
 		a6[label = "layout_and_allocate(info,flags)",shape = rect];
-		a6_notes[label = "layout_and_allocate(info,flags):\l
+		a6_note[label = "layout_and_allocate(info,flags):\l
 				  计算模块布局，并分配所有内存,放置到最终位置:\l
 				   check_modinfo(info->mod,info,flags):\l
 				   -vermagic\l
@@ -58,20 +81,22 @@ digraph G {
                                    move_module(info->mod,info):放入最终位置\l
                                    mod = info->sehdrs[info->index.mod].sh_addr:这是模块的最终状态\l
                                    kmemleak_load_module(mod,info):内核模块泄漏检查？\l",shape = note];
-
-		a7[label = "audit_log_kern_module(mod->name)",shape = rect];
-		a7_note[label = "audit：这个原理该处理了",shape = note];
 		
-		a8[label = "add_unformed_module(mode)\l",shape = rect];
-		a8_note[label = "add_unformed_module:\l",shape = note];
-
-		
+		a6:e -> a6_note:w[dir = none,style=dashed];		  
+		a5:s -> a6:n;			  
+				
+		a7[label = "audit_log_kern_module(mod->name):审计hook",shape = rect];
+	  
+		a6:s -> a7:n;			  
+						
+		a8[label = "add_unformed_module(mode):\l保持模块在系统中的唯一性",shape = rect];
+	  
+		a7:s -> a8:n;			  
+					
 		a9[label = "percpu_modalloc(mod,info)\l",shape = rect];
-		a9_note[label = "percpu_modalloc:\l",shape = note];
-		
-		a10[label = "module_unload_init(mod)\l",shape = rect];
-		a10_note[label = "module_unload_init(mod):初始化模块中卸载的节,增加引用计数\l",shape = note];			
-	  		
+	  
+		a8:s -> a9:n;			  
+
 		a11[label = "find_module_sections(modinfo)\l",shape = rect];
 		a11_note[label = "find_module_sections(modinfo):\l
 				   初始化各个节的基地址mod->:\l
@@ -82,80 +107,103 @@ digraph G {
 				   --ftrace_callsites = section_objs(...);\l--ei_funcs = _error_injection_whitelist;\l--kprobes_text_start = .kprobes.text;\l
 				   --kprobe_blacklist = _kprobe_blacklist;\l--static_call_sites = .static_call_sites;\l--extable = __ex_table;\l--debug = __dyndbg;\l",shape = note];
 		
-		a12[label = "check_module_license_and_versions(mod)\l",shape = rect];
-		a12_note[label = "check_module_license_and_versions(mod):\l",shape = note];	
-		
-		a13[label = "setup_modinfo(mod,info)\l",shape = rect];
-		a13_note[label = "setup_modinfo(mod,info)\l",shape = note];
-		   
+		a11:e -> a11_note:w[dir = none,style=dashed];		  
+		a9:s -> a11:n;			  
+				
+		a12[label = "check_module_license_and_versions(mod):\l校验许可版本\l",shape = rect];
+		  
+		a11:s -> a12:n;			  
+				
+		a13[label = "setup_modinfo(mod,info):\l运行模块属性的setup方法\l",shape = rect];
+		  
+		a12:s -> a13:n;			  
 
-		a1[label = "",shape = rect];
-		a1_note[label = "",shape = note];
 
-
-		a14[label = "simplify_symbols\l",shape = rect];
-		a14_note[label = "simplify_symbols:\l",shape = note];
-
+		a14[label = "simplify_symbols:处理符号，\lst_value直接指向指针\l",shape = rect];
+		  
+		a13:s -> a14:n;			  
+				
 
 		a15[label = "apply_relocations\l",shape = rect];
 		a15_note[label = "apply_relocations:\l",shape = note];
-		
+				a15:e -> a15_note:w[dir = none,style=dashed];		  
+		a14:s -> a15:n;			  
+				
 		
 		a16[label = "post_relocation\l",shape = rect];
-		a16_note[label = "post_relocation:\l",shape = note];
+		a16_note[label = "重定位原理:\l",shape = note];
+		a16:e -> a16_note:w[dir = none,style=dashed];		  
+		a15:s -> a16:n;			  
+				
 
+		a17[label = "flush_module_icache :\linit_layout + core_layout\limb\l",shape = rect];		  
+		a16:s -> a17:n;			  
+				
+		a18[label = "cfi_init(mod)\l",shape = rect];
+		a18_note[label = "cfi_init描述:\l",shape = note];
+		a18:e -> a18_note:w[dir = none,style=dashed];		  
+		a17:s -> a18:n;			  
+				
+		a19[label = "mod->args:填充内核模块参数\l",shape = rect];		  
+		a18:s -> a19:n;			  
+				
 
-		a17[label = "flush_module_icache\l",shape = rect];
-		a17_note[label = "flush_module_icache:\l",shape = note];
-
-		a18[label = "mod->args初始化",shape = rect];
-		a18_note[label = "",shape = note];
-
-		a19[label = "",shape = rect];
-		a19_note[label = "",shape = note];
-
-
-		a20[label = "init_build_id\l",shape = rect];
-		a20_note[label = "init_build_id:\l",shape = note];
-	
+		a20[label = "init_build_id（mod,info)\l",shape = rect];
+		a20_note[label = "init_build_id理解:\l",shape = note];
+		a20:e -> a20_note:w[dir = none,style=dashed];		  
+		a19:s -> a20:n;			  
+					
 
 		a21[label = "dynamic_debug_setup",shape = rect];
-		a21_note[label = "dynamic_debug_setup",shape = note];
+		a21_note[label = "dynamic_debug_setup理解:\l",shape = note];
+		a21:e -> a21_note:w[dir = none,style=dashed];		  
+		a20:s -> a21:n;			  
+						
+		a22[label = "ftrace_module_init(mod):\lftrace hook\l",shape = rect];
+		  
+		a21:s -> a22:n;			  
+				
+		a23[label = "complete_formation(mod,info):\l",shape = rect];
+		a22:s -> a23:n;	
 		
-		a22[label = "ftrace_module_init(mod)",shape = rect];
-		a22_note[label = "ftrace_module_init(mod)",shape = note];
-
-		a23[label = "complete_formation(mod,info)",shape = rect];
-	
-		a24[label = "prepare_coming_module(mod)",shape = rect];
-		a24_note[label = "prepare_coming_module(mod)",shape = note];
-
-		a25[label = "参数处理:parse_args",shape = rect];
-		a25_note[label = "",shape = note];
-
+		a24[label = "prepare_coming_module(mod):\l",shape = rect];
+		  
+		a23:s -> a24:n;			  
+				
+		a25[label = "模块参数处理:parse_args",shape = rect];
+		  
+		a24:s -> a25:n;			  
+				
 		a26[label = "mod_sysfs_setup(mod,info,mod->kp,mod->num_kp)",shape = rect];
-		a26_note[label = "mod_sysfs_setup:\l",shape = note];
-	
+		a26_note[label = "mod_sysfs_setup:sysfs节点初始化\l",shape = note];
+		a26:e -> a26_note:w[dir = none,style=dashed];		  
+		a25:s -> a26:n;			  
+				
 		a27[label = "is_livepatch_module(mod):copy_module_elf(mod,info)",shape = rect];
-		a27_note[label = "livepatch_module:\l",shape = note];
-		
-		a28[label = "free_copy",shape = rect];
-		a29[label = "trace_module_load(mod)",shape = rect];
-		a30[label = "do_init_module(mod)",shape = rect];
-		
-		
-		subgraph cluster_0 {
-			label = "do_init_module";
+		a27_note[label = "livepatch_module:\l实时内核补丁部分处理\l",shape = note];
+		a27:e -> a27_note:w[dir = none,style=dashed];		  
+		a26:s -> a27:n;			  
+				
+		a28[label = "free_copy(info):释放info\l",shape = rect];
+		a27:s -> a28:n;
 			
+		a29[label = "trace_module_load(mod):\l trace hook\l",shape = rect];
+		a28:s -> a29:n;
+			
+		a30[label = "do_init_module(mod)",shape = rect];
+		a29:s -> a30:n;	
+		
+		subgraph cluster_1 {
+			label = "do_init_module";
+			color = black;
 			b0[label = "freeinit->module_init = mod->init_layout.base",shape = rect];
-			b1[label = "do_mod_ctors(mod)",shape = rect];
-			b2[label = "do_one_initcall(mod->init)",shape = rect];
-			b3[label = "mod->state = MODULE_STATE_LIVE\l",shape = rect];
-			b4[label = "blocking_notifier_call_chain:module_notify_list:MODULE_STATE_LIVE\l",shape = rect];
-			b5[label = "kobject_uevent(&mod->mkobj.kobj,KOBJ_ADD)",shape = rect];
-			b6[label = "async_synchronize_full()\l",shape = rect];
-			b7[label = "ftrace_free_mem(mod,mod->init_layout.base,mod->init_layout.base + mod->init_layout.size)",shape = rect];
-			b8[label = "module_put(mod)\l",shape = rect];
+			b1[label = "do_mod_ctors(mod): 忽略\l",shape = rect];
+			b2[label = "do_one_initcall(mod->init):运行初始化句柄\l",shape = rect];
+			b3[label = "mod->state = MODULE_STATE_LIVE:\l设置状态\l",shape = rect];
+			b4[label = "blocking_notifier_call_chain:\lmodule_notify_list:MODULE_STATE_LIVE\l给对模块加载感兴趣的单元发送通知信息.\l",shape = rect];
+			b5[label = "kobject_uevent(&mod->mkobj.kobj,KOBJ_ADD):\l通知用户空间程序，有模块加载.\l",shape = rect];
+			b6[label = "async_synchronize_full():\l同步\l",shape = rect];
+			b7[label = "ftrace_free_mem(mod,mod->init_layout.base,\lmod->init_layout.base + mod->init_layout.size):\l释放初始化部分内存\l",shape = rect];
 			b9[label = "trim_init_extable(mod)\l",shape = rect];
 			b10[label="rcu_assign_pointer(mod->kallsyms,&mod->core_kallsyms)",shape = rect];
 			b11[label="module_enable_ro(mod,true);\l",shape = rect];
@@ -164,13 +212,33 @@ digraph G {
 			b14[label ="schedule_work(&init_free_wq);\l",shape = rect];
 			b15[label ="wake_up_all(&module_wq);\l",shape = rect];
 			
-			
+			b0:s -> b1:n;
+			b1:s -> b2:n;
+			b2:s -> b3:n;
+			b3:s -> b4:n;
+			b4:s -> b5:n;
+			b5:s -> b6:n;
+			b6:s -> b7:n;
+			b7:s -> b9:n;
+			b9:s -> b10:n;
+			b10:s -> b11:n;
+			b11:s -> b12:n;
+			b12:s -> b13:n;
+			b13:s -> b14:n;
+			b14:s -> b15:n;
 			
 			
 			
 		}
 
-	}
+		a30:e -> b0:w[dir = none,style=dashed];
+		
+		
+		
+		
+		}
+		
+
 	
 
 	

@@ -47,10 +47,56 @@
 <li class="toctree-l3"><a class="reference internal" href="#id3">总线类型</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id4">设备驱动程序设计模式</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#struct-device">基本设备结构:struct device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#devres">devres-管理设备资源</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#struct-device-driver">设备驱动程序: struct device_driver</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id9">linux 内核设备模型</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id10">平台设备和驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#kset-kobject-kref">kset/kobject/kref描述</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#kobject">kobject理解</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ksetkobject">对kset、kobject的理解</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id45">kobject 结构关系图</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uevent">uevent总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kobject-api">kobject API总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kobjectkset">kobject加入kset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id56">kobject 操作</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id57">内核示例程序</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id58">引用参考</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id59">设备驱动</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#platform">platform设备驱动</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dma">DMA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id62">硬件原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id63">软件编程基础</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id64">驱动资源</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pci-pci-e">PCI/PCI-E</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#acpi">ACPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtb">DTB</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id65">开源固件和设备树</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id66">设备树规范：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtc">DTC的解析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dtbdtbo">编译出来的dtb和dtbo文件的编码格式是完全一致的，它们仅仅只是后缀不一样</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#i2c">i2c驱动架构</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#i2c-i2c">i2c硬件信号：i2c数据包</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#i2ci2c">i2c控制器与i2c从设备逻辑</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#spi">spi驱动架构</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#spi-spi">spi硬件信号：spi数据包</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id127">驱动分类</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id128">字符设备驱动：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mtd">块设备驱动:mtd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#can">网络设备驱动：can</a></li>
 </ul>
 </li>
 </ul>
@@ -110,8 +156,8 @@
 <div class="section" id="id3">
 <h3>总线类型<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <p>内核为每类如PCI,USB等设备声明一个静态的总线类型的对象。必须指定名字，可选择性初始化其match回调函数。</p>
-<div class="literal-block-wrapper docutils container" id="id11">
-<div class="code-block-caption"><span class="caption-text">pci_bus_type</span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id129">
+<div class="code-block-caption"><span class="caption-text">pci_bus_type</span><a class="headerlink" href="#id129" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -133,8 +179,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 两种列表的迭代函数：（注意：需要确认函数名字？？？？？）
 - bus_for_each_dev 函数：</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id12">
-<div class="code-block-caption"><span class="caption-text">bus_for_each_dev 函数</span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id130">
+<div class="code-block-caption"><span class="caption-text">bus_for_each_dev 函数</span><a class="headerlink" href="#id130" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">bus_for_each_dev</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span> <span class="n">bus</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">start</span><span class="p">,</span>
@@ -147,8 +193,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 <ul>
 <li><p>bus_for_each_drv函数：</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id13">
-<div class="code-block-caption"><span class="caption-text">bus_for_each_dev 函数</span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id131">
+<div class="code-block-caption"><span class="caption-text">bus_for_each_dev 函数</span><a class="headerlink" href="#id131" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">bus_for_each_drv</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span> <span class="n">bus</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">device_driver</span> <span class="o">*</span> <span class="n">start</span><span class="p">,</span>
      <span class="kt">void</span> <span class="o">*</span> <span class="n">data</span><span class="p">,</span> <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">device_driver</span> <span class="o">*</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="p">));</span>
@@ -163,8 +209,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 <li><p>sysfs</p></li>
 </ul>
 <p>有一个名为“bus”的顶级目录。每条总线在总线目录中都有一个目录，以及两个默认目录：</p>
-<div class="literal-block-wrapper docutils container" id="id14">
-<div class="code-block-caption"><span class="caption-text">tree /sys/bus/pci</span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id132">
+<div class="code-block-caption"><span class="caption-text">tree /sys/bus/pci</span><a class="headerlink" href="#id132" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3</pre></div></td><td class="code"><div class="highlight"><pre><span></span>/sys/bus/pci/
@@ -174,8 +220,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 </td></tr></table></div>
 </div>
 <p>在总线上注册的驱动程序会在总线的驱动程序目录中获得一个目录：</p>
-<div class="literal-block-wrapper docutils container" id="id15">
-<div class="code-block-caption"><span class="caption-text">tree /sys/bus/pci</span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id133">
+<div class="code-block-caption"><span class="caption-text">tree /sys/bus/pci</span><a class="headerlink" href="#id133" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -193,8 +239,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 </td></tr></table></div>
 </div>
 <p>在该类型的总线上发现的每个设备都会在总线的设备目录中获得指向物理层次结构中设备目录的符号链接：</p>
-<div class="literal-block-wrapper docutils container" id="id16">
-<div class="code-block-caption"><span class="caption-text">tree /sys/bus/pci</span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id134">
+<div class="code-block-caption"><span class="caption-text">tree /sys/bus/pci</span><a class="headerlink" href="#id134" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -212,8 +258,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 <ul class="simple">
 <li><p>导出属性</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id17">
-<div class="code-block-caption"><span class="caption-text">struct bus_attribute</span><a class="headerlink" href="#id17" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id135">
+<div class="code-block-caption"><span class="caption-text">struct bus_attribute</span><a class="headerlink" href="#id135" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -227,15 +273,15 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 </td></tr></table></div>
 </div>
 <p>总线驱动程序可以使用与设备的 DEVICE_ATTR_RW 宏类似的 BUS_ATTR_RW 宏导出属性。例如，这样的定义：</p>
-<div class="literal-block-wrapper docutils container" id="id18">
-<div class="code-block-caption"><span class="caption-text">BUS_ATTR_RW</span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id136">
+<div class="code-block-caption"><span class="caption-text">BUS_ATTR_RW</span><a class="headerlink" href="#id136" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>static BUS_ATTR_RW(debug);等价于 static bus_attribute bus_attr_debug;
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>然后可以使用以下命令在总线的 sysfs 目录中添加和删除属性：</p>
-<div class="literal-block-wrapper docutils container" id="id19">
-<div class="code-block-caption"><span class="caption-text">添加/删除属性</span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id137">
+<div class="code-block-caption"><span class="caption-text">添加/删除属性</span><a class="headerlink" href="#id137" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">bus_create_file</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">bus_attribute</span> <span class="o">*</span><span class="p">);</span>
 <span class="kt">void</span> <span class="nf">bus_remove_file</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">bus_attribute</span> <span class="o">*</span><span class="p">);</span>
@@ -250,8 +296,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 <dt>1.状态容器;</dt><dd><p>虽然内核包含一些设备驱动程序，它们假设它们只会在某个系统（单例）上被探测（）一次，但通常假设驱动程序绑定到的设备将出现在多个实例中。这意味着 probe() 函数和所有回调都需要可重入。最常见的实现方式是使用状态容器设计模式。它通常有这种形式：</p>
 </dd>
 </dl>
-<div class="literal-block-wrapper docutils container" id="id20">
-<div class="code-block-caption"><span class="caption-text">demo代码</span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id138">
+<div class="code-block-caption"><span class="caption-text">demo代码</span><a class="headerlink" href="#id138" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -282,8 +328,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 </div>
 <p>2.container_of();</p>
 <p>添加一个卸载的工作：</p>
-<div class="literal-block-wrapper docutils container" id="id21">
-<div class="code-block-caption"><span class="caption-text">demo代码</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id139">
+<div class="code-block-caption"><span class="caption-text">demo代码</span><a class="headerlink" href="#id139" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -369,8 +415,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 <ul class="simple">
 <li><p>当设备的引用计数变为 0 时，设备将从内核中移除。可以使用以下命令调整引用计数：</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id22">
-<div class="code-block-caption"><span class="caption-text">增加/减少设备引用计数</span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id140">
+<div class="code-block-caption"><span class="caption-text">增加/减少设备引用计数</span><a class="headerlink" href="#id140" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">get_device</span><span class="p">(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">dev</span><span class="p">);</span>
 <span class="kt">void</span> <span class="nf">put_device</span><span class="p">(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">dev</span><span class="p">);</span>
@@ -380,8 +426,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 <p>get_device()如果引用还不是 0（如果它已经在被删除的过程中），将返回一个指向传递给它的struct device结构指针。
 - 驱动可以通过以下方式访问设备结构中的锁：</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id23">
-<div class="code-block-caption"><span class="caption-text">访问结构中的锁</span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id141">
+<div class="code-block-caption"><span class="caption-text">访问结构中的锁</span><a class="headerlink" href="#id141" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">lock_device</span><span class="p">(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">dev</span><span class="p">);</span>
 <span class="kt">void</span> <span class="nf">unlock_device</span><span class="p">(</span><span class="k">struct</span> <span class="nc">device</span> <span class="o">*</span> <span class="n">dev</span><span class="p">);</span>
@@ -393,8 +439,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 <li><p>属性：</p>
 <blockquote>
 <div><blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id24">
-<div class="code-block-caption"><span class="caption-text">属性结构</span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id142">
+<div class="code-block-caption"><span class="caption-text">属性结构</span><a class="headerlink" href="#id142" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -433,495 +479,37 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 </li>
 <li><p>tree /sys/bus -L 2</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id25">
-<div class="code-block-caption"><span class="caption-text">系统中的总线</span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
-  2
-  3
-  4
-  5
-  6
-  7
-  8
-  9
- 10
- 11
- 12
- 13
- 14
- 15
- 16
- 17
- 18
- 19
- 20
- 21
- 22
- 23
- 24
- 25
- 26
- 27
- 28
- 29
- 30
- 31
- 32
- 33
- 34
- 35
- 36
- 37
- 38
- 39
- 40
- 41
- 42
- 43
- 44
- 45
- 46
- 47
- 48
- 49
- 50
- 51
- 52
- 53
- 54
- 55
- 56
- 57
- 58
- 59
- 60
- 61
- 62
- 63
- 64
- 65
- 66
- 67
- 68
- 69
- 70
- 71
- 72
- 73
- 74
- 75
- 76
- 77
- 78
- 79
- 80
- 81
- 82
- 83
- 84
- 85
- 86
- 87
- 88
- 89
- 90
- 91
- 92
- 93
- 94
- 95
- 96
- 97
- 98
- 99
-100
-101
-102
-103
-104
-105
-106
-107
-108
-109
-110
-111
-112
-113
-114
-115
-116
-117
-118
-119
-120
-121
-122
-123
-124
-125
-126
-127
-128
-129
-130
-131
-132
-133
-134
-135
-136
-137
-138
-139
-140
-141
-142
-143
-144
-145
-146
-147
-148
-149
-150
-151
-152
-153
-154
-155
-156
-157
-158
-159
-160
-161
-162
-163
-164
-165
-166
-167
-168
-169
-170
-171
-172
-173
-174
-175
-176
-177
-178
-179
-180
-181
-182
-183
-184
-185
-186
-187
-188
-189
-190
-191
-192
-193
-194
-195
-196
-197
-198
-199
-200
-201
-202
-203
-204
-205
-206
-207
-208
-209
-210
-211
-212
-213
-214
-215
-216
-217
-218
-219
-220
-221
-222
-223
-224
-225
-226
-227
-228
-229
-230
-231
-232
-233
-234
-235
-236
-237
-238
-239
-240
-241
-242
-243
-244</pre></div></td><td class="code"><div class="highlight"><pre><span></span>/sys/bus
+<div><div class="literal-block-wrapper docutils container" id="id143">
+<div class="code-block-caption"><span class="caption-text">系统中的总线</span><a class="headerlink" href="#id143" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="highlight"><pre><span></span>/sys/bus
 ├── acpi
 │   ├── devices
 │   ├── drivers
 │   ├── drivers_autoprobe
 │   ├── drivers_probe
 │   └── uevent
-├── auxiliary
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── cec
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── clockevents
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── clocksource
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── container
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── cpu
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── dax
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── edac
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── event_source
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── gpio
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── hdaudio
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── hid
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
+......
 ├── i2c
 │   ├── devices
 │   ├── drivers
 │   ├── drivers_autoprobe
 │   ├── drivers_probe
 │   └── uevent
-├── machinecheck
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── media
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── mei
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── memory
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── mipi-dsi
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── mmc
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── node
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── nvmem
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── pci
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   ├── rescan
-│   ├── resource_alignment
-│   ├── slots
-│   └── uevent
-├── pci_express
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── platform
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── pnp
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── rmi4
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── sdio
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── serial
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── serio
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── snd_seq
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── soundwire
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── spi
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── thunderbolt
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── typec
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── usb
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── wmi
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── workqueue
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-├── xen
-│   ├── devices
-│   ├── drivers
-│   ├── drivers_autoprobe
-│   ├── drivers_probe
-│   └── uevent
-└── xen-backend
-    ├── devices
-    ├── drivers
-    ├── drivers_autoprobe
-    ├── drivers_probe
-    └── uevent
+......
 </pre></div>
 </td></tr></table></div>
 </div>
@@ -933,8 +521,8 @@ extern struct bus_type pci_bus_type;作为全局变量包含在头文件中，�
 <div><p>static BUS_ATTR_WO(drivers_probe);
 static BUS_ATTR_RW(drivers_autoprobe);</p>
 <p>bus_register函数中创建：</p>
-<div class="literal-block-wrapper docutils container" id="id26">
-<div class="code-block-caption"><span class="caption-text">bus_register函数</span><a class="headerlink" href="#id26" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id144">
+<div class="code-block-caption"><span class="caption-text">bus_register函数</span><a class="headerlink" href="#id144" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -979,8 +567,8 @@ static BUS_ATTR_RW(drivers_autoprobe);</p>
 </pre></div>
 </td></tr></table></div>
 </div>
-<div class="literal-block-wrapper docutils container" id="id27">
-<div class="code-block-caption"><span class="caption-text">drivers_autoprobe/drivers_probe具体实现原理</span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id145">
+<div class="code-block-caption"><span class="caption-text">drivers_autoprobe/drivers_probe具体实现原理</span><a class="headerlink" href="#id145" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1031,8 +619,8 @@ static BUS_ATTR_RW(drivers_autoprobe);</p>
 </pre></div>
 </td></tr></table></div>
 </div>
-<div class="literal-block-wrapper docutils container" id="id28">
-<div class="code-block-caption"><span class="caption-text">uevent 具体实现原理</span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id146">
+<div class="code-block-caption"><span class="caption-text">uevent 具体实现原理</span><a class="headerlink" href="#id146" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1092,112 +680,346 @@ static BUS_ATTR_RW(drivers_autoprobe);</p>
 57
 58
 59
-60</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">ssize_t</span> <span class="n">bus_uevent_store</span><span class="p">(</span><span class="k">struct</span> <span class="nc">bus_type</span> <span class="o">*</span><span class="n">bus</span><span class="p">,</span>
-                                <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">)</span> <span class="c1">// /sys/bus/i2c/uevent</span>
-<span class="p">{</span>
-        <span class="kt">int</span> <span class="n">rc</span><span class="p">;</span>
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91</pre></div></td><td class="code"><div class="highlight"><pre><span></span>static ssize_t bus_uevent_store(struct bus_type *bus,
+                                const char *buf, size_t count) // /sys/bus/i2c/uevent
+{
+        int rc;
 
-        <span class="n">rc</span> <span class="o">=</span> <span class="n">kobject_synth_uevent</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bus</span><span class="o">-&gt;</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">subsys</span><span class="p">.</span><span class="n">kobj</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
-        <span class="k">return</span> <span class="n">rc</span> <span class="o">?</span> <span class="nl">rc</span> <span class="p">:</span> <span class="n">count</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="cm">/**</span>
-<span class="cm"> * kobject_synth_uevent - send synthetic uevent with arguments</span>
-<span class="cm"> *</span>
-<span class="cm"> * @kobj: struct kobject for which synthetic uevent is to be generated</span>
-<span class="cm"> * @buf: buffer containing action type and action args, newline is ignored</span>
-<span class="cm"> * @count: length of buffer</span>
-<span class="cm"> *</span>
-<span class="cm"> * Returns 0 if kobject_synthetic_uevent() is completed with success or the</span>
-<span class="cm"> * corresponding error when it fails.</span>
-<span class="cm"> */</span>
-<span class="kt">int</span> <span class="n">kobject_synth_uevent</span><span class="p">(</span><span class="k">struct</span> <span class="nc">kobject</span> <span class="o">*</span><span class="n">kobj</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">)</span>
-<span class="p">{</span>
-        <span class="kt">char</span> <span class="o">*</span><span class="n">no_uuid_envp</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;SYNTH_UUID=0&quot;</span><span class="p">,</span> <span class="nb">NULL</span> <span class="p">};</span>
-        <span class="k">enum</span> <span class="n">kobject_action</span> <span class="n">action</span><span class="p">;</span>
-        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">action_args</span><span class="p">;</span>
-        <span class="k">struct</span> <span class="nc">kobj_uevent_env</span> <span class="o">*</span><span class="n">env</span><span class="p">;</span>
-        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">msg</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">*</span><span class="n">devpath</span><span class="p">;</span>
-        <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+        rc = kobject_synth_uevent(&amp;bus-&gt;p-&gt;subsys.kobj, buf, count);//总线的kobj
+        return rc ? rc : count;
+}
+/**
+ * kobject_synth_uevent - send synthetic uevent with arguments
+ *
+ * @kobj: struct kobject for which synthetic uevent is to be generated
+ * @buf: buffer containing action type and action args, newline is ignored
+ * @count: length of buffer
+ *
+ * Returns 0 if kobject_synthetic_uevent() is completed with success or the
+ * corresponding error when it fails.
+ */
+int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count)
+{
 
-        <span class="n">r</span> <span class="o">=</span> <span class="n">kobject_action_type</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">action</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">action_args</span><span class="p">);</span> <span class="c1">//所以uevent取值范围为：static const char *kobject_actions;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;unknown uevent action string&quot;</span><span class="p">;</span>
-                <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
-        <span class="p">}</span>
+        r = kobject_action_type(buf, count, &amp;action, &amp;action_args); //所以uevent取值范围为：static const char *kobject_actions;
+        。。。。。。
+        if (!action_args) {
+                r = kobject_uevent_env(kobj, action, no_uuid_envp);//只加入了事件
+                goto out;
+        }
 
-        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">action_args</span><span class="p">)</span> <span class="p">{</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="n">kobject_uevent_env</span><span class="p">(</span><span class="n">kobj</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">no_uuid_envp</span><span class="p">);</span>
-                <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
-        <span class="p">}</span>
+        r = kobject_action_args(action_args,
+                                count - (action_args - buf), &amp;env);//参数
+        。。。。。。
 
-        <span class="n">r</span> <span class="o">=</span> <span class="n">kobject_action_args</span><span class="p">(</span><span class="n">action_args</span><span class="p">,</span>
-                                <span class="n">count</span> <span class="o">-</span> <span class="p">(</span><span class="n">action_args</span> <span class="o">-</span> <span class="n">buf</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">env</span><span class="p">);</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">r</span> <span class="o">==</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">)</span> <span class="p">{</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;incorrect uevent action arguments&quot;</span><span class="p">;</span>
-                <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
-        <span class="p">}</span>
+        r = kobject_uevent_env(kobj, action, env-&gt;envp);//事件加参数
+        。。。。。。
+}
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span>
-                <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+/**
+ * kobject_uevent_env - send an uevent with environmental data
+ *
+ * @kobj: struct kobject that the action is happening to
+ * @action: action that is happening
+ * @envp_ext: pointer to environmental data
+ *
+ * Returns 0 if kobject_uevent_env() is completed with success or the
+ * corresponding error when it fails.
+ */
+int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+                       char *envp_ext[])
+{
+        ......
 
-        <span class="n">r</span> <span class="o">=</span> <span class="n">kobject_uevent_env</span><span class="p">(</span><span class="n">kobj</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">envp</span><span class="p">);</span>
-        <span class="n">kfree</span><span class="p">(</span><span class="n">env</span><span class="p">);</span>
-<span class="nl">out</span><span class="p">:</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
-                <span class="n">devpath</span> <span class="o">=</span> <span class="n">kobject_get_path</span><span class="p">(</span><span class="n">kobj</span><span class="p">,</span> <span class="n">GFP_KERNEL</span><span class="p">);</span>
-                <span class="n">pr_warn</span><span class="p">(</span><span class="s">&quot;synth uevent: %s: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
-                       <span class="n">devpath</span> <span class="o">?:</span> <span class="s">&quot;unknown device&quot;</span><span class="p">,</span>
-                       <span class="n">msg</span> <span class="o">?:</span> <span class="s">&quot;failed to send uevent&quot;</span><span class="p">);</span>
-                <span class="n">kfree</span><span class="p">(</span><span class="n">devpath</span><span class="p">);</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
-<span class="p">}</span>
+        if (!top_kobj-&gt;kset) {//必须有对应的kset，否则就没法了
+                ......
+                return -EINVAL;
+        }
+
+        kset = top_kobj-&gt;kset;
+        uevent_ops = kset-&gt;uevent_ops;//uevent_ops方法
+
+        /* skip the event, if uevent_suppress is set*/
+        if (kobj-&gt;uevent_suppress) {
+                ......
+                return 0;
+        }
+        /* skip the event, if the filter returns zero. */
+        if (uevent_ops &amp;&amp; uevent_ops-&gt;filter)
+                if (!uevent_ops-&gt;filter(kset, kobj)) {
+                        ......
+                        return 0;
+                }
+
+        /* originating subsystem */
+        if (uevent_ops &amp;&amp; uevent_ops-&gt;name)
+                subsystem = uevent_ops-&gt;name(kset, kobj);//uevent_ops的作用
+        else
+                subsystem = kobject_name(&amp;kset-&gt;kobj);
+        ......
+        /* environment buffer */
+                。。。。。。
+
+        /* let the kset specific function add its stuff */
+        if (uevent_ops &amp;&amp; uevent_ops-&gt;uevent) {
+                retval = uevent_ops-&gt;uevent(kset, kobj, env);//有就执行，返回非零就退出了，返回零则继续执行，这个可以作为全局的一个通知点。如驱动匹配等。kobj：代表本结构的对象
+                if(retval)
+                      goto exit;
+        }
+        ......
+        retval = kobject_uevent_net_broadcast(kobj, env, action_string,//uevent_net_broadcast_tagged-&gt;netlink_broadcast():发送
+                                              devpath);
+......
+}
 </pre></div>
 </td></tr></table></div>
 </div>
 <ol class="arabic simple">
-<li><p>drivers_autoprobe 设置说明：</p></li>
-<li><p>drivers_probe 设置说明：</p></li>
-<li><p>uevent 设置说明：</p></li>
+<li><p>drivers_autoprobe 设置说明：如果为1,则在device_add()函数时运行device_initial_probe(dev)进行设备驱动匹配。进而调用__device_attach(dev,true);</p></li>
+<li><p>drivers_probe 设置说明：设备名称（字符串），为设备重新匹配设备驱动；</p></li>
+<li><p>uevent 设置说明：kobject_uevent_env(。。。)：发送事件。</p></li>
 </ol>
 </div></blockquote>
-<ul class="simple">
-<li><p>总线注册：</p></li>
-</ul>
 </li>
 </ul>
 </div>
-<div class="section" id="devres">
-<h3>devres-管理设备资源<a class="headerlink" href="#devres" title="Permalink to this headline">¶</a></h3>
 </div>
-<div class="section" id="struct-device-driver">
-<h3>设备驱动程序: struct device_driver<a class="headerlink" href="#struct-device-driver" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="kset-kobject-kref">
+<h2>kset/kobject/kref描述<a class="headerlink" href="#kset-kobject-kref" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="kobject">
+<h3>kobject理解<a class="headerlink" href="#kobject" title="Permalink to this headline">¶</a></h3>
+<p>内核对象的嵌入单元,主要应用在内核与用户空间信息的交互：</p>
+<ul>
+<li><p>每个kobject对应一个sysfs目录，可用于导出对象信息；
+struct kobject {</p>
+<blockquote>
+<div><p>const char              <a href="#id9"><span class="problematic" id="id10">*</span></a>name;
+struct list_head        entry;
+struct kobject          <a href="#id11"><span class="problematic" id="id12">*</span></a>parent;
+struct kset             <a href="#id13"><span class="problematic" id="id14">*</span></a>kset;
+struct kobj_type        <a href="#id15"><span class="problematic" id="id16">*</span></a>ktype;
+struct kernfs_node      <a href="#id17"><span class="problematic" id="id18">*</span></a>sd;
+struct kref             kref;</p>
+</div></blockquote>
+</li>
+</ul>
+<dl class="simple">
+<dt>#ifdef CONFIG_DEBUG_KOBJECT_RELEASE</dt><dd><p>struct delayed_work     release;</p>
+</dd>
+<dt>#endif</dt><dd><p>unsigned int state_initialized:1;
+unsigned int state_in_sysfs:1;
+unsigned int state_add_uevent_sent:1;
+unsigned int state_remove_uevent_sent:1;
+unsigned int uevent_suppress:1;</p>
+</dd>
+</dl>
+<p>};</p>
+<dl class="simple">
+<dt>struct kobj_type {</dt><dd><p>void (<em>release)(struct kobject *kobj);
+const struct sysfs_ops *sysfs_ops;
+struct attribute **default_attrs;       /</em> use default_groups instead <a href="#id19"><span class="problematic" id="id20">*</span></a>/
+const struct attribute_group <a href="#id21"><span class="problematic" id="id22">**</span></a>default_groups;
+const struct kobj_ns_type_operations <a href="#id23"><span class="problematic" id="id24">*</span></a>(<a href="#id25"><span class="problematic" id="id26">*</span></a>child_ns_type)(struct kobject <a href="#id27"><span class="problematic" id="id28">*</span></a>kobj);
+const void <a href="#id29"><span class="problematic" id="id30">*</span></a>(<a href="#id31"><span class="problematic" id="id32">*</span></a>namespace)(struct kobject <a href="#id33"><span class="problematic" id="id34">*</span></a>kobj);
+void (<a href="#id35"><span class="problematic" id="id36">*</span></a>get_ownership)(struct kobject <a href="#id37"><span class="problematic" id="id38">*</span></a>kobj, kuid_t <a href="#id39"><span class="problematic" id="id40">*</span></a>uid, kgid_t <a href="#id41"><span class="problematic" id="id42">*</span></a>gid);</p>
+</dd>
+</dl>
+<p>};</p>
 <ul class="simple">
-<li><p>分配：设备驱动程序是静态分配的结构。尽管驱动程序支持的系统中可能有多个设备，但 struct device_driver 将驱动程序表示为一个整体（而不是特定的设备实例）。</p></li>
-<li><p>初始化：</p></li>
-<li><p>声明：</p></li>
-<li><p>注册：</p></li>
-<li><p>转换总线驱动程序：</p></li>
-<li><p>访问：</p></li>
-<li><p>sysfs:</p></li>
-<li><p>回调：</p></li>
-<li><p>属性：</p></li>
-<li></li>
+<li><p>以kset为单位提供uevent结构，实现异步通知。</p></li>
+</ul>
+<dl class="simple">
+<dt>struct kset {</dt><dd><p>struct list_head list;//维护struct kobject的双向链表；
+spinlock_t list_lock;
+struct kobject kobj;
+const struct kset_uevent_ops <a href="#id43"><span class="problematic" id="id44">*</span></a>uevent_ops;</p>
+</dd>
+</dl>
+<p>} __randomize_layout;</p>
+<ul class="simple">
+<li><p>kset与kobject实现内核对象的分类组织。进一步将内核信息有组织地通过sysfs文件系统向用户空间进行呈现。</p></li>
+<li><p>kset与子系统（subsystem：struct bus_type)对应；</p></li>
 </ul>
 </div>
-<div class="section" id="id9">
-<h3>linux 内核设备模型<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="ksetkobject">
+<h3>对kset、kobject的理解<a class="headerlink" href="#ksetkobject" title="Permalink to this headline">¶</a></h3>
+<p>kset与kobject结构间的关系：</p>
+<img alt="_images/kset_kobject_ra.svg" class="align-center" src="_images/kset_kobject_ra.svg" /></div>
+<div class="section" id="id45">
+<h3>kobject 结构关系图<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
+<p>每个kobject对应一个sysfs目录（kset借助内嵌的kobject成员对应一个sysfs目录)</p>
+<img alt="_images/kobject_struct.svg" class="align-center" src="_images/kobject_struct.svg" /></div>
+<div class="section" id="uevent">
+<h3>uevent总结<a class="headerlink" href="#uevent" title="Permalink to this headline">¶</a></h3>
+<p>一个kset通过内嵌的kset_uevent_ops结构来对与其相关的kobject的状态变化进行进一步处理。</p>
+<ul class="simple">
+<li><p>filter函数允许kset阻止一个特定kobject的uevent被发送到用户空间。 如果该函数返回0，该uevent将不会被发送出去。</p></li>
+<li><p>name函数将被调用用于覆盖uevent发送到用户空间的kset的默认名称。默认情况下，该名称将与kset本身相同。</p></li>
+<li><p>当事件被发送至用户空间前，调用uevent函数来设置更多的环境变量。</p></li>
+</ul>
+<p>相关状态：</p>
+<div class="literal-block-wrapper docutils container" id="id147">
+<div class="code-block-caption"><span class="caption-text">enum kobject_action</span><a class="headerlink" href="#id147" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/* counter to tag the uevent, read only except for the kobject core */</span>
+<span class="k">extern</span> <span class="n">u64</span> <span class="n">uevent_seqnum</span><span class="p">;</span>
+
+<span class="hll"><span class="cm">/*</span>
+</span><span class="hll"><span class="cm">* The actions here must match the index to the string array</span>
+</span><span class="cm">* in lib/kobject_uevent.c</span>
+<span class="cm">*</span>
+<span class="cm">* Do not add new actions here without checking with the driver-core</span>
+<span class="cm">* maintainers. Action strings are not meant to express subsystem</span>
+<span class="cm">* or device specific properties. In most cases you want to send a</span>
+<span class="cm">* kobject_uevent_env(kobj, KOBJ_CHANGE, env) with additional event</span>
+<span class="cm">* specific variables added to the event environment.</span>
+<span class="cm">*/</span>
+<span class="k">enum</span> <span class="n">kobject_action</span> <span class="p">{</span>
+        <span class="n">KOBJ_ADD</span><span class="p">,</span>
+        <span class="n">KOBJ_REMOVE</span><span class="p">,</span>
+        <span class="n">KOBJ_CHANGE</span><span class="p">,</span>
+        <span class="n">KOBJ_MOVE</span><span class="p">,</span>
+        <span class="n">KOBJ_ONLINE</span><span class="p">,</span>
+        <span class="n">KOBJ_OFFLINE</span><span class="p">,</span>
+        <span class="n">KOBJ_BIND</span><span class="p">,</span>
+        <span class="n">KOBJ_UNBIND</span><span class="p">,</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
 </div>
-<div class="section" id="id10">
-<h3>平台设备和驱动程序<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p>通过调用kobject_uevent进行事件通知</p>
+<div class="literal-block-wrapper docutils container" id="id148">
+<div class="code-block-caption"><span class="caption-text">kobject_uevent</span><a class="headerlink" href="#id148" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* kobject_uevent - notify userspace by sending an uevent</span>
+<span class="cm">*</span>
+<span class="cm">* @kobj: struct kobject that the action is happening to</span>
+<span class="cm">* @action: action that is happening</span>
+<span class="cm">*</span>
+<span class="cm">* Returns 0 if kobject_uevent() is completed with success or the</span>
+<span class="cm">* corresponding error when it fails.</span>
+<span class="cm">*/</span>
+<span class="kt">int</span> <span class="nf">kobject_uevent</span><span class="p">(</span><span class="k">struct</span> <span class="nc">kobject</span> <span class="o">*</span><span class="n">kobj</span><span class="p">,</span> <span class="k">enum</span> <span class="n">kobject_action</span> <span class="n">action</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">return</span> <span class="n">kobject_uevent_env</span><span class="p">(</span><span class="n">kobj</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>事件发送处理流程：</p>
+<img alt="_images/kobject_uevent.svg" class="align-center" src="_images/kobject_uevent.svg" /><p>kobject_uevent函数流程图显示了其功能实现的底层逻辑。</p>
+</div>
+<div class="section" id="kobject-api">
+<h3>kobject API总结<a class="headerlink" href="#kobject-api" title="Permalink to this headline">¶</a></h3>
+<p>一个kset有以下功能:它像是一个包含一组对象(struct kobject)的袋子。一个kset可以被内核用来追踪“所有块设备”或“所有PCI设备驱动”,也可用于追踪某类内核时间状态变化。kset也是sysfs中的一个子目录，代表kset本身的kobject结构与对应的sysfs目录对应，kset对应的kobject它可以被设置为其他kobject的父对象，进而与kset包含的kobject形成一个数结构；sysfs层次结构的顶级目录就是以这种方式构建的。</p>
+<p>Ksets通过uevent_ops成员实现kobjects的“热插拔”，将”热插拔”事件传递给用户空间，应用程序进行进一步的处理。</p>
+<p>kset在一个标准的内核链表(list)中保存它的子对象(kobject)。Kobjects中的kset字段指向包含自身的kset。在几乎所有的情况下，属于一个kset的kobjects的父对象成员都指向kset内嵌的kobject。</p>
+<p>由于kset中包含一个kobject，它应该总是被动态地创建，而不是静态地 或在堆栈中声明。要创建一个新的kset，请使用:</p>
+<dl class="simple">
+<dt>struct kset <a href="#id46"><span class="problematic" id="id47">*</span></a>kset_create_and_add(const char <a href="#id48"><span class="problematic" id="id49">*</span></a>name,</dt><dd><p>const struct kset_uevent_ops <a href="#id50"><span class="problematic" id="id51">*</span></a>uevent_ops,
+struct kobject <a href="#id52"><span class="problematic" id="id53">*</span></a>parent_kobj);</p>
+</dd>
+</dl>
+<p>当你完成对kset的处理后，调用:</p>
+<p>void kset_unregister(struct kset <a href="#id54"><span class="problematic" id="id55">*</span></a>k);</p>
+<p>来销毁它。这将从sysfs中删除该kset并递减其引用计数值。当引用计数 为零时,该kset将被释放。因为对该kset的其他引用可能仍然存在， 释放可能发生在kset_unregister()返回之后。</p>
+<p>一个使用kset的例子可以在内核树中的 samples/kobject/kset-example.c 文件中看到。</p>
+</div>
+<div class="section" id="kobjectkset">
+<h3>kobject加入kset<a class="headerlink" href="#kobjectkset" title="Permalink to this headline">¶</a></h3>
+<p>有人可能会问，鉴于没有提出执行该功能的函数，究竟如何将一个kobject添加到一个kset中。答案是这个任务是由kobject_add()处理的。当一个 kobject被传递给kobject_add()时，它的kset成员应该指向这个kobject 所属的kset。 kobject_add()将处理剩下的部分。</p>
+<p>如果属于一个kset的kobject没有父kobject集，它将被添加到kset的目录中。并非所有的kset成员都必须住在kset目录中。如果在添加kobject 之前分配了一个明确的父kobject，那么该kobject将被注册到kset中， 但是被添加到父kobject下面。</p>
+</div>
+<div class="section" id="id56">
+<h3>kobject 操作<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h3>
+<p>通过kobject_add()注册了你的kobject，不要使用kfree()来直接释放它。用kobject_put()来释放。在kobject_init()后，通过调用kobject_put()来进行正确释放。具体操作通过调用kobject的release()方法完成的。release()存储在kobject内嵌的结构体kobj_type中；实际编程中通过调用内核库中封装的kobject函数对kobject等进行操作，不要采用自己定义接口进行处理。</p>
+<p>具体API参考内核文档：<a class="reference external" href="https://www.kernel.org/doc/html/latest/core-api/kobject.html">https://www.kernel.org/doc/html/latest/core-api/kobject.html</a></p>
+</div>
+<div class="section" id="id57">
+<h3>内核示例程序<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h3>
+<p>samples/kobject/{kobject-example.c,kset-example.c}</p>
+</div>
+<div class="section" id="id58">
+<h3>引用参考<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://www.kernel.org/doc/html/latest/core-api/kobject.html">https://www.kernel.org/doc/html/latest/core-api/kobject.html</a></p>
+</div>
+</div>
+<div class="section" id="id59">
+<h2>设备驱动<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="platform">
+<h3>platform设备驱动<a class="headerlink" href="#platform" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>有关平台总线的驱动程序模型接口，请参见 &lt;linux/platform_device.h&gt;：platform_device 和 platform_driver。这种伪总线用于连接具有最少基础设施的总线上的设备，例如用于在许多片上系统处理器上集成外围设备的设备，或一些“传统”PC 互连；而不是像 PCI 或 USB 这样的大型总线指定的。</p>
 </div></blockquote>
 <ul class="simple">
 <li><p>平台设备：平台设备是通常在系统中显示为自治实体的设备。这包括传统的基于端口的设备和外设总线的主机桥，以及集成到片上系统平台的大多数控制器。它们通常的共同点是从 CPU 总线直接寻址。极少情况下，platform_device 会通过其他某种总线的段连接；但它的寄存器仍然是可直接寻址的。平台设备有一个名称，用于驱动程序绑定，以及一个资源列表，例如地址和 IRQ：</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id29">
-<div class="code-block-caption"><span class="caption-text">struct platform_device</span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id149">
+<div class="code-block-caption"><span class="caption-text">struct platform_device</span><a class="headerlink" href="#id149" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -1247,6 +1069,328 @@ static BUS_ATTR_RW(drivers_autoprobe);</p>
 <li><p>使用 platform_driver_probe() 注册驱动程序的工作方式与使用 platform_driver_register() 类似，但如果其他设备注册，则以后不会探测该驱动程序。（没关系，因为此接口仅适用于非热插拔设备。）</p></li>
 </ul>
 </div></blockquote>
+<p>驱动注册：platform_driver_register(drv):__platform_driver_register(drv,THIS_MODULE);</p>
+<img alt="_images/platform_driver_register.svg" class="align-center" src="_images/platform_driver_register.svg" /><p>设备注册：platform_device_register(struct platform_device <a href="#id60"><span class="problematic" id="id61">*</span></a>pdev);</p>
+<img alt="_images/platform_device_register.svg" class="align-center" src="_images/platform_device_register.svg" /><p>代码流程更与上面描述的struct bus_type,strut device,struct device_driver三者之间的关系。</p>
+</div>
+</div>
+<div class="section" id="dma">
+<h2>DMA<a class="headerlink" href="#dma" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id62">
+<h3>硬件原理<a class="headerlink" href="#id62" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id63">
+<h3>软件编程基础<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id64">
+<h2>驱动资源<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pci-pci-e">
+<h3>PCI/PCI-E<a class="headerlink" href="#pci-pci-e" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="acpi">
+<h3>ACPI<a class="headerlink" href="#acpi" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="dtb">
+<h3>DTB<a class="headerlink" href="#dtb" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id65">
+<h2>开源固件和设备树<a class="headerlink" href="#id65" title="Permalink to this headline">¶</a></h2>
+<p>ARM Device Tree起源于OpenFirmware (OF)，在过去的Linux中，arch/arm/plat-xxx和arch/arm/mach-xxx中充斥着大量的垃圾代码，相当多数的代码只是在描述板级细节，而这些板级细节对于内核来讲，不过是垃圾，如板上的platform设备、resource、i2c_board_info、spi_board_info以及各种硬件的platform_data。为了改变这种局面，Linux社区的大牛们参考了PowerPC等体系架构中使用的Flattened Device Tree（FDT），也采用了Device Tree结构，许多硬件的细节可以直接透过它传递给Linux，而不再需要在kernel中进行大量的冗余编码。</p>
+<p>    Device Tree是一种描述硬件的数据结构，由一系列被命名的结点（node）和属性（property）组成，而结点本身可包含子结点。所谓属性，其实就是成对出现的name和value。在Device Tree中，可描述的信息包括（原先这些信息大多被hard code到kernel中）：CPU的数量和类别，内存基地址和大小，总线和桥，外设连接，中断控制器和中断使用情况，GPIO控制器和GPIO使用情况，Clock控制器和Clock使用情况。 通常由.dts文件以文本方式对系统设备树进行描述，经过Device Tree Compiler(dtc)将dts文件转换成二进制文件binary device tree blob(dtb)，.dtb文件可由Linux内核解析，有了device tree就可以在不改动Linux内核的情况下，对不同的平台实现无差异的支持，只需更换相应的dts文件，即可满足，当然这样会增加内核的体积。
+    基本上，那些可以动态探测到的设备是不需要描述的， 例如USB device。不过对于SOC上的usb hostcontroller，它是无法动态识别的，需要在device tree中描述。同样的道理， 在computersystem中，PCI device可以被动态探测到，不需要在device tree中描述，但是PCI bridge如果不能被探测，那么就需要描述之。</p>
+<div class="section" id="id66">
+<h3>设备树规范：<a class="headerlink" href="#id66" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://www.devicetree.org/specifications/">https://www.devicetree.org/specifications/</a></p>
+<p>要理解的最重要的一点是，DT 只是一个描述硬件的数据结构。它没有什么神奇之处，它也不会神奇地让所有硬件配置问题都消失。它所做的是提供一种语言，用于将硬件配置与 Linux 内核（或任何其他操作系统）中的板卡和设备驱动程序支持分离。使用它可以让电路板和设备支持成为数据驱动的；根据传递到内核的数据而不是每台机器的硬编码选择来做出设置决策。</p>
+<p>理想情况下，数据驱动的平台设置应该会减少代码重复，并更容易使用单个内核映像支持广泛的硬件。</p>
+<p>Linux 将 DT 数据用于三个主要目的：</p>
+</div>
+<div class="section" id="dtc">
+<h3>DTC的解析<a class="headerlink" href="#dtc" title="Permalink to this headline">¶</a></h3>
+<p>dtc:device tree compiler:设备树编译器： dtc [options] &lt;input file&gt;
+dts:device tree source
+dtb:device tree blob</p>
+<p>但是我还是简单说一下。。。dt主要由两种文件组成，分别是xx.dts和xx.dtsi，其中只有xx.dts文件才能生成对应的dtb/dtbo，dtsi文件是用来include的。
+也就是说，一个dtb/dtbo文件中包含了</p>
+<p>生成这个dtb/dtbo的dts文件内容
+这个dts文件中include的dtsi文件内容
+被include的dtsi文件中引用的其它dtsi文件内容
+至于这里的include(引用)，其实在生成dtb时你可以简单的理解为复制粘贴，也就是把那个文件的内容替换到include的位置（（
+还有一个非常关键的点，关系到dtbo的原理，那就是dt之间是可以互相覆盖的
+比如1.dtsi引用了2.dtsi，那么1.dtsi就可以在include的下方重写2.dtsi中的节点</p>
+<p>总结一下，编译dtb/dtbo的过程实际上先是一个合并+递归include的过程，其中谁距离dts文件越近，就具有越高的覆盖优先级，可以覆盖越多的节点而更难被别人覆盖</p>
+<p>dtb是device tree binary的简称
+binary，顾名思义，就是可以被bootloader直接读取执行的内容
+它们在开机启动在早期阶段由bootloader解码，传递给内核，从而帮助内核完成启动过程</p>
+<p>在较老的平台上（msm-3.18 / msm-4.4)，device tree只存在于boot分区中， 可以通过在Makefile中指定dtb-y += &lt;名称&gt;.dtb来编译对应的dtb文件（其中名称是指源dts的名称，也就是&lt;名称&gt;.dts）。这些文件将会被与内核的编译产物Image.xx连接，最终生成Image.xx-dtb，常见的有Image-dtb Image.gz-dtb Image.lz4-dtb等，而这个过程由CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE控制。在这个选项被关闭后，编译也会生成dtb文件，但不会主动连接至内核镜像。
+dtbo
+dtbo是device tree binary overlay的简称
+在msm-4.9平台上，dtbo横空出世（准确来说是出厂搭载安卓9的要求）。device tree被拆分到了两个地方，一个是boot分区中的老位置，另一个则是dtbo分区。谷歌做这件事的初衷在于：希望分离芯片厂商和手机厂商的修改，芯片厂商只修改内核中的dtb，而手机厂商只修改dtbo分区，这样能够井井有条（（但是事实是手机厂商也还在改内核的dtb草
+因此，就初衷而言，我们已经可以看出dtb和dtbo分区之间的关系</p>
+<p>那么问题来了，谁的优先级更高呢？假如一个东西同时出现在dtb与dtbo中，谁会覆盖谁呢？</p>
+<p>肯定是dtbo覆盖kernel dtb啊，不然它凭什么叫overlay…(((不过我并没有去验证（懒
+在Makefile中，我们可以看到包含dtbo分区的设备的dt编译逻辑，和上方的旧平台有些许不同
+我们可以通过dtbo-y += &lt;名称&gt;.dtbo来编译dtbo文件（和上方的dtb一样，名称来自于源文件&lt;名称&gt;.dts）
+但是，同时我们需要指定dtbo的base，也就是这个叠加层是基于哪个dtb进行叠加覆盖的
+&lt;名称&gt;.dtbo-base := &lt;名称2&gt;.dtb
+在这样配置之后，编译内核时，编译系统将会编译对应的dtbo和dtb，并将dtb打包进入内核（前提是开启CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE），但是dtbo将会留在原处。厂商在编译系统时，dtbo文件是由编译系统的其他部分（非内核）处理并打包成为dtbo分区，生成dtbo镜像。
+但是，我们依然可以在单跑内核时生成dtbo镜像。
+我们需要摘下以下几个提交</p>
+<p>dtb中装有芯片级配置，比如gpu频率表，这就是为什么gpu超频卡刷包里面是个dtb文件的原因（用来替换kernel dtb）
+dtbo中装有厂商级的配置，比如屏幕、相机等，这就是为什么超刷新率改的是dtbo分区
+具体，你可以去溯源，只需要追随着dts文件的include，就可以知道它们里面到底装了些什么。</p>
+<p>以kona-v2.1（骁龙865）为例</p>
+<p>dtb和dtbo文件是同一种东西</p>
+<div class="section" id="dtbdtbo">
+<h4>编译出来的dtb和dtbo文件的编码格式是完全一致的，它们仅仅只是后缀不一样<a class="headerlink" href="#dtbdtbo" title="Permalink to this headline">¶</a></h4>
+<p>1. linux设备树中DTS、 DTC和DTB的关系
+(1) DTS：.dts文件是设备树的源文件。由于一个SoC可能对应多个设备，这些.dst文件可能包含很多共同的部分，共同的部分一般被提炼为一个 .dtsi 文件，这个文件相当于C语言的头文件。
+(2) DTC：DTC是将.dts编译为.dtb的工具，相当于gcc。
+(3) DTB：.dtb文件是 .dts 被 DTC 编译后的二进制格式的设备树文件，它可以被linux内核解析。</p>
+<p>.dts文件是一种ASCII 文本格式的Device Tree描述，此文本格式非常人性化，适合人类的阅读习惯。 基本上，在ARM Linux在，一个.dts文件对应一个ARM的machine，一般放置在内核的arch/arm/boot/dts/目录。 由于一个SoC可能对应多个machine（一个SoC可以对应多个产品和电路板），势必这些.dts文件需包含许多共同的部分， Linux内核为了简化，把SoC公用的部分或者多个machine共同的部分一般提炼为.dtsi，类似于C语言的头文件。 其他的machine对应的.dts就include这个.dtsi。譬如，对于RK3288而言， rk3288.dtsi就被rk3288-chrome.dts所引用， rk3288-chrome.dts有如下一行：#include“rk3288.dtsi”, 对于rtd1195,在 rtd-119x-nas.dts中就包含了/include/ ”rtd-119x.dtsi” 当然，和C语言的头文件类似，.dtsi也可以include其他的.dtsi，譬如几乎所有的ARM SoC的.dtsi都引用了skeleton.dtsi，即#include”skeleton.dtsi“ 或者 /include/ “skeleton.dtsi”</p>
+<p>正常情况下所有的dts文件以及dtsi文件都含有一个根节点”/”,这样include之后就会造成有很多个根节点? 按理说 device tree既然是一个树，那么其只能有一个根节点，所有其他的节点都是派生于根节点的child node. 其实Device Tree Compiler会对DTS的node进行合并，最终生成的DTB中只有一个 root node.</p>
+<p>device tree的基本单元是node。这些node被组织成树状结构，除了root node，每个node都只有一个parent。 一个device tree文件中只能有一个root node。每个node中包含了若干的property/value来描述该node的一些特性。 每个node用节点名字（node name）标识，节点名字的格式是node-<a class="reference external" href="mailto:name&#37;&#52;&#48;unit-address">name<span>&#64;</span>unit-address</a>。如果该node没有reg属性（后面会描述这个property）， 那么该节点名字中必须不能包括&#64;和unit-address。unit-address的具体格式是和设备挂在那个bus上相关。例如对于cpu， 其unit-address就是从0开始编址，以此加一。而具体的设备，例如以太网控制器，其unit-address就是寄存器地址。root node的node name是确定的，必须是“/”。 在一个树状结构的device tree中，如何引用一个node呢？要想唯一指定一个node必须使用full path，例如/node-name-1/node-name-2/node-name-N。</p>
+<p>DTB文件主要包含四部分内容：struct ftdheader、memory reservation block、structure block、strings block；</p>
+<p>① struct ftdheader：用来表明各个分部的偏移地址，整个文件的大小，版本号等；
+② memory reservation block：在设备树中使用/memreserve/ 定义的保留内存信息；
+③ structure block：保存节点的信息，节点的结构；
+④ strings block：保存属性的名字，单独作为字符串保存；
+struct ftd_header结构体的定义如下：</p>
+<dl class="simple">
+<dt>struct fdt_header {</dt><dd><p>uint32_t magic; /<em>它的值为0xd00dfeed，以大端模式保存</em>/
+uint32_t totalsize; /<em>整个DTB文件的大小</em>/
+uint32_t off_dt_struct; /<em>structure block的偏移地址</em>/
+uint32_t off_dt_strings; /<em>strings block的偏移地址</em>/
+uint32_t off_mem_rsvmap; /<em>memory reservation block的偏移地址</em>/
+uint32_t version; /<em>设备树版本信息</em>/
+uint32_t last_comp_version; /<em>向后兼容的最低设备树版本信息</em>/
+uint32_t boot_cpuid_phys; /<em>CPU ID</em>/
+uint32_t size_dt_strings; /<em>strings block的大小</em>/
+uint32_t size_dt_struct; /<em>structure block的大小</em>/</p>
+</dd>
+</dl>
+<p>};</p>
+<p>fdtreserveentry结构体如下：</p>
+<dl class="simple">
+<dt>struct fdt_reserve_entry {</dt><dd><p>uint64_t address;  /<em>64bit 的地址</em>/
+uint64_t size;    /<em>保留的内存空间的大小</em>/</p>
+</dd>
+</dl>
+<p>};
+该结构体用于表示memreserve的起始地址和内存空间的大小，它紧跟在struct ftdheader结构体后面。</p>
+<p>例如：/memreserve/ 0x33000000 0x10000，fdtreserve_entry 结构体的成员 address = 0x33000000，size = 0x10000。</p>
+<p>structure block是用于描述设备树节点的结构，保存着节点的信息、节点的结构，它有5种标记类型:</p>
+<p>① FDTBEGINNODE (0x00000001)：表示节点的开始，它的后面紧跟的是节点的名字；
+② FDTENDNODE (0x00000002)：表示节点的结束；
+③ FDTPROP (0x00000003) ：表示开始描述节点里面的一个属性，在FDTPROP后面紧跟一个结构体如下所示:
+struct {</p>
+<blockquote>
+<div><p>uint32_t len;       /<em>表示属性值的长度</em>/
+uint32_t nameoff;   /<em>属性的名字在string block的偏移</em>/</p>
+</div></blockquote>
+<p>}
+注：上面的这个结构体后紧跟着是属性值，属性的名字保存在字符串块（Strings block）中。</p>
+<p>④ FDT_END (0x00000009)：表示structure block的结束。
+单个节点在structure block的存储格式如下图如所示：(注：子节点的存储格式也是一样)</p>
+<p>总结：</p>
+<ol class="arabic simple">
+<li><p>DTB文件可以分为四个部分:struct ftdheader、memory reservation block、structure block、strings block；</p></li>
+<li><p>最开始的为struct ftdheader，包含其它三个部分的偏移地址；</p></li>
+<li><p>memory reservation block记录保留内存信息；</p></li>
+<li><p>structure block保存节点的信息，节点的结构；</p></li>
+<li><p>strings block保存属性的名字，将属性名字单独作为字符串保存；</p></li>
+</ol>
+<dl>
+<dt>struct device_node {</dt><dd><p>const char <a href="#id67"><span class="problematic" id="id68">*</span></a>name;
+phandle phandle;
+const char <a href="#id69"><span class="problematic" id="id70">*</span></a>full_name;
+struct fwnode_handle fwnode;</p>
+<p>struct  property <em>properties;
+struct  property *deadprops;    /</em> removed properties <a href="#id71"><span class="problematic" id="id72">*</span></a>/
+struct  device_node <a href="#id73"><span class="problematic" id="id74">*</span></a>parent;
+struct  device_node <a href="#id75"><span class="problematic" id="id76">*</span></a>child;
+struct  device_node <a href="#id77"><span class="problematic" id="id78">*</span></a>sibling;</p>
+</dd>
+<dt>#if defined(CONFIG_OF_KOBJ)</dt><dd><p>struct  kobject kobj;</p>
+</dd>
+<dt>#endif</dt><dd><p>unsigned long _flags;
+void    <a href="#id79"><span class="problematic" id="id80">*</span></a>data;</p>
+</dd>
+<dt>#if defined(CONFIG_SPARC)</dt><dd><p>unsigned int unique_id;
+struct of_irq_controller <a href="#id81"><span class="problematic" id="id82">*</span></a>irq_trans;</p>
+</dd>
+</dl>
+<p>#endif
+};
+unflatten_device_tree
+这一部分就进入了设备树的解析部分：</p>
+<p>void __init unflatten_device_tree(void)
+{</p>
+<blockquote>
+<div><p>__unflatten_device_tree(initial_boot_params, NULL, &amp;of_root,early_init_dt_alloc_memory_arch, false);  —————— part1</p>
+<p>of_alias_scan(early_init_dt_alloc_memory_arch);                  —————— part2
+…</p>
+</div></blockquote>
+<p>}</p>
+<p>LIST_HEAD(aliases_lookup);</p>
+<p>struct device_node <a href="#id83"><span class="problematic" id="id84">*</span></a>of_root;
+EXPORT_SYMBOL(of_root);
+struct device_node <a href="#id85"><span class="problematic" id="id86">*</span></a>of_chosen;
+EXPORT_SYMBOL(of_chosen);
+struct device_node <a href="#id87"><span class="problematic" id="id88">*</span></a>of_aliases;
+struct device_node <a href="#id89"><span class="problematic" id="id90">*</span></a>of_stdout;
+static const char <a href="#id91"><span class="problematic" id="id92">*</span></a>of_stdout_options;</p>
+<p>of_chosen和of_aliases都是struct device_node型的全局数据。</p>
+<p>程序跟踪到这里，设备树由dtb二进制文件经过解析为每个节点生成一个struct device_node结构体的过程基本上就清晰了，我们再进行一下总结，首先看看struct device_node结构：</p>
+<dl class="simple">
+<dt>struct device_node {</dt><dd><p>const char <em>name;
+const char *type;
+phandle phandle;
+const char *full_name;
+…
+struct      property *properties;//资源列表？
+struct      property *deadprops;    /</em> removed properties <a href="#id93"><span class="problematic" id="id94">*</span></a>/
+struct      device_node <a href="#id95"><span class="problematic" id="id96">*</span></a>parent;
+struct      device_node <a href="#id97"><span class="problematic" id="id98">*</span></a>child;
+struct      device_node <a href="#id99"><span class="problematic" id="id100">*</span></a>sibling;
+struct      kobject kobj;
+unsigned long _flags;
+void        <a href="#id101"><span class="problematic" id="id102">*</span></a>data;
+…</p>
+</dd>
+</dl>
+<p>};</p>
+<p>.name属性：设备节点中的name属性转换而来。
+.type属性：由设备节点中的device_type转换而来。
+.phandle属性：有设备节点中的”phandle”和”linux,phandle”属性转换而来，特殊的还可能由”ibm,phandle”属性转换而来。
+full_name:这个指针指向整个结构体的结尾位置，在结尾位置存储着这个结构体对应设备树节点的unit_name，意味着一个struct device_node结构体占内存空间为sizeof(struct device_node)+strlen(unit_name)+字节对齐。
+.properties这是一个设备树节点的属性链表，属性可能有很多种，比如：”interrupts”,”timer”，”hwmods”等等。
+.parent,.child,.sibling:与当前属性链表节点相关节点，所以相关链表节点构成整个device_node的属性节点。
+.kobj：用于在/sys目录下生成相应用户文件。
+这就是设备树子节点到struct device_node的转换，为了能更直观地看出设备树节点到struct device_node的转换过程，博主特意制作了一张脑图：</p>
+<p>dtb –&gt; strut device_node –&gt; struct platform_device</p>
+<p>设备树的产生就是为了替代driver中过多的platform_device部分的静态定义，将硬件资源抽象出来，由系统统一解析，这样就可以避免各驱动中对硬件资源大量的重复定义，这样一来，几乎可以肯定的是，设备树中的节点最终目标是转换成platform device结构，在驱动开发时就只需要添加相应的platform driver部分进行匹配即可。</p>
+<p>首先，对于所有的device_node，如果要转换成platform_device，必须满足以下条件：</p>
+<p>一般情况下，只对设备树中根的子节点进行转换，也就是子节点的子节点并不处理。但是存在一种特殊情况，就是当某个根子节点的compatible属性为”simple-bus”、”simple-mfd”、”isa”、”arm,amba-bus”时，当前节点中的子节点将会被转换成platform_device节点。</p>
+<p>节点中必须有compatible属性。</p>
+<p>如果是device_node转换成platform device，这个转换过程又是怎么样的呢？</p>
+<p>在设备树中，这一类资源通常通过reg属性来描述，中断则通过interrupts来描述，所以，设备树中的reg和interrupts资源将会被转换成platform_device内的struct resources资源。</p>
+<p>那么，设备树中其他属性是怎么转换的呢？答案是：不需要转换，在platform_device中有一个成员struct device dev，这个dev中又有一个指针成员struct device_node <a href="#id103"><span class="problematic" id="id104">*</span></a>of_node,linux的做法就是将这个of_node指针直接指向由设备树转换而来的device_node结构。</p>
+<p>例如，有这么一个struct platform_device* of_test.我们可以直接通过of_test-&gt;dev.of_node来访问设备树中的信息.</p>
+<dl>
+<dt>struct platform_device {</dt><dd><p>const char      <a href="#id105"><span class="problematic" id="id106">*</span></a>name;
+int             id;
+bool            id_auto;
+struct device   dev;
+u64             platform_dma_mask;
+struct device_dma_parameters dma_parms;
+u32             num_resources;
+struct resource <a href="#id107"><span class="problematic" id="id108">*</span></a>resource;</p>
+<p>const struct platform_device_id <em>id_entry;
+char *driver_override; /</em> Driver name to force a match <a href="#id109"><span class="problematic" id="id110">*</span></a>/</p>
+<p>/* MFD cell pointer <a href="#id111"><span class="problematic" id="id112">*</span></a>/
+struct mfd_cell <a href="#id113"><span class="problematic" id="id114">*</span></a>mfd_cell;</p>
+<p>/* arch specific additions <a href="#id115"><span class="problematic" id="id116">*</span></a>/
+struct pdev_archdata    archdata;</p>
+</dd>
+</dl>
+<p>};</p>
+<p>struct platform_device –&gt; struct device dev –&gt; struct device_node of_node</p>
+<p>of_platform_default_populate_init(),它被调用的方式是这样一个声明：</p>
+<p>明确：维护的是struct device链：</p>
+<p>of_platform_default_populate()调用了of_platform_populate()。</p>
+<p>需要注意的是，在调用of_platform_populate()时传入了参数of_default_bus_match_table[]，这个table是一个静态数组，这个静态数组中定义了一系列的compatible属性：”simple-bus”、”simple-mfd”、”isa”、”arm,amba-bus”。</p>
+<p>按照我们上文中的描述，当某个根节点下的一级子节点的compatible属性为这些属性其中之一时，它的一级子节点也将由device_node转换成platform_device.</p>
+<p>of_device_add –&gt; device_add;</p>
+<p>struct platform_device <a href="#id117"><span class="problematic" id="id118">*</span></a>of_device_alloc(struct device_node <a href="#id119"><span class="problematic" id="id120">*</span></a>np,const char <a href="#id121"><span class="problematic" id="id122">*</span></a>bus_id,struct device <a href="#id123"><span class="problematic" id="id124">*</span></a>parent)
+{</p>
+<blockquote>
+<div><p>//统计reg属性的数量
+while (of_address_to_resource(np, num_reg, &amp;temp_res) == 0)</p>
+<blockquote>
+<div><p>num_reg++;</p>
+</div></blockquote>
+<p>//统计中断irq属性的数量
+num_irq = of_irq_count(np);
+//根据num_irq和num_reg的数量申请相应的struct resource内存空间。
+if (num_irq || num_reg) {</p>
+<blockquote>
+<div><p>res = kzalloc(sizeof(<a href="#id125"><span class="problematic" id="id126">*</span></a>res) * (num_irq + num_reg), GFP_KERNEL);
+if (!res) {</p>
+<blockquote>
+<div><p>platform_device_put(dev);
+return NULL;</p>
+</div></blockquote>
+<p>}
+//设置platform_device中的num_resources成员
+dev-&gt;num_resources = num_reg + num_irq;
+//设置platform_device中的resource成员
+dev-&gt;resource = res;</p>
+<p>//将device_node中的reg属性转换成platform_device中的struct resource成员。
+for (i = 0; i &lt; num_reg; i++, res++) {</p>
+<blockquote>
+<div><p>rc = of_address_to_resource(np, i, res);
+WARN_ON(rc);</p>
+</div></blockquote>
+<p>}
+//将device_node中的irq属性转换成platform_device中的struct resource成员。
+if (of_irq_to_resource_table(np, res, num_irq) != num_irq)</p>
+<blockquote>
+<div><dl class="simple">
+<dt>pr_debug(“not all legacy IRQ resources mapped for %sn”,</dt><dd><p>np-&gt;name);</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p>}
+//将platform_device的dev.of_node成员指针指向device_node。
+dev-&gt;dev.of_node = of_node_get(np);
+//将platform_device的dev.fwnode成员指针指向device_node的fwnode成员。
+dev-&gt;dev.fwnode = &amp;np-&gt;fwnode;
+//设备parent为platform_bus
+dev-&gt;dev.parent = parent ? : &amp;platform_bus;</p>
+</div></blockquote>
+<p>}
+首先，函数先统计设备树中reg属性和中断irq属性的个数，然后分别为它们申请内存空间，链入到platform_device中的struct resources成员中。除了设备树中”reg”和”interrupt”属性之外，还有可选的”reg-names”和”interrupt-names”这些io中断资源相关的设备树节点属性也在这里被转换。</p>
+<p>将相应的设备树节点生成的device_node节点链入到platform_device的dev.of_node中。</p>
+<p>将当前platform_device中的struct device成员注册到系统device中，并为其在用户空间创建相应的访问节点。</p>
+<dl class="simple">
+<dt>dtb -&gt; struct device_node –&gt; struct platform_device-&gt;dev.of_node</dt><dd><p>^                                               |
+<a href="#id150"><span class="problematic" id="id151">|_______________________________________________|</span></a></p>
+</dd>
+</dl>
+<p>struct platform_device 将资源解析为struct resource列表。</p>
+</div>
+</div>
+</div>
+<div class="section" id="i2c">
+<h2>i2c驱动架构<a class="headerlink" href="#i2c" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="i2c-i2c">
+<h3>i2c硬件信号：i2c数据包<a class="headerlink" href="#i2c-i2c" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="i2ci2c">
+<h3>i2c控制器与i2c从设备逻辑<a class="headerlink" href="#i2ci2c" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="spi">
+<h2>spi驱动架构<a class="headerlink" href="#spi" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="spi-spi">
+<h3>spi硬件信号：spi数据包<a class="headerlink" href="#spi-spi" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id127">
+<h2>驱动分类<a class="headerlink" href="#id127" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id128">
+<h3>字符设备驱动：<a class="headerlink" href="#id128" title="Permalink to this headline">¶</a></h3>
+<p>我们以字符设备驱动为例进一步从细节说明。</p>
+</div>
+<div class="section" id="mtd">
+<h3>块设备驱动:mtd<a class="headerlink" href="#mtd" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="can">
+<h3>网络设备驱动：can<a class="headerlink" href="#can" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 </div>

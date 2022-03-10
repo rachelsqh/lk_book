@@ -17,6 +17,11 @@ all:
 	#dot -Tsvg kernel_boot.dot -o kernel_boot.svg
 	dot -Tsvg bus_device_driver_kset.dot -o bus_device_driver_kset.svg
 	dot -Tsvg bus_device_driver_klist.dot -o bus_device_driver_klist.svg
+	dot -Tsvg platform_driver_register.dot -o platform_driver_register.svg
+	dot -Tsvg platform_device_register.dot -o platform_device_register.svg
+	dot -Tsvg module_finit.dot -o module_finit.svg
+	dot -Tsvg module_load.dot -o module_load.svg
+#	dot -Tsvg module_unload.dot -o module_unload.svg
 clean:
 	rm -rf *.svg
 	rm -rf fs/*.svg

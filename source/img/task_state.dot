@@ -1,0 +1,38 @@
+digraph G {
+
+	label = "进程状态切换图"
+	
+	subgraph cluster_0 {
+		label = "进程状态切换";
+		a0[label = "TASK_RUNNING"];
+		a1[label = "TASK_INTERRUPTIBLE"];	
+		a2[label = "TASK_UNINTERRUPTIBLE"];		
+		a3[label = "__TASK_STOPPED"];
+		a4[label = "__TASK_TRACED"];			
+		a5[label = "EXIT_DEAD"];	
+		a6[label = "EXIT_ZOMBIE"];		
+		a7[label = "TASK_PARKED"];			
+		a8[label = "TASK_DEAD"];
+		a9[label = "TASK_WAKEKILL"];
+		a10[label = "TASK_WAKING"];
+		a11[label = "TASK_NOLOAD"];
+		a12[label = "TASK_NEW"];		
+		a13[label = "TASK_STATE_MAX"];
+		
+		b0[label = "fork:new_task",shape = rect];
+		b0 -> a0[label = "wake_up_new_task"];
+		
+
+
+
+
+
+	
+	
+	
+	
+	
+
+	
+	
+}

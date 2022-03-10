@@ -10,39 +10,37 @@ edge [
 ];
 label = "kset与kobject关系图"
 "kset" [
-label = "<f0> kset| <f1> list| <f2> kobj| <f3> uevent_ops";
+label = "<f0> kset:struct kset \{\l| <f1> struct list_head list\r| <f2> struct kobject kobj\r| <f3> const struct kset_uevent_ops *uevent_ops;\r| <f4>\}\l";
 shape = "record";
 ];
 
 "kobject0" [
-label = "<f0> kobject0| <f1> name| <f2> entry| <f3> parent| <f4> kset | <f5> ktype | <f6> sd | <f7> kref";
+label = "<f0> kobject0:struct kobject \{\l| <f1> const char name\r| <f2> struct list_head entry\r| <f3> strut kobject *parent\r| <f4> struct kset *kset \r| <f5> struct kobj_type *ktype;\r | <f6> struct kernfs_node *sd | <f7>struct kref  kref;|<f7> ...\n\}\l";
 shape = "record";
 ];
 
 "kobject1" [
-label = "<f0> kobject1| <f1> name| <f2> entry| <f3> parent| <f4> kset | <f5> ktype | <f6> sd | <f7> kref";
+label = "<f0> kobject1:struct kobject \{\l| <f1> const char name\r| <f2> struct list_head entry\r| <f3> strut kobject *parent\r| <f4> struct kset *kset \r| <f5> struct kobj_type *ktype;\r | <f6> struct kernfs_node *sd | <f7>struct kref  kref;|<f7> ...\n\}\l";
 shape = "record";
 ];
 
 "kobject2" [
-label = "<f0> kobject2| <f1> name| <f2> entry| <f3> parent| <f4> kset | <f5> ktype | <f6> sd | <f7> kref";
+label = "<f0> kobject2:struct kobject \{\l| <f1> const char name\r| <f2> struct list_head entry\r| <f3> strut kobject *parent\r| <f4> struct kset *kset \r| <f5> struct kobj_type *ktype;\r | <f6> struct kernfs_node *sd | <f7>struct kref  kref;|<f7> ...\n\}\l";
 shape = "record";
 ];
 
 
-"kset":f1 -> "kobject0":f2 [
-id = 0;
-];
+"kset":f1 -> "kobject0":f2 [dir = both,id = 0;];
 
-"kobject0":f2 -> "kobject1":f2 [
+"kobject0":f2 -> "kobject1":f2 [dir = both,
 id = 4;
 ];
 
-"kobject1":f2 -> "kobject2":f2 [
+"kobject1":f2 -> "kobject2":f2 [dir = both,
 id = 7;
 ];
 
-"kobject2":f2 -> "kset":f1 [
+"kobject2":f2:w -> "kset":f1:e [dir = both,
 id = 11;
 color = blue;
 ];

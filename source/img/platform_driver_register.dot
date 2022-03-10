@@ -1,0 +1,82 @@
+digraph G {
+
+	label = "platform_driver_register流程"
+	splines = false;
+	
+	subgraph cluster_0 {
+		label = "__platform_driver_register(struct platform_driver *drv,struct module *owner";
+		a0[label = "drv->driver.owner = owner",shape = rect ];
+		a1[label = "drv->driver.bus = &platorm_bus_type",shape = rect];
+		a2[label = "driver_register(&drv->driver)",shape = rect];
+		
+		a0:s -> a1:n;
+		a1:s -> a2:n;
+	
+	}
+	
+	subgraph cluster_1 {
+		label = "driver_register：struct device_driver *drv";
+		color = black;	
+		
+		b0[label = "bus_add_driver(drv)",shape = rect];
+		b1[label = "driver_add_groups(drv,drv->groups)",shape = rect];	
+		b2[label = "kobject_uevent(&drv->p->kobj,KOBJ_ADD)",shape = rect];
+		b0:s -> b1:n;
+		b1:s -> b2:n;
+	}
+
+	a2:e -> b0:w[dir = none];
+	subgraph cluster_2 {
+		label = "bus_add_driver: struct device_driver *drv";
+		c0[label = "struct driver_private *priv = kzalloc()",shape = rect];
+		c1[label = "klist_init(&priv->klist_devices,NULL,NULL)",shape = rect];
+		c2[label = "priv->driver = drv",shape = rect];
+		c3[label = "drv->p = priv;",shape = rect];
+		c4[label = "priv->kobj.kset = bus->p->divers_kset;这是从属关系",shape = rect];
+		c5[label = "kobject_init_and_add(&priv->kobj,&driver_ktype,....)",shape = rect];
+		c6[label = "klist_add_tail(&priv->knode_bus,&bus->p->klist_drivers):这么就挂到bus上了",shape = rect];
+		c7[label = "if drv->bus->p->drivers_autoprobe\ldriver_attach(drv)\n",shape = rect];
+		c8[label = "module_add_driver(drv->owner,drv);",shape = rect];
+		c9[label = "driver_create_file(drv,&driver_attr_uevent);",shape = rect];
+		c10[label = "driver_add_groups(drv,bus->drv_groups)",shape = rect];
+		c11[label = "if drv->suppress_bind_attrs\l add_bind_files(drv)\n",shape = rect];
+		
+		c0:s -> c1:n;
+		c1:s -> c2:n;
+		c2:s -> c3:n;
+		c3:s -> c4:n;
+		c4:s -> c5:n;
+		c5:s -> c6:n;
+		c6:s -> c7:n;
+		c7:s -> c8:n;
+		c8:s -> c9:n;
+		c9:s -> c10:n;
+		c10:s -> c11:n;
+		
+	}
+	b0:e -> c0:w[dir = none];	
+	subgraph cluster_3 {	
+		label = "module_add_driver(struct module *mod,struct device_driver *drv)";
+		d0[label = "struct module_kobject *mk = &mod->mkobj",shape = rect];
+		d1[label = "sysfs_create_link(&drv->p->kobj,&mk->kobj,\"module\")",shape = rect];
+		d2[label = "driver_name = make_driver_name(drv):(drv->bus->name:drv->name)",shape = rect];
+		d3[label = "module_create_drivers_dir(mk)",shape = rect];
+		d4[label = "sysfs_create_link(mk->drivers_dir,&drv->p->kobj,driver_name)",shape = rect];
+		
+				
+		d0:s -> d1:n;
+		d1:s -> d2:n;
+		d2:s -> d3:n;
+		d3:s -> d4:n;
+	}
+	
+	c8:e -> d0:w[dir = none];	
+		
+		
+		
+		
+		
+		
+		
+	
+}

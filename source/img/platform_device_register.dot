@@ -1,0 +1,74 @@
+digraph G {
+
+	label = "platform_device_register流程"
+	splines = false;
+	
+	subgraph cluster_0 {
+		label = "platform_device_register(struct platform_device *pdev";
+		a0[label = "device_initialize(&pdev->dev)",shape = rect ];
+		a1[label = "setup_pdev_dma_masks(pdev)",shape = rect];
+		a2[label = "platform_device_add(pdev)",shape = rect];
+		
+		a0:s -> a1:n;
+		a1:s -> a2:n;
+	
+	}
+	
+	subgraph cluster_1 {
+		label = "driver_device_add：struct platform_device *pdrv";
+		color = black;	
+		
+		b0[label = "if !pdev->dev.parent\lpdev->dev.parent = &platform_bus\n",shape = rect];
+		b1[label = "pdev->dev.bus = &platform_bus_type",shape = rect];	
+		b2[label = "struct platform_device:pdev->resource处理",shape = rect];
+		b3[label = "device_add(&pdev->dev)",shape = rect];
+		b0:s -> b1:n;
+		b1:s -> b2:n;
+		b2:s -> b3:n;
+	}
+
+	a2:e -> b0:w[dir = none];
+	subgraph cluster_2 {
+		label = "device_add: struct device *dev";
+		c0[label = "device_private_init(dev);私有数据初始化",shape = rect];
+		c1[label = "kobj = get_device_parent()\lkobject_add(&dev->kobj,dev->kobj.parent\n",shape = rect];
+		c2[label = "device_platform_notify(dev,KOBJ_ADD)",shape = rect];
+		c3[label = "device_create_file(dev,&dev_attr_uevent)",shape = rect];
+		c4[label = "device_add_class_symlinks(dev)",shape = rect];
+		c5[label = "device_add_attrs(dev)",shape = rect];
+		c6[label = "bus_add_device(dev)",shape = rect];
+		c7[label = "dpm_sysfs_add(dev)",shape = rect];
+		c8[label = "device_pm_add(dev)",shape = rect];
+		c9[label = "driver_create_file(dev,&dev_attr_dev);",shape = rect];
+		c10[label = "device_create_sys_dev_entry(dev)",shape = rect];
+		c11[label = "devtmpfs_create_node",shape = rect];
+		c12[label = "if(dev->bus)\lblocking_notifier_call_chain(&dev->bus->p->bus_notifier,\nBUS_NOTIFY_ADD_DEVICE,dev)\n",shape = rect];
+		c13[label = "koject_uevent(&dev->kobj,KOBJ_ADD);",shape = rect];
+		c14[label = "bus_probe_device(dev);",shape = rect];
+		c15[label = "klist_add_tail:p->knode_parent ---> parent->p->klist_children)",shape = rect];
+		c16[label = "klist_add_tail:p->node_class --> class->p->klist_devices);",shape = rect];
+		c17[label = "notify:通知链接到设备的所有接口设备",shape = rect];
+		c0:s -> c1:n;
+		c1:s -> c2:n;
+		c2:s -> c3:n;
+		c3:s -> c4:n;
+		c4:s -> c5:n;
+		c5:s -> c6:n;
+		c6:s -> c7:n;
+		c7:s -> c8:n;
+		c8:s -> c9:n;
+		c9:s -> c10:n;
+		c10:s -> c11:n;
+		c11:s -> c12:n;
+		c12:s -> c13:n;
+		c13:s -> c14:n;
+		c14:s -> c15:n;
+		c15:s -> c16:n;
+		c16:s -> c17:n;
+		
+	}
+
+	b3:e -> c0:w;
+	
+	
+}

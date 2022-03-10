@@ -611,26 +611,24 @@
 <li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="lk_code/base_arch.html">linux 内核代码目录结构</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lk_code/module.html">linux 内核模块原理分析</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id1">linux 内核模块编程基础</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#id2">内核模块数据结构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id1">linux 内核模块编程基础</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id2">内核编译及调试参考：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id3">内核模块编译流程原理分析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#id4">构建过程分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#id9">总结</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#kbuild">内核模块编译：kbuild</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id5">内核模块编译流程原理分析</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#id6">构建过程分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id10">内核导出符号</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#id11">模块中引用外部函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#id12">内核模块编译过程中符号的处理</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id11">构建模块过程中的的符号处理</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#k-m-mod-c-k-m-mod-o">k_m.mod.c –&gt; k_m.mod.o:</a></li>
-<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#k-m-o-k-m-mod-o-k-m-ko">k_m.o + k_m.mod.o –&gt; k_m.ko</a></li>
-<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#k-m-ko">k_m.ko二进制格式分析</a></li>
-<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#id12">总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id13">内核模块加载过程分析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="lk_code/module.html#id14">重点函数分析</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id13">内核模块加载过程分析</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id14">内核模块卸载</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id15">内核模块中可调用的函数</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id16">总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#rmmod">rmmod 卸载过程分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lk_code/module.html#id31">总结</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="lk_code/notifier.html">linux 内核通知/通信机制</a><ul>
@@ -720,10 +718,56 @@
 <li class="toctree-l3"><a class="reference internal" href="driver.html#id3">总线类型</a></li>
 <li class="toctree-l3"><a class="reference internal" href="driver.html#id4">设备驱动程序设计模式</a></li>
 <li class="toctree-l3"><a class="reference internal" href="driver.html#struct-device">基本设备结构:struct device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver.html#devres">devres-管理设备资源</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver.html#struct-device-driver">设备驱动程序: struct device_driver</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver.html#id9">linux 内核设备模型</a></li>
-<li class="toctree-l3"><a class="reference internal" href="driver.html#id10">平台设备和驱动程序</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#kset-kobject-kref">kset/kobject/kref描述</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#kobject">kobject理解</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#ksetkobject">对kset、kobject的理解</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id45">kobject 结构关系图</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#uevent">uevent总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#kobject-api">kobject API总结</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#kobjectkset">kobject加入kset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id56">kobject 操作</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id57">内核示例程序</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id58">引用参考</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id59">设备驱动</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#platform">platform设备驱动</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#dma">DMA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id62">硬件原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id63">软件编程基础</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id64">驱动资源</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#pci-pci-e">PCI/PCI-E</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#acpi">ACPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#dtb">DTB</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id65">开源固件和设备树</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id66">设备树规范：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#dtc">DTC的解析</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="driver.html#dtbdtbo">编译出来的dtb和dtbo文件的编码格式是完全一致的，它们仅仅只是后缀不一样</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#i2c">i2c驱动架构</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#i2c-i2c">i2c硬件信号：i2c数据包</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#i2ci2c">i2c控制器与i2c从设备逻辑</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#spi">spi驱动架构</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#spi-spi">spi硬件信号：spi数据包</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id127">驱动分类</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#id128">字符设备驱动：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#mtd">块设备驱动:mtd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="driver.html#can">网络设备驱动：can</a></li>
 </ul>
 </li>
 </ul>
