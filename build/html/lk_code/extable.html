@@ -44,12 +44,15 @@
 <li class="toctree-l2"><a class="reference internal" href="notifier.html">linux 内核通知/通信机制</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lock.html">linux 内核竞争处理</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hook.html">linux 内核hook</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kexec.html">kexec总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kexec.html">linux 加载ELF 内核文件：kexec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="struct.html">linux 内核基础算法</a></li>
 <li class="toctree-l2"><a class="reference internal" href="umh.html">第一个应用进程及umh</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">异常表:extable</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">异常表:extable</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">编程示例</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="jump_label.html">jump_label</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syscall.html">linux 系统调用原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86.html">x86架构部分</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../pm.html">电源管理框架</a></li>
@@ -62,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../uboot.html">uboot理解</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dot.html">dot画图</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bpf_helper.html">BPF-HELPERS</a></li>
 </ul>
 
         </div>
@@ -91,130 +95,202 @@
              
   <div class="section" id="extable">
 <h1>异常表:extable<a class="headerlink" href="#extable" title="Permalink to this headline">¶</a></h1>
-<div class="literal-block-wrapper docutils container" id="id43">
-<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id43" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+<ul>
+<li><p>异常表：用于存储发生pf的地址的处理方式。</p>
+<blockquote>
+<div></div></blockquote>
+</li>
+<li><p>我们观察struct exception_table_entry结构：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">异常表项结构</span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/*</span>
+<span class="cm">      * The exception table consists of triples of addresses relative to the</span>
+<span class="cm">      * exception table entry itself. The first address is of an instruction</span>
+<span class="cm">      * that is allowed to fault, the second is the target at which the program</span>
+<span class="cm">      * should continue. The third is a handler function to deal with the fault</span>
+<span class="cm">      * caused by the instruction in the first field.</span>
+<span class="cm">      *</span>
+<span class="cm">      * All the routines below use bits of fixup code that are out of line</span>
+<span class="cm">      * with the main instruction path.  This means when everything is well,</span>
+<span class="cm">      * we don&#39;t even have to jump over them.  Further, they do not intrude</span>
+<span class="cm">      * on our cache or tlb entries.</span>
+<span class="cm">      */</span>
+
+     <span class="k">struct</span> <span class="nc">exception_table_entry</span> <span class="p">{</span>
+             <span class="kt">int</span> <span class="n">insn</span><span class="p">,</span> <span class="cm">/* 出错的指令 */</span>
+                 <span class="n">fixup</span><span class="p">,</span> <span class="cm">/* 继续的指令 */</span>
+                 <span class="n">handler</span><span class="p">;</span> <span class="cm">/* 错误处理句柄 */</span>
+     <span class="p">};</span>
+     <span class="k">struct</span> <span class="nc">pt_regs</span><span class="p">;</span>
+
+     <span class="cp">#define ARCH_HAS_RELATIVE_EXTABLE</span>
+
+     <span class="cp">#define swap_ex_entry_fixup(a, b, tmp, delta)                   \</span>
+<span class="cp">             do {                                                    \</span>
+<span class="cp">                     (a)-&gt;fixup = (b)-&gt;fixup + (delta);              \</span>
+<span class="cp">                     (b)-&gt;fixup = (tmp).fixup - (delta);             \</span>
+<span class="cp">                     (a)-&gt;handler = (b)-&gt;handler + (delta);          \</span>
+<span class="cp">                     (b)-&gt;handler = (tmp).handler - (delta);         \</span>
+<span class="cp">             } while (0)</span>
+
+     <span class="k">enum</span> <span class="n">handler_type</span> <span class="p">{</span>
+             <span class="n">EX_HANDLER_NONE</span><span class="p">,</span>
+             <span class="n">EX_HANDLER_FAULT</span><span class="p">,</span>
+             <span class="n">EX_HANDLER_UACCESS</span><span class="p">,</span>
+             <span class="n">EX_HANDLER_OTHER</span>
+     <span class="p">};</span>
+
+     <span class="k">extern</span> <span class="kt">int</span> <span class="n">fixup_exception</span><span class="p">(</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">,</span> <span class="kt">int</span> <span class="n">trapnr</span><span class="p">,</span>
+                                <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">error_code</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">fault_addr</span><span class="p">);</span>
+     <span class="k">extern</span> <span class="kt">int</span> <span class="n">fixup_bug</span><span class="p">(</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">,</span> <span class="kt">int</span> <span class="n">trapnr</span><span class="p">);</span>
+     <span class="k">extern</span> <span class="k">enum</span> <span class="n">handler_type</span> <span class="n">ex_get_fault_handler_type</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">ip</span><span class="p">);</span>
+     <span class="k">extern</span> <span class="kt">void</span> <span class="n">early_fixup_exception</span><span class="p">(</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">,</span> <span class="kt">int</span> <span class="n">trapnr</span><span class="p">);</span>
 </pre></div>
 </td></tr></table></div>
 </div>
-<p>异常表：用于存储发生pf的地址的处理方式。</p>
-<blockquote>
-<div><p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
-</div></blockquote>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>mutex protecting text section modification (dynamic code patching).</p></li>
-<li><p>some users need to sleep (allocating memory…) while they hold this lock.</p></li>
-<li></li>
-<li><p>Note: Also protects SMP-alternatives modification on x86.</p></li>
-<li></li>
-<li><p>NOT exported to modules - patching kernel text is a really delicate matter.</p></li>
+<ul class="simple">
+<li><p>kernel/vmlinux.ld</p></li>
 </ul>
-<p><a href="#id5"><span class="problematic" id="id6">*</span></a>/</p>
-</dd>
-</dl>
-<p>DEFINE_MUTEX(text_mutex);</p>
-<p>extern struct exception_table_entry __start___ex_table[];
-extern struct exception_table_entry __stop___ex_table[];
-<a href="#id7"><span class="problematic" id="id8">``</span></a><a href="#id9"><span class="problematic" id="id10">`</span></a></p>
-<p>我们观察struct exception_table_entry结构：</p>
-<p><a href="#id11"><span class="problematic" id="id12">``</span></a>`
-/*</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>The exception table consists of triples of addresses relative to the</p></li>
-<li><p>exception table entry itself. The first address is of an instruction</p></li>
-<li><p>that is allowed to fault, the second is the target at which the program</p></li>
-<li><p>should continue. The third is a handler function to deal with the fault</p></li>
-<li><p>caused by the instruction in the first field.</p></li>
-<li></li>
-<li><p>All the routines below use bits of fixup code that are out of line</p></li>
-<li><p>with the main instruction path.  This means when everything is well,</p></li>
-<li><p>we don’t even have to jump over them.  Further, they do not intrude</p></li>
-<li><p>on our cache or tlb entries.</p></li>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">异常表在内核中的布局</span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="p">.</span> <span class="o">=</span> <span class="n">ALIGN</span><span class="p">(</span><span class="mi">16</span><span class="p">);</span> <span class="nl">__ex_table</span> <span class="p">:</span> <span class="n">AT</span><span class="p">(</span><span class="n">ADDR</span><span class="p">(</span><span class="n">__ex_table</span><span class="p">)</span> <span class="o">-</span> <span class="mh">0xffffffff80000000</span><span class="p">)</span> <span class="p">{</span> <span class="n">__start___ex_table</span> <span class="o">=</span> <span class="p">.;</span> <span class="n">KEEP</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">__ex_table</span><span class="p">))</span> <span class="n">__stop___ex_table</span> <span class="o">=</span> <span class="p">.;</span> <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>操作函数：</p></li>
 </ul>
-<p><a href="#id13"><span class="problematic" id="id14">*</span></a>/</p>
-</div></blockquote>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text">异常表项查询</span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/* Sort the kernel&#39;s built-in exception table */</span>
+     <span class="kt">void</span> <span class="n">__init</span> <span class="n">sort_main_extable</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="k">if</span> <span class="p">(</span><span class="n">main_extable_sort_needed</span> <span class="o">&amp;&amp;</span>
+                 <span class="o">&amp;</span><span class="n">__stop___ex_table</span> <span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">__start___ex_table</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="n">pr_notice</span><span class="p">(</span><span class="s">&quot;Sorting __ex_table...</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+                     <span class="n">sort_extable</span><span class="p">(</span><span class="n">__start___ex_table</span><span class="p">,</span> <span class="n">__stop___ex_table</span><span class="p">);</span>
+             <span class="p">}</span>
+     <span class="p">}</span>
+
+     <span class="cm">/* Given an address, look for it in the kernel exception table */</span>
+     <span class="k">const</span>
+     <span class="k">struct</span> <span class="nc">exception_table_entry</span> <span class="o">*</span><span class="n">search_kernel_exception_table</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">addr</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="k">return</span> <span class="nf">search_extable</span><span class="p">(</span><span class="n">__start___ex_table</span><span class="p">,</span>
+                                   <span class="n">__stop___ex_table</span> <span class="o">-</span> <span class="n">__start___ex_table</span><span class="p">,</span> <span class="n">addr</span><span class="p">);</span>
+     <span class="p">}</span>
+
+     <span class="cm">/* Given an address, look for it in the exception tables. */</span>
+     <span class="k">const</span> <span class="k">struct</span> <span class="nc">exception_table_entry</span> <span class="o">*</span><span class="n">search_exception_tables</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">addr</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="k">const</span> <span class="k">struct</span> <span class="nc">exception_table_entry</span> <span class="o">*</span><span class="n">e</span><span class="p">;</span>
+
+             <span class="n">e</span> <span class="o">=</span> <span class="n">search_kernel_exception_table</span><span class="p">(</span><span class="n">addr</span><span class="p">);</span><span class="cm">/* 内核代码中的异常表 */</span>
+             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="p">)</span>
+                     <span class="n">e</span> <span class="o">=</span> <span class="n">search_module_extables</span><span class="p">(</span><span class="n">addr</span><span class="p">);</span> <span class="cm">/* 内核模块中的异常表 */</span>
+             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="p">)</span>
+                     <span class="n">e</span> <span class="o">=</span> <span class="n">search_bpf_extables</span><span class="p">(</span><span class="n">addr</span><span class="p">);</span> <span class="cm">/* bpf中的异常表 */</span>
+             <span class="k">return</span> <span class="n">e</span><span class="p">;</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>添加项的时机：模块或系统调用莫个地址处：这个主要用在pf处使用，就是当某个地址访问有问题时本身自带处理方法。</p></li>
+</ul>
+<div class="section" id="id1">
+<h2>编程示例<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>struct exception_table_entry {</dt><dd><p>int insn, fixup, handler;</p>
+<dt>struct module {</dt><dd><p>unsigned int num_exentires;
+struct exception_table_entry <a href="#id2"><span class="problematic" id="id3">*</span></a>extable;
+……</p>
 </dd>
 </dl>
-<p>};
-struct pt_regs;</p>
-<p>#define ARCH_HAS_RELATIVE_EXTABLE</p>
-<dl>
-<dt>#define swap_ex_entry_fixup(a, b, tmp, delta)                   </dt><dd><dl class="simple">
-<dt>do {                                                    </dt><dd><p>(a)-&gt;fixup = (b)-&gt;fixup + (delta);              (b)-&gt;fixup = (tmp).fixup - (delta);             (a)-&gt;handler = (b)-&gt;handler + (delta);          (b)-&gt;handler = (tmp).handler - (delta);         </p>
-</dd>
-</dl>
-<p>} while (0)</p>
-</dd>
-<dt>enum handler_type {</dt><dd><p>EX_HANDLER_NONE,
-EX_HANDLER_FAULT,
-EX_HANDLER_UACCESS,
-EX_HANDLER_OTHER</p>
-</dd>
-</dl>
-<p>};</p>
+<p>}</p>
+<p>mod-&gt;extable = section_objs(info,”__ex_table”,sizeof(<a href="#id4"><span class="problematic" id="id5">*</span></a>mod-&gt;extable),&amp;mod-&gt;num_exentries);</p>
 <dl class="simple">
-<dt>extern int fixup_exception(struct pt_regs <a href="#id15"><span class="problematic" id="id16">*</span></a>regs, int trapnr,</dt><dd><p>unsigned long error_code, unsigned long fault_addr);</p>
-</dd>
-</dl>
-<p>extern int fixup_bug(struct pt_regs <a href="#id17"><span class="problematic" id="id18">*</span></a>regs, int trapnr);
-extern enum handler_type ex_get_fault_handler_type(unsigned long ip);
-extern void early_fixup_exception(struct pt_regs <a href="#id19"><span class="problematic" id="id20">*</span></a>regs, int trapnr);</p>
-<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
-<p>kernel/vmlinux.ld</p>
-<p><code class="docutils literal notranslate"><span class="pre">`</span>
-<span class="pre">.</span> <span class="pre">=</span> <span class="pre">ALIGN(16);</span> <span class="pre">__ex_table</span> <span class="pre">:</span> <span class="pre">AT(ADDR(__ex_table)</span> <span class="pre">-</span> <span class="pre">0xffffffff80000000)</span> <span class="pre">{</span> <span class="pre">__start___ex_table</span> <span class="pre">=</span> <span class="pre">.;</span> <span class="pre">KEEP(*(__ex_table))</span> <span class="pre">__stop___ex_table</span> <span class="pre">=</span> <span class="pre">.;</span> <span class="pre">}</span>
-<span class="pre">`</span></code></p>
-<p>操作函数：</p>
-<p><a href="#id25"><span class="problematic" id="id26">``</span></a>`
-/* Sort the kernel’s built-in exception table <a href="#id27"><span class="problematic" id="id28">*</span></a>/
-void __init sort_main_extable(void)
-{</p>
-<blockquote>
-<div><dl class="simple">
-<dt>if (main_extable_sort_needed &amp;&amp;</dt><dd><dl class="simple">
-<dt>&amp;__stop___ex_table &gt; &amp;__start___ex_table) {</dt><dd><p>pr_notice(“Sorting __ex_table…n”);
-sort_extable(__start___ex_table, __stop___ex_table);</p>
-</dd>
-</dl>
+<dt>struct bpf_prog_aux {</dt><dd><p>u32 num_exentries;
+struct exception_table_entry <a href="#id6"><span class="problematic" id="id7">*</span></a>extable;
+……</p>
 </dd>
 </dl>
 <p>}</p>
-</div></blockquote>
-<p>}</p>
-<p>/* Given an address, look for it in the kernel exception table <a href="#id29"><span class="problematic" id="id30">*</span></a>/
-const
-struct exception_table_entry <a href="#id31"><span class="problematic" id="id32">*</span></a>search_kernel_exception_table(unsigned long addr)
-{</p>
-<blockquote>
-<div><dl class="simple">
-<dt>return search_extable(__start___ex_table,</dt><dd><p>__stop___ex_table - __start___ex_table, addr);</p>
-</dd>
-</dl>
-</div></blockquote>
-<p>}</p>
-<p>/* Given an address, look for it in the exception tables. <a href="#id33"><span class="problematic" id="id34">*</span></a>/
-const struct exception_table_entry <a href="#id35"><span class="problematic" id="id36">*</span></a>search_exception_tables(unsigned long addr)
-{</p>
-<blockquote>
-<div><p>const struct exception_table_entry <a href="#id37"><span class="problematic" id="id38">*</span></a>e;</p>
-<p>e = search_kernel_exception_table(addr);
-if (!e)</p>
-<blockquote>
-<div><p>e = search_module_extables(addr);</p>
-</div></blockquote>
-<dl class="simple">
-<dt>if (!e)</dt><dd><p>e = search_bpf_extables(addr);</p>
-</dd>
-</dl>
-<p>return e;</p>
-</div></blockquote>
-<p>}</p>
-<p><a href="#id39"><span class="problematic" id="id40">``</span></a><a href="#id41"><span class="problematic" id="id42">`</span></a></p>
-<p>添加项的时机：模块或系统调用莫个地址处：这个主要用在pf处使用，就是当某个地址访问有问题时本身带的处理方法。</p>
+<ul class="simple">
+<li><p>代码位置：/usr/src/k_mod_sample_extable</p></li>
+<li><p>内核文档参考： <a class="reference external" href="https://kernel.org/doc/html/latest/x86/exception-tables.html">https://kernel.org/doc/html/latest/x86/exception-tables.html</a></p></li>
+</ul>
+</div>
 </div>
 
 

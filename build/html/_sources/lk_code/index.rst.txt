@@ -18,6 +18,5 @@ linux 内核基础代码分析
    umh
    extable
    jump_label
-   syscall
-
+   x86
 

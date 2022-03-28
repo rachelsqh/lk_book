@@ -1,5 +1,8 @@
 linux 二进制接口
------------------
+"""""""""""""""""
+应用程序二进制接口参考：https://refspecs.linuxbase.org/
+
+
 跟踪信息的实现原理
 
 
@@ -14,7 +17,9 @@ kernel hacking
   				    UNWINDER_FRAME_POINTER:	Frame pointer unwinder
   				    UNWINDER_GUESS:		Guess unwinder
   				 
-  				    
+
+我们当前一般设定为UNWINDER_ORC。
+ 				    
   	
 
 
@@ -78,9 +83,10 @@ x86_64的frame point模式
 但是.debug_frame和.eh_frame同时面临一个难题：怎么样生成堆栈信息表？
 
 
-CFI directives:
-为了解决上述难题，GAS(GCC Assembler)汇编编译器定义了一组伪指令来协助生成调用栈信息CFI(Call Frame Information)。
-CFI directives伪指令是一组生成CFI调试信息的高级语言，它的形式类似于：
+CFI 指令：
+
+GAS(GCC Assembler)汇编编译器定义了一组伪指令来协助生成调用栈信息CFI(Call Frame Information)。
+CFI 伪指令是一组生成CFI调试信息的高级语言，它的形式类似于：
 
 	f：
 		.cfi_startproc

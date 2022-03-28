@@ -41,6 +41,44 @@
 <li class="toctree-l2"><a class="reference internal" href="../lk_build/index.html">linux 内核构建</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">linux 内核编程</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="comp_api.html">linux 二进制接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id4">寄存器和栈帧</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id10">异常接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id11">虚拟地址空间</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id12">页长度</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id13">虚拟地址对齐</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id19">初始化栈和寄存器状态</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id20">辅助向量</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id24">架构约束</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id25">约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id26">位置无关的函数序言</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id27">数据对象</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id28">函数调用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id29">分支</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id30">变量参数列表</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id31">DWARF 发行值</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id32">DWARF 寄存器号映射</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id34">机器信息</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id36">节标识</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id37">节类型</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id38">特定节</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id39">EH_FRAME节</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id42">重定位类型</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id43">大模式</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id45">程序头</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id47">程序加载器</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id48">初始化和结束函数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id49">全局数据符号</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id50">浮点环境函数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id51">异常句柄架构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id52">数据结构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id53">丢出异常</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id54">异常对象管理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id55">上下文管理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id56">私有例程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id59">调用约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id60">栈布局</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id61">请求处理器特性</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comp_api.html#id63">其他问题</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_as.html">AS:内核汇编</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">ld 在linux中的应用</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id1">命令行选项</a></li>
@@ -74,6 +112,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../uboot.html">uboot理解</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bpf_helper.html">BPF-HELPERS</a></li>
 </ul>
 
         </div>
@@ -407,6 +446,19 @@
 <p>很多脚本是非常简单的。最简单的脚本只有一个命令：“SECTIONS”。使用SECTIONS指令来描述输出文件的内存布局。</p>
 <p>SECTIONS是一个很强大的命令。假设程序只包含代码，初始化数据和未初始化数据，对应’.text’,’.data’和’.bss’节。假设输入文件也只包含这些节。</p>
 <p>数据加载到0x10000，数据从0x8000000开始，如下</p>
+<div class="literal-block-wrapper docutils container" id="id58">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id58" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span>
+<span class="p">{</span>
+ <span class="p">.</span> <span class="o">=</span> <span class="mh">0x1000</span><span class="p">;</span>
+ <span class="p">.</span><span class="nl">text</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)}</span>
+ <span class="p">.</span> <span class="o">=</span> <span class="mh">0x08000000</span><span class="p">;</span>
+ <span class="p">.</span><span class="nl">data</span> <span class="p">:</span> <span class="p">{</span><span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)}</span>
+ <span class="p">.</span><span class="nl">bss</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">bss</span><span class="p">)}</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
 <ul class="simple">
 <li><p>‘.’：位置计数器,如果不重新设定，则顺序递增。SECTIONS命令的开始，定位计数器的值为“0”。这是一个简单而完整的链接描述文件.</p></li>
 <li><p>第二行定义一个输出节’.text’,冒号是必需的语法，可以暂时忽略.在输出节名称后的花括号内，列出 应放入此输出部分的输入部分的名称,’*’通配符匹配所有文件,表达式’<a href="#id9"><span class="problematic" id="id10">*</span></a>(.text)’意思是所有输入文件中的’.text’输入节.</p></li>
@@ -483,24 +535,28 @@ OUTPUT_FORMAT(default , big , little ):与‘–oformat bfdname’命令行参�
 <ul class="simple">
 <li><p>可以采用C风格的赋值操作。</p></li>
 </ul>
+<div class="literal-block-wrapper docutils container" id="id59">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id59" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">symbol</span> <span class="o">=</span> <span class="n">expression</span> <span class="p">;</span>
+<span class="n">symbol</span> <span class="o">+=</span> <span class="n">expression</span> <span class="p">;</span>
+<span class="n">symbol</span> <span class="o">-=</span> <span class="n">expression</span> <span class="p">;</span>
+<span class="n">symbol</span> <span class="o">*=</span> <span class="n">expression</span> <span class="p">;</span>
+<span class="n">symbol</span> <span class="o">/=</span> <span class="n">expression</span> <span class="p">;</span>
+<span class="n">symbol</span> <span class="o">&lt;&lt;=</span> <span class="n">expression</span> <span class="p">;</span>
+<span class="n">symbol</span> <span class="o">&gt;&gt;=</span> <span class="n">expression</span> <span class="p">;</span>
+<span class="n">symbol</span> <span class="o">&amp;=</span> <span class="n">expression</span> <span class="p">;</span>
+<span class="n">symbol</span> <span class="o">|=</span> <span class="n">expression</span> <span class="p">;</span>
+</pre></div>
+</div>
+</div>
 <p>第一种情况将符号定义为表达式的值。 在其他情况下，必须已定义符号，并将相应地调整值。
 - ’.’表示定位计数器。通常仅在SECTIONS命令中使用。表达式后的分号是必需的,
 - 您可以自行将符号分配编写为命令， 也可以将其编写为SECTIONS命令中的语句，也可以将其作为SECTIONS命令中输出节描述的一部分。</p>
 <div class="section" id="hidden-hidden-symbol-expression">
 <h4>HIDDEN：不会导出的符号：HIDDEN(symbol = expression )<a class="headerlink" href="#hidden-hidden-symbol-expression" title="Permalink to this headline">¶</a></h4>
-<div class="literal-block-wrapper docutils container" id="id58">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id58" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">HIDDEN</span><span class="p">(</span><span class="n">floating_point</span> <span class="o">=</span> <span class="mi">0</span><span class="p">);</span>
+<div class="literal-block-wrapper docutils container" id="id60">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id60" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">HIDDEN</span><span class="p">(</span><span class="n">floating_point</span> <span class="o">=</span> <span class="mi">0</span><span class="p">);</span>
 <span class="n">SECTIONS</span>
 <span class="p">{</span>
 <span class="p">.</span><span class="nl">text</span> <span class="p">:</span>
@@ -512,7 +568,7 @@ OUTPUT_FORMAT(default , big , little ):与‘–oformat bfdname’命令行参�
 <span class="p">.</span><span class="nl">data</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>在这种情况下，这三个符号在该模块外部均不可见。</p>
 </div>
@@ -528,56 +584,52 @@ OUTPUT_FORMAT(default , big , little ):与‘–oformat bfdname’命令行参�
 <div class="section" id="id18">
 <h4>源码引用<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
 <p>源代码中访问链接脚本中定义的变量是不直观的。特别是链接脚本符号与高级语言中的变量定义不同，是没有值的符号。进一步分析前，认识到编译器经常将源代码中的名字会转换为不同的名字存入符号表中时。例如，Fortran 编译器通常会在符号名前后加入下划线，C++则会更广发改名。因此，在源代码中使用的变量名称与在链接描述文件中定义的相同变量的名称之间可能会有差异。也就是说在源码中使用的变量的名字和链接脚本中定义的变量点可能会有差异。例如在C语言中引用链接脚本变量的方式如下：extern int fool;但在链接脚本中可能定义如下： _foo = 1000;( 也就是说，链接脚本中变量应该与编译器修改后的符号名字一致）其他例子假定名称不需要改变。当一个符号在如C一样的高级语言中声明，会发生两件事情。第一编译器会在程序内存中保留足够的空间来保存符号的值。第二编译器在符号表中传见一个保存符号地址的入口（entry)。如符号表包含保存符号值的内存块的地址。所以，文件范围内，下面的C声明中：</p>
-<div class="literal-block-wrapper docutils container" id="id59">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id59" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">foo</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
+<div class="literal-block-wrapper docutils container" id="id61">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id61" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">foo</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>在符号表中创建一个’foo’的入口。这个入口包含一个’int’长度的内存块的地址，内存块初始化为1000。
 当程序引用编译器产生代码中的符号时，首先访问符号表查找到符号内存块的地址，然后代码从内存块中读出数值。所以：</p>
-<div class="literal-block-wrapper docutils container" id="id60">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id60" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">foo</span><span class="p">;</span>
+<div class="literal-block-wrapper docutils container" id="id62">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id62" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">foo</span><span class="p">;</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>产生foo在符号表中的符号，获取其地址，然后将地址复制到变量’a’对应的内存块中。
 链接脚本符号声明，相比之下，在符号表中创建一个符号入口，但没为其指定内存。也就是说是一个没有值的地址。例如，链接脚本定义如下：</p>
-<div class="literal-block-wrapper docutils container" id="id61">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id61" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">foo</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
+<div class="literal-block-wrapper docutils container" id="id63">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id63" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">foo</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>在符号表中创建一个’foo’的入口，包含地址定位为1000的地址（所以这是个地址？不是值？）。但在地址1000中没有指定值。也就意味着不能访问链接脚本中定义的符号，因为没有值。所能做的只能是访问链接脚本定义的符号的地址。所以当源码使用链接脚本中定义的符号时只能使用符号的地址，不能试图使用其中的值。例如假设你想将一个称为’.ROM’的节的内容复制到一个称为’.FLASH’的节中，链接脚本中的定义如下：</p>
-<div class="literal-block-wrapper docutils container" id="id62">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id62" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">start_of_ROM</span> <span class="o">=</span> <span class="p">.</span><span class="n">ROM</span><span class="p">;</span>
+<div class="literal-block-wrapper docutils container" id="id64">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id64" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">start_of_ROM</span> <span class="o">=</span> <span class="p">.</span><span class="n">ROM</span><span class="p">;</span>
 <span class="n">end_of_ROM</span> <span class="o">=</span> <span class="p">.</span><span class="n">ROM</span> <span class="o">+</span> <span class="k">sizeof</span> <span class="p">(.</span><span class="n">ROM</span><span class="p">);</span>
 <span class="n">start_of_FLASH</span> <span class="o">=</span> <span class="p">.</span><span class="n">FLASH</span><span class="p">;</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>复制方式如下：</p>
-<div class="literal-block-wrapper docutils container" id="id63">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id63" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span></span>extern char start_of_ROM,end_of_ROM,start_of_FLASH; (为啥我感觉这样是不对的呢？）
+<div class="literal-block-wrapper docutils container" id="id65">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id65" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>extern char start_of_ROM,end_of_ROM,start_of_FLASH; (为啥我感觉这样是不对的呢？）
 memcpy (&amp; start_of_FLASH, &amp; start_of_ROM, &amp; end_of_ROM - &amp; start_of_ROM);
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>注意 ‘&amp;’操作符的使用。这样使用是正确的，也可以将变量看作一个向量或数组，使用方式可以如下：</p>
-<div class="literal-block-wrapper docutils container" id="id64">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id64" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span></span>extern char start_of_ROM[], end_of_ROM[], start_of_FLASH[];（我就采用这个方式了）
+<div class="literal-block-wrapper docutils container" id="id66">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id66" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>extern char start_of_ROM[], end_of_ROM[], start_of_FLASH[];（我就采用这个方式了）
 memcpy (start_of_FLASH, start_of_ROM, end_of_ROM - start_of_ROM);
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 </div>
 </div>
@@ -588,18 +640,9 @@ memcpy (start_of_FLASH, start_of_ROM, end_of_ROM - start_of_ROM);
 <p>输出节描述和叠加描述描述如下:如果链接脚本中没有使用SECTIONS命令，链接器会将每个输入节放置在一个名称相同的输出节中，以在输入文件出现的顺序存放。第一个节会被存放在地址0</p>
 <div class="section" id="id19">
 <h4>输出节的完整描述为<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
-<div class="literal-block-wrapper docutils container" id="id65">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id65" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">section</span> <span class="p">[</span><span class="n">address</span> <span class="p">]</span> <span class="p">[(</span><span class="n">type</span> <span class="p">)]</span> <span class="o">:</span>
+<div class="literal-block-wrapper docutils container" id="id67">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id67" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">section</span> <span class="p">[</span><span class="n">address</span> <span class="p">]</span> <span class="p">[(</span><span class="n">type</span> <span class="p">)]</span> <span class="o">:</span>
      <span class="p">[</span><span class="n">AT</span><span class="p">(</span><span class="n">lma</span> <span class="p">)]</span>
      <span class="p">[</span><span class="n">ALIGN</span><span class="p">(</span><span class="n">section_align</span> <span class="p">)</span> <span class="o">|</span> <span class="n">ALIGN_WITH_INPUT</span><span class="p">]</span>
      <span class="p">[</span><span class="n">SUBALIGN</span><span class="p">(</span><span class="n">subsection_align</span> <span class="p">)]</span>
@@ -610,7 +653,7 @@ memcpy (start_of_FLASH, start_of_ROM, end_of_ROM - start_of_ROM);
      <span class="p">...</span>
      <span class="p">}</span> <span class="p">[</span><span class="o">&gt;</span><span class="n">region</span> <span class="p">]</span> <span class="p">[</span><span class="n">AT</span><span class="o">&gt;</span><span class="n">lma_region</span> <span class="p">]</span> <span class="p">[</span><span class="o">:</span><span class="nl">phdr</span> <span class="p">:</span><span class="n">phdr</span> <span class="p">...]</span> <span class="p">[</span><span class="o">=</span><span class="n">fillexp</span> <span class="p">]</span> <span class="p">[,]</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <dl class="simple">
 <dt>大多数输出节不会使用大多数的节属性。节附近的空格是必须的。明确的节名。冒号和花括号也是必须的。如果使用fillexp，并且下一部分命令看起来像是表达式的延续，则可能需要在末尾加逗号。 换行符和其他空格是可选的。</dt><dd><p>每个output-section-command都是下面的一种：</p>
@@ -635,20 +678,19 @@ memcpy (start_of_FLASH, start_of_ROM, end_of_ROM - start_of_ROM);
 - 如果已使用MEMORY命令创建了一个存储区域列表，则选择具有与该节兼容的属性的第一个区域来包含它。 该部分的输出地址将是该区域中的下一个空闲地址；
 - 如果未指定任何存储区域，或者与该部分不匹配，则输出地址将基于位置计数器的当前值进行设置。</p>
 <p>例如：</p>
-<div class="literal-block-wrapper docutils container" id="id66">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id66" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span></span>.text . : { *(.text) }和
+<div class="literal-block-wrapper docutils container" id="id68">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id68" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>.text . : { *(.text) }和
 .text : { *(.text) }
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>这两个有细微不同。第一个会将.text输出节的地址设置为定位寄存器的当前值。第二个会设置为当前值并符合严格对齐要求,地址可以是任何表达式;例如，如果要求节 0x10字节对其，节地址的低四位为0，可以这样设置</p>
-<div class="literal-block-wrapper docutils container" id="id67">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id67" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">.</span><span class="n">text</span> <span class="n">ALIGN</span><span class="p">(</span><span class="mh">0x10</span><span class="p">)</span> <span class="o">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span>
+<div class="literal-block-wrapper docutils container" id="id69">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id69" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">.</span><span class="n">text</span> <span class="n">ALIGN</span><span class="p">(</span><span class="mh">0x10</span><span class="p">)</span> <span class="o">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。为一个节制定地址会修改定位计数器的值，前提是节不能为空。（空节是要忽略的）.</p>
 </div>
@@ -657,23 +699,44 @@ memcpy (start_of_FLASH, start_of_ROM, end_of_ROM - start_of_ROM);
 <p>输入节描述：最常见的输出节命令是输入节描述。输入节描述是最基本的链接脚本操作。输出节告诉连接器程序的内存布局。可以使用输入节描述来告诉链接器如何将输入文件映射到您的内存布局中。</p>
 <p>输入节基本信息</p>
 <p>输入节描述由文件名组成，可以选择在文件名后加上括号中的节名列表。 文件名和节名可以用通配符方式，后面会进一步描述。最通用的输入节描述是在输出节中包含所有具有特定名称的输入节，例如，要包括所有输入的“ .text”部分：</p>
-<div class="literal-block-wrapper docutils container" id="id68">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id68" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span>
+<div class="literal-block-wrapper docutils container" id="id70">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id70" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>‘*’是一个通配符，适配所有文件名字。用EXCLUDE_FILE列表用于排除掉适配的文件，如：</p>
-<div class="literal-block-wrapper docutils container" id="id69">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id69" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">*</span><span class="p">(</span><span class="n">EXCLUDE_FILE</span> <span class="p">(</span><span class="o">*</span><span class="n">crtend</span><span class="p">.</span><span class="n">o</span> <span class="o">*</span><span class="n">otherfile</span><span class="p">.</span><span class="n">o</span><span class="p">)</span> <span class="p">.</span><span class="n">ctors</span><span class="p">)</span>
+<div class="literal-block-wrapper docutils container" id="id71">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id71" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">*</span><span class="p">(</span><span class="n">EXCLUDE_FILE</span> <span class="p">(</span><span class="o">*</span><span class="n">crtend</span><span class="p">.</span><span class="n">o</span> <span class="o">*</span><span class="n">otherfile</span><span class="p">.</span><span class="n">o</span><span class="p">)</span> <span class="p">.</span><span class="n">ctors</span><span class="p">)</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>注意：最前面那个’*’通配任意文件。以上两种方式功能等效。如果节列表包含多个节，则支持EXCLUDE FILE的两种语法非常有用，如下所述。</p>
 <p>包含多个节（两种方式）</p>
+<div class="literal-block-wrapper docutils container" id="id72">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id72" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">*</span><span class="p">(</span><span class="n">EXCLUDE_FILE</span> <span class="p">(</span><span class="o">*</span><span class="n">somefile</span><span class="p">.</span><span class="n">o</span><span class="p">)</span> <span class="p">.</span><span class="n">text</span> <span class="p">.</span><span class="n">rdata</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <p>则只针对文件列表的.text节，如果想排除掉其中的.rdata节，则需要这样写：</p>
+<div class="literal-block-wrapper docutils container" id="id73">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id73" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="p">.</span><span class="n">o</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <p>要基于输入节的节标记来精炼包含的节,可以使用INPUT_SECTION_FLAGS。这是对ELF部分使用Section标头标志的简单示例</p>
+<div class="literal-block-wrapper docutils container" id="id74">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id74" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span> <span class="p">{</span>
+    <span class="p">.</span><span class="nl">text</span> <span class="p">:</span> <span class="p">{</span> <span class="n">INPUT_SECTION_FLAGS</span> <span class="p">(</span><span class="n">SHF_MERGE</span> <span class="o">&amp;</span> <span class="n">SHF_STRINGS</span><span class="p">)</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span>
+    <span class="p">.</span><span class="nl">text2</span> <span class="p">:</span> <span class="p">{</span> <span class="n">INPUT_SECTION_FLAGS</span> <span class="p">(</span><span class="o">!</span><span class="n">SHF_WRITE</span><span class="p">)</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
 <p>输出节.text包含输入节中节头标志设置了SHF_MERGE和SHF_STRINGS的*(.text)。输出节.text2包含输入节中节头标志清楚了SHF_WRITE的*(.text)节。</p>
 <p>个人理解：INPUT_SECTION_FLAGS针对节头的flags项。</p>
 <p>也可以通过写一个模式来适配归档文件中的文件，’:’是必须的，’:’附近不能有空格。(个人问题：归档文件原理，不理解的)</p>
@@ -700,13 +763,12 @@ memcpy (start_of_FLASH, start_of_ROM, end_of_ROM - start_of_ROM);
 </ul>
 <p>文件名通配符模式仅与在命令行或INPUT命令中明确指定的文件匹配。链接器不会搜索扩展通配符匹配的目录。
 如果文件名与多个通配符模式匹配，或者文件名显式出现并且也由通配符模式匹配，则链接器将使用链接器脚本中的第一个匹配项。例如，此输入节描述的顺序可能有误，因为将不使用“ data.o”规则（如何理解？）：</p>
-<div class="literal-block-wrapper docutils container" id="id70">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id70" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">.</span><span class="nl">data</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="p">}</span>
+<div class="literal-block-wrapper docutils container" id="id75">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id75" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">.</span><span class="nl">data</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="p">}</span>
 <span class="p">.</span><span class="nl">data1</span> <span class="p">:</span> <span class="p">{</span> <span class="n">data</span><span class="p">.</span><span class="n">o</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="p">}</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>通常，链接器将按通配符匹配的顺序放置文件和节。 您可以使用SORT_BY_NAME关键字更改此关键字，该关键字会出现在括号中的通配符模式之前（例如SORT_BY_NAME（.text <a href="#id25"><span class="problematic" id="id26">*</span></a>））。 当使用SORT_BY_NAME关键字时，链接器将文件或节按名称升序排序，然后再将它们放置在输出文件中。
 SORT_BY_ALIGNMENT与SORT_BY_NAME类似。 SORT_BY_ALIGNMENT将对部分进行排序 在将它们放入输出文件之前，先按对齐的降序排列。 在较小的对齐方式之前放置较大的对齐方式可以减少所需的填充量。 SORT_BY_INIT_PRIORITY也类似于SORT_BY_NAME。 SORT_BY_INIT_PRIORITY将把节按在节名称中编码的GCC初始化优先级属性的升序排列，然后再将它们放入输出文件中。 在.init_array.NNNNN和.fini_array.NNNNN中，NNNNN是初始化优先级。 在.ctors.NNNNN和.dtors.NNNNN中，NNNNN为65535减去初始优先级。
@@ -812,25 +874,31 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <p>可以通过ONLY_IF_RO和ONLY_IF_RW来指定仅当所有输入节同时为只读或读写时才创建对应的输出节。</p>
 <p>输出节区域</p>
 <p>可以使用’&gt;region’来将一个已经定义的内存区域指定给一个节。如</p>
-<div class="literal-block-wrapper docutils container" id="id71">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id71" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">MEMORY</span> <span class="p">{</span> <span class="nl">rom</span> <span class="p">:</span> <span class="n">ORIGIN</span> <span class="o">=</span> <span class="mh">0x1000</span><span class="p">,</span> <span class="n">LENGTH</span> <span class="o">=</span> <span class="mh">0x1000</span> <span class="p">}</span>
+<div class="literal-block-wrapper docutils container" id="id76">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id76" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">MEMORY</span> <span class="p">{</span> <span class="nl">rom</span> <span class="p">:</span> <span class="n">ORIGIN</span> <span class="o">=</span> <span class="mh">0x1000</span><span class="p">,</span> <span class="n">LENGTH</span> <span class="o">=</span> <span class="mh">0x1000</span> <span class="p">}</span>
 <span class="n">SECTIONS</span> <span class="p">{</span> <span class="nl">ROM</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span> <span class="o">&gt;</span><span class="n">rom</span> <span class="p">}</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>输出节 Phdr设置</p>
 <p>可以使用‘：phdr’将节指定到一定定义的程序段中。如果一个节同时指定到一个或多个段，然后，所有后续分配的部分也将被分配给这些段，除非显式使用’:phdr’进行修改。可以使用:NONE来告诉连接器不要将节放入任何一个段中（这是不用加载吗？）。</p>
 <p>例如：</p>
+<div class="literal-block-wrapper docutils container" id="id77">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id77" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">PHDRS</span> <span class="p">{</span> <span class="n">text</span> <span class="n">PT_LOAD</span> <span class="p">;</span> <span class="p">}</span>
+<span class="n">SECTIONS</span> <span class="p">{</span> <span class="p">.</span><span class="nl">text</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span> <span class="o">:</span> <span class="n">text</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
 <p>输出节填充</p>
 <p>可以使用’= fillexp’设置整个部分的填充模式。其中fillexp是一个表达式。输出节中任何其他未使用的内存区域（如，输入节中因为对齐要求产生的空洞）将会填充为指定的值，根据需要进行重复。如果填充表达式是一个简单的十六制数字，如以’0x’开头的十六制数字的字符串没有以’k’或’M’结尾，然后可以使用任意长的十六进制数字序列来指定填充模式 ;打头的零也成为模式的一部分。其他情况下，包含额外的括号或’+’,填充模式是表达式值的四个最低有效字节.所有情况下，数字采用大端模式。</p>
 <p>可以使用输出节中的FILL命令来更改填充值。</p>
-<div class="literal-block-wrapper docutils container" id="id72">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id72" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span> <span class="p">{</span> <span class="p">.</span><span class="nl">text</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span> <span class="o">=</span><span class="mh">0x90909090</span> <span class="p">}</span>
+<div class="literal-block-wrapper docutils container" id="id78">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id78" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span> <span class="p">{</span> <span class="p">.</span><span class="nl">text</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span> <span class="o">=</span><span class="mh">0x90909090</span> <span class="p">}</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 </div>
 <div class="section" id="overlay">
@@ -838,24 +906,9 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <p>提供了一个容易的方法来描述作为单个内存映像的一部分加载并在相同的地址运行的节。运行时，</p>
 <p>某种覆盖管理器将根据需要在运行时内存地址中复制覆盖部分，也许是简单地操纵寻址位。</p>
 <p>这种方法是有效的，例如，当某个内存区域比另一个区域更快。用OVERLAY命令来描述Overlays。OVERLAY命令与输出节描述符一样，在SECTIONS命令中使用。完整语法如下：</p>
-<div class="literal-block-wrapper docutils container" id="id73">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id73" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">OVERLAY</span> <span class="p">[</span><span class="n">start</span> <span class="p">]</span> <span class="o">:</span> <span class="p">[</span><span class="n">NOCROSSREFS</span><span class="p">]</span> <span class="p">[</span><span class="n">AT</span> <span class="p">(</span> <span class="n">ldaddr</span> <span class="p">)]</span>
+<div class="literal-block-wrapper docutils container" id="id79">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id79" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">OVERLAY</span> <span class="p">[</span><span class="n">start</span> <span class="p">]</span> <span class="o">:</span> <span class="p">[</span><span class="n">NOCROSSREFS</span><span class="p">]</span> <span class="p">[</span><span class="n">AT</span> <span class="p">(</span> <span class="n">ldaddr</span> <span class="p">)]</span>
 <span class="p">{</span>
 <span class="n">secname1</span>
 <span class="p">{</span>
@@ -872,7 +925,7 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <span class="p">...</span>
 <span class="p">}</span> <span class="p">[</span><span class="o">&gt;</span><span class="n">region</span> <span class="p">]</span> <span class="p">[</span><span class="o">:</span><span class="n">phdr</span> <span class="p">...]</span> <span class="p">[</span><span class="o">=</span><span class="n">fill</span> <span class="p">]</span> <span class="p">[,]</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>除了OVERLAY（关键字）外其他都是可选的，每个节必须有一个名字（secname1 和 secname2)。OVERLAY构建中节的定义与SECTIONS构建中的节定义是相同的，只是OVERLAY中节的定义不指定地址和内存区域。</p>
 <div class="section" id="fill-fill">
@@ -910,14 +963,68 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <p>expression：该表达式给出程序头的数字类型。 这可以用于上面未定义的类型。</p>
 <p>您可以使用AT表达式指定将段加载到内存中的特定地址。 这与用作输出节属性的AT命令相同（请参见第3.6.8.2节[输出节LMA]，第71页）。 程序头的AT命令将覆盖输出部分属性。</p>
 <p>链接器通常会根据组成段的段来设置段标志。 您可以使用FLAGS关键字来显式指定段标志。 标志的值必须是整数。 它用于设置程序头的p_flags字段。 这是PHDRS的示例。 这显示了在本机ELF系统上使用的一组典型的程序头。</p>
+<div class="literal-block-wrapper docutils container" id="id80">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id80" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">PHDRS</span>
+<span class="p">{</span>
+     <span class="n">headers</span> <span class="n">PT_PHDR</span> <span class="n">PHDRS</span> <span class="p">;</span>
+     <span class="n">interp</span> <span class="n">PT_INTERP</span> <span class="p">;</span>
+     <span class="n">text</span> <span class="n">PT_LOAD</span> <span class="n">FILEHDR</span> <span class="n">PHDRS</span> <span class="p">;</span>
+     <span class="n">data</span> <span class="n">PT_LOAD</span> <span class="p">;</span>
+     <span class="n">dynamic</span> <span class="n">PT_DYNAMIC</span> <span class="p">;</span>
+<span class="p">}</span>
+<span class="n">SECTIONS</span>
+<span class="p">{</span>
+     <span class="p">.</span> <span class="o">=</span> <span class="n">SIZEOF_HEADERS</span><span class="p">;</span>
+     <span class="p">.</span><span class="nl">interp</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">interp</span><span class="p">)</span> <span class="p">}</span> <span class="o">:</span><span class="nl">text</span> <span class="p">:</span><span class="n">interp</span>
+     <span class="p">.</span><span class="nl">text</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span> <span class="o">:</span><span class="n">text</span>
+     <span class="p">.</span><span class="nl">rodata</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">rodata</span><span class="p">)</span> <span class="p">}</span> <span class="cm">/* defaults to :text */</span>
+     <span class="p">...</span>
+     <span class="p">.</span> <span class="o">=</span> <span class="p">.</span> <span class="o">+</span> <span class="mh">0x1000</span><span class="p">;</span> <span class="cm">/* move to a new page in memory */</span>
+     <span class="p">.</span><span class="nl">data</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="p">}</span> <span class="o">:</span><span class="n">data</span>
+     <span class="p">.</span><span class="nl">dynamic</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">dynamic</span><span class="p">)</span> <span class="p">}</span> <span class="o">:</span><span class="nl">data</span> <span class="p">:</span><span class="n">dynamic</span>
+     <span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="version">
 <h3>VERSION 指令<a class="headerlink" href="#version" title="Permalink to this headline">¶</a></h3>
 <p>使用ELF时，链接器支持符号版本。 符号版本仅在使用共享库时有用。 当动态链接程序运行可能已与共享库的早期版本链接的程序时，它可以使用符号版本来选择函数的特定版本。</p>
 <p>您可以直接在主链接程序脚本中包含版本脚本，也可以将版本脚本作为隐式链接程序脚本提供。 您也可以使用“ –version-script”链接器选项。</p>
 <p>VERSION命令的语法很简单 ：</p>
+<div class="literal-block-wrapper docutils container" id="id81">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id81" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">VERSION</span> <span class="p">{</span> <span class="n">version</span><span class="o">-</span><span class="n">script</span><span class="o">-</span><span class="n">commands</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
 <p>版本脚本命令的格式与Sun的链接程序在Solaris 2.5中使用的格式相同。 版本脚本定义了版本节点树。 您可以在版本脚本中指定节点名称和相互依赖性。 您可以指定将哪些符号绑定到哪个版本节点，并且可以将一组指定的符号减少到本地范围，以使它们在共享库的外部不全局可见。</p>
 <p>演示版本脚本语言的最简单方法是使用一些示例。</p>
+<div class="literal-block-wrapper docutils container" id="id82">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id82" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">VERS_1</span><span class="mf">.1</span> <span class="p">{</span>
+     <span class="nl">global</span><span class="p">:</span>
+     <span class="n">foo1</span><span class="p">;</span>
+     <span class="nl">local</span><span class="p">:</span>
+     <span class="n">old</span><span class="o">*</span><span class="p">;</span>
+     <span class="n">original</span><span class="o">*</span><span class="p">;</span>
+     <span class="n">new</span><span class="o">*</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="n">VERS_1</span><span class="mf">.2</span> <span class="p">{</span>
+     <span class="n">foo2</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VERS_1</span><span class="mf">.1</span><span class="p">;</span>
+<span class="n">VERS_2</span><span class="mf">.0</span> <span class="p">{</span>
+     <span class="n">bar1</span><span class="p">;</span> <span class="n">bar2</span><span class="p">;</span>
+     <span class="k">extern</span> <span class="s">&quot;C++&quot;</span> <span class="p">{</span>
+             <span class="n">ns</span><span class="o">::*</span><span class="p">;</span>
+             <span class="s">&quot;f(int, double)&quot;</span><span class="p">;</span>
+     <span class="p">};</span>
+<span class="p">}</span> <span class="n">VERS_1</span><span class="mf">.2</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
 <p>此示例版本脚本定义了三个版本节点。 定义的第一个版本节点为“ VERS_1.1”； 它没有其他依赖项。 该脚本将符号“ foo1”绑定到“ VERS_1.1”。它会将符号数量减少到本地范围，以使它们在 共享库 这是使用通配符模式完成的，因此任何名称以“ old”，“ original”或“ new”开头的符号都将匹配。 匹配文件名时，可用的通配符模式与Shell中使用的通配符模式相同（也称为“ globbing”）。 然而， 如果在双引号中指定符号名称，则该名称将被视为文字，而不是全局模式。</p>
 <p>接下来，版本脚本定义节点“ VERS_1.2”。 该节点取决于“ VERS_1.1”。 该脚本将符号“ foo2”绑定到版本节点“ VERS_1.2”。</p>
 <p>最后，版本脚本定义了节点“ VERS_2.0”。 该节点取决于“ VERS_1.2”。</p>
@@ -925,15 +1032,39 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <p>当链接器在库中定义的未特定绑定到版本节点的符号时，它将有效地将其绑定到库的未指定基本版本。 您可以通过在版本脚本中的某个位置使用“ global：<a href="#id41"><span class="problematic" id="id42">*</span></a>;”将所有其他未指定的符号绑定到给定的版本节点。 请注意，在全球规范中使用通配符有点疯狂，但最后一个版本节点除外。 其他地方的全局通配符冒着将符号意外添加到旧版本导出的集合中的风险。 这是错误的，因为较旧的版本应具有一组固定的符号。</p>
 <p>版本节点的名称除了它们可能向阅读它们的人建议的含义外，没有其他特殊含义。 “ 2.0”版本也可能出现在“ 1.1”和“ 1.2”之间。 但是，这将是编写版本脚本的一种令人困惑的方法。</p>
 <p>如果节点名称是版本脚本中的唯一版本节点，则可以省略。 这样的版本脚本不会为符号分配任何版本，只会选择哪些符号在全局范围内可见，哪些不会。</p>
+<div class="literal-block-wrapper docutils container" id="id83">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id83" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">{</span> <span class="nl">global</span><span class="p">:</span> <span class="n">foo</span><span class="p">;</span> <span class="n">bar</span><span class="p">;</span> <span class="nl">local</span><span class="p">:</span> <span class="o">*</span><span class="p">;</span> <span class="p">};</span>
+</pre></div>
+</div>
+</div>
 <p>当您将应用程序链接到具有版本控制符号的共享库时，应用程序本身知道它需要的每个符号的版本，并且还知道要链接到的每个共享库中所需的版本节点。 因此，在运行时，动态加载程序可以进行快速检查，以确保所链接的库确实提供了应用程序解析所有动态符号所需的所有版本节点。 通过这种方式，动态链接器可以确定地知道它所需要的所有外部符号将是可解析的，而不必搜索每个符号引用。</p>
 <p>实际上，符号版本控制是进行SunOS进行次要版本检查的一种更为复杂的方法。 此处要解决的基本问题是，通常在需要时绑定对外部函数的引用，并且在应用程序启动时不会全部绑定。 如果共享库已过期，则可能缺少所需的接口； 当应用程序尝试使用该接口时，它可能会突然意外失败。 使用符号版本控制时，如果与该应用程序一起使用的库太旧，则用户在启动程序时将收到警告。</p>
 <p>Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符号绑定到源文件中的版本节点的能力，在该节点中已定义符号而不是在版本控制脚本中。 这样做主要是为了减轻图书馆维护人员的负担。 您可以通过输入以下内容来做到这一点：</p>
+<div class="literal-block-wrapper docutils container" id="id84">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id84" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">__asm__</span><span class="p">(</span><span class="s">&quot;.symver original_foo,foo@VERS_1.1&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
 <p>在C源文件中。 这会将功能“ original_foo”重命名为绑定到版本节点“ VERS_1.1”的“ foo”的别名。 “ local：”指令可用于阻止导出符号“ original_foo”。 “ .symver”指令优先于版本脚本。</p>
 <p>第二个GNU扩展是允许同一功能的多个版本出现在给定的共享库中。 这样，您可以对接口进行不兼容的更改，而无需增加共享库的主要版本号，同时仍然允许与旧接口链接的应用程序继续运行。</p>
 <p>为此，您必须在源文件中使用多个“ .symver”指令。 这是一个例子：</p>
+<div class="literal-block-wrapper docutils container" id="id85">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id85" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">__asm__</span><span class="p">(</span><span class="s">&quot;.symver original_foo,foo@&quot;</span><span class="p">);</span><span class="n">__asm__</span><span class="p">(</span><span class="s">&quot;.symver old_foo,foo@VERS_1.1&quot;</span><span class="p">);</span><span class="n">__asm__</span><span class="p">(</span><span class="s">&quot;.symver old_foo1,foo@VERS_1.2&quot;</span><span class="p">);</span><span class="n">__asm__</span><span class="p">(</span><span class="s">&quot;.symver new_foo,foo@@VERS_2.0&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
 <p>在此示例中，“ foo &#64;”代表符号“ foo”绑定到未指定的基本版本。 包含此示例的源文件将定义4个C函数：“ original_foo”，“ old_foo”，“ old_foo1”和“ new_foo”。</p>
 <p>当给定符号有多个定义时，需要某种方式指定默认版本，该符号的外部引用将绑定到该默认版本。 您可以使用“ .symver”指令的“ foo &#64;&#64; VERS_2.0”类型执行此操作。 您只能以这种方式将符号的一个版本声明为默认版本。 否则，您将有效地对同一符号进行多个定义。</p>
 <p>如果希望将引用绑定到共享库中特定版本的符号，则可以使用方便的别名（即“ old_foo”），也可以使用“ .symver”指令专门绑定到外部 有关功能的版本。 您还可以在版本脚本中指定语言：</p>
+<div class="literal-block-wrapper docutils container" id="id86">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id86" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">VERSION</span> <span class="k">extern</span> <span class="s">&quot;lang&quot;</span> <span class="p">{</span> <span class="n">version</span><span class="o">-</span><span class="n">script</span><span class="o">-</span><span class="n">commands</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
 <p>支持的“ lang”是“ C”，“ C ++”和“ Java”。 链接器将在链接时遍历符号列表，并根据“ lang”对它们进行解映射，然后再将它们与“ version-script-commands”中指定的模式进行匹配。 默认的“ lang”是“ C”。</p>
 <p>杂乱的名称可能包含空格和其他特殊字符。 如上所述，您可以使用glob模式来匹配不匹配的名称，也可以使用双引号引起来的字符串来完全匹配该字符串。 在后一种情况下，请注意，版本脚本和demangler输出之间的细微差异（例如不同的空格）将导致不匹配。 由于分解器生成的确切字符串将来可能会更改，即使名称不正确，您也应该检查所有版本指令的行为是否符合升级时的预期。</p>
 </div>
@@ -942,6 +1073,15 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <p>链接程序脚本语言中表达式的语法与C表达式相同。 所有表达式均以整数形式求值。 所有表达式都以相同的大小求值，如果主机和目标都为32位，则为32位，否则为64位。</p>
 <p>您可以在表达式中使用和设置符号值。</p>
 <p>链接器定义了几个专用于表达式的内置函数。</p>
+<div class="literal-block-wrapper docutils container" id="id87">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id87" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>_fourk_1 = 4K；
+_fourk_2 = 4096；
+_fourk_3 = 0x1000;
+_fourk_4 = 10000o
+</pre></div>
+</div>
+</div>
 <p>注意 - K 和 M 后缀不能与提到的基本后缀一起使用</p>
 <div class="section" id="id44">
 <h4>常数<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h4>
@@ -952,6 +1092,12 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <div><p>此外，可以使用后缀K和M分别将常数缩放1024或1024^2。</p>
 </div></blockquote>
 <p>例如，以下所有都是指相同的数量：</p>
+<div class="literal-block-wrapper docutils container" id="id88">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id88" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">_fourk_1</span> <span class="o">=</span> <span class="mi">4</span><span class="n">K</span><span class="p">;</span><span class="n">_fourk_2</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">;</span><span class="n">_fourk_3</span> <span class="o">=</span> <span class="mh">0x1000</span><span class="p">;</span><span class="n">_fourk_4</span> <span class="o">=</span> <span class="mi">10000</span><span class="n">o</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
 <p>注意-K和M后缀不能与上述基本后缀一起使用。</p>
 </div>
 <div class="section" id="id45">
@@ -962,11 +1108,23 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <li><p>COMMONPAGESIZE:目标的默认页面大小。</p></li>
 </ul>
 <p>因此，例如：</p>
+<div class="literal-block-wrapper docutils container" id="id89">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id89" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">.</span><span class="n">text</span> <span class="n">ALIGN</span> <span class="p">(</span><span class="n">CONSTANT</span> <span class="p">(</span><span class="n">MAXPAGESIZE</span><span class="p">))</span> <span class="o">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
 <p>将创建与目标所支持的最大页面边界对齐的文本部分。</p>
 </div>
 <div class="section" id="id46">
 <h4>符号名称<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h4>
 <p>除非加引号，否则符号名称以字母，下划线或句点开头，并且可以包括字母，数字，下划线，句点和连字符。 未加引号的符号名称不得与任何关键字冲突。 您可以使用双引号将符号名称括起来，以指定包含奇数字符或与关键字名称相同的符号：</p>
+<div class="literal-block-wrapper docutils container" id="id90">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id90" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="s">&quot;SECTION&quot;</span> <span class="o">=</span> <span class="mi">9</span><span class="p">;</span><span class="s">&quot;with a space&quot;</span> <span class="o">=</span> <span class="s">&quot;also with a space&quot;</span> <span class="o">+</span> <span class="mi">10</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
 <p>由于符号可以包含许多非字母字符，因此用空格定界符号是最安全的。 例如，“ A-B”是一个符号，而“ A-B”是一个包含减法的表达式。</p>
 </div>
 <div class="section" id="id47">
@@ -983,24 +1141,42 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <h4>位置计数器<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h4>
 <p>特殊链接器变量点“.”始终包含当前输出位置计数器。 自从。 总是引用输出节中的位置，它只能出现在SECTIONS命令中的表达式中。 这 . 符号可以出现在表达式中允许使用普通符号的任何位置。</p>
 <p>为分配一个值. 将导致位置计数器被移动。 这可用于在输出部分中创建孔. 位置计数器可能不会在输出部分内部向后移动，也可能不会在输出部分外部向后移动，如果这样做会创建具有重叠LMA的区域。</p>
-<div class="literal-block-wrapper docutils container" id="id74">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id74" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="nl">output</span> <span class="p">:</span>        <span class="p">{</span>               <span class="n">file1</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span>            <span class="p">.</span> <span class="o">=</span> <span class="p">.</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">;</span>           <span class="n">file2</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span>            <span class="p">.</span> <span class="o">+=</span> <span class="mi">1000</span><span class="p">;</span>              <span class="n">file3</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span>    <span class="p">}</span> <span class="o">=</span> <span class="mh">0x12345678</span><span class="p">;}</span>
+<div class="literal-block-wrapper docutils container" id="id91">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id91" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="nl">output</span> <span class="p">:</span>        <span class="p">{</span>               <span class="n">file1</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span>            <span class="p">.</span> <span class="o">=</span> <span class="p">.</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">;</span>           <span class="n">file2</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span>            <span class="p">.</span> <span class="o">+=</span> <span class="mi">1000</span><span class="p">;</span>              <span class="n">file3</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span>    <span class="p">}</span> <span class="o">=</span> <span class="mh">0x12345678</span><span class="p">;}</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>在上一个示例中，“ file1”中的“ .text”部分位于输出部分“ output”的开头。 随后是一个1000字节的间隙。 然后出现“ file2”中的“ .text”部分，并且在“ file3”中“ .text”部分之前也有一个1000字节的间隙。 标记“ = 0x12345678”指定要在间隙中写入哪些数据（请参见第3.6.8.8节“输出节填充”，第73页）。</p>
 <p>注意： . 实际上是指从当前包含对象的开头开始的字节偏移量. 通常，这是SECTIONS语句，其起始地址为0，因此为. 可以用作绝对地址。 如果 . 在节描述中使用“ 0”，但是它指的是距该节开始处的字节偏移量，而不是绝对地址。 因此，在这样的脚本中：</p>
+<div class="literal-block-wrapper docutils container" id="id92">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id92" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="p">.</span> <span class="o">=</span> <span class="mh">0x100</span>       <span class="p">.</span><span class="nl">text</span><span class="p">:</span> <span class="p">{</span>                <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span>                <span class="p">.</span> <span class="o">=</span> <span class="mh">0x200</span>       <span class="p">}</span>       <span class="p">.</span> <span class="o">=</span> <span class="mh">0x500</span>       <span class="p">.</span><span class="nl">data</span><span class="p">:</span> <span class="p">{</span>        <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span>        <span class="p">.</span> <span class="o">+=</span> <span class="mh">0x600</span>      <span class="p">}}</span>
+</pre></div>
+</div>
+</div>
 <p>即使“ .text”输入部分中的数据不足以填充该区域，也会为“ .text”部分分配0x100的起始地址，大小恰好为0x200字节。 （如果数据太多，将产生错误，因为这是向后移动的尝试）。 “ .data”部分将从0x500开始，并且在“ .data”输入部分的值结束之后和“ .data”输出部分本身结束之前还有0x600字节的额外空间。</p>
 <p>如果链接器需要放置孤立节，则在输出节语句之外将符号设置为位置计数器的值可能会导致意外的值。 例如，给出以下内容：</p>
-<div class="literal-block-wrapper docutils container" id="id75">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id75" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="n">start_of_text</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>     <span class="p">.</span><span class="nl">text</span><span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span>     <span class="n">end_of_text</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>       <span class="n">start_of_data</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>     <span class="p">.</span><span class="nl">data</span><span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="p">}</span>     <span class="n">end_of_data</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;}</span>
+<div class="literal-block-wrapper docutils container" id="id93">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id93" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="n">start_of_text</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>     <span class="p">.</span><span class="nl">text</span><span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span>     <span class="n">end_of_text</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>       <span class="n">start_of_data</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>     <span class="p">.</span><span class="nl">data</span><span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="p">}</span>     <span class="n">end_of_data</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;}</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>如果链接器需要放置一些输入部分，例如 .rodata（脚本中未提及），它可能会选择将该部分放在.text和.data之间。 您可能会认为链接器应该在上面的脚本的空白行上放置.rodata，但是空白行对链接器没有特别的意义。 同样，链接器也没有将上述符号名称与其部分相关联。 而是假定所有赋值或其他语句都属于上一个输出节，但对..的特殊情况除外，即，链接器将放置孤立的.rodata节，就像脚本编写如下</p>
+<div class="literal-block-wrapper docutils container" id="id94">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id94" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="n">start_of_text</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>     <span class="p">.</span><span class="nl">text</span><span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span>     <span class="n">end_of_text</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>       <span class="n">start_of_data</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>     <span class="p">.</span><span class="nl">rodata</span><span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">rodata</span><span class="p">)</span> <span class="p">}</span> <span class="p">.</span><span class="nl">data</span><span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="p">}</span>     <span class="n">end_of_data</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;}</span>
+</pre></div>
+</div>
+</div>
 <p>这可能不是脚本作者对start_of_data的值的意图。 影响孤立节放置的一种方法是将位置计数器分配给它自己，因为链接器假定已将分配给。 正在设置下一个输出部分的起始地址，因此应与该部分分组。 所以你可以这样写：</p>
+<div class="literal-block-wrapper docutils container" id="id95">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id95" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="n">start_of_text</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>     <span class="p">.</span><span class="nl">text</span><span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}</span>     <span class="n">end_of_text</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>       <span class="p">.</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span> <span class="n">start_of_data</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;</span>     <span class="p">.</span><span class="nl">data</span><span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="p">}</span>     <span class="n">end_of_data</span> <span class="o">=</span> <span class="p">.</span> <span class="p">;}</span>
+</pre></div>
+</div>
+</div>
 <p>现在，孤立的.rodata节将放置在end_of_text和start_of_data之间。</p>
 </div>
 <div class="section" id="id49">
@@ -1016,6 +1192,12 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <p>直到分配后才能知道节的大小，因此直到分配后才执行取决于这些节的分配。</p>
 <p>某些表达式，例如取决于位置计数器“。”的表达式，必须在节分配期间求值。</p>
 <p>如果需要表达式的结果，但该值不可用，则将导致错误。 例如，以下脚本</p>
+<div class="literal-block-wrapper docutils container" id="id96">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id96" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="p">.</span><span class="n">text</span> <span class="mi">9</span><span class="o">+</span><span class="nl">this_isnt_constant</span> <span class="p">:</span>    <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">text</span><span class="p">)</span> <span class="p">}}</span>
+</pre></div>
+</div>
+</div>
 <p>将导致错误消息“初始地址的非常量表达式”。</p>
 </div>
 <div class="section" id="id51">
@@ -1024,6 +1206,12 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <p>链接器表达式中的某些术语是地址。 对于部分相对符号和返回地址的内置函数（例如ADDR，LOADADDR，ORIGIN和SEGMENT_START）而言，都是如此。 其他术语只是数字，或者是返回非地址值的内置函数，例如LENGTH。 一种复杂的情况是，除非您设置LD_FEATURE（“ SANE_EXPR”）（请参见第3.4.5节[其他命令]，第56页），否则数字和绝对符号将根据其位置而有所不同，以与ld的较早版本兼容。</p>
 <p>出现在输出节定义之外的表达式会将所有数字视为绝对地址。 出现在输出节定义内的表达式将绝对符号视为数字。 如果给出了LD_FEATURE（“ SANE_EXPR”），则绝对符号和数字在任何地方都将被简单地视为数字。</p>
 <p>在下面的简单示例中，</p>
+<div class="literal-block-wrapper docutils container" id="id97">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id97" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="p">.</span> <span class="o">=</span> <span class="mh">0x100</span><span class="p">;</span>      <span class="n">__executable_start</span> <span class="o">=</span> <span class="mh">0x100</span><span class="p">;</span>     <span class="p">.</span><span class="nl">data</span> <span class="p">:</span> <span class="p">{</span>               <span class="p">.</span> <span class="o">=</span> <span class="mh">0x10</span><span class="p">;</span>               <span class="n">__data_start</span> <span class="o">=</span> <span class="mh">0x10</span><span class="p">;</span>            <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span>        <span class="p">}...}</span>
+</pre></div>
+</div>
+</div>
 <p>两个都 . 和__executable_start在前两个分配中均设置为绝对地址0x100，然后在两者中均设置为。 相对于后两个赋值中的.data节，__data_start和__data_start设置为0x10。</p>
 <p>对于涉及数字，相对地址和绝对地址的表达式，ld遵循以下规则来评估术语：</p>
 <ul class="simple">
@@ -1041,6 +1229,12 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <p>如果表达式是相对的，则可以使用内置函数ABSOLUTE强制表达式为绝对。 例如，要创建一个绝对符号集，将其设置为输出节“ .data”末尾的地址：</p>
 </li>
 </ul>
+<div class="literal-block-wrapper docutils container" id="id98">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id98" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span>    <span class="p">.</span><span class="nl">data</span> <span class="p">:</span> <span class="p">{</span> <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span> <span class="n">_edata</span> <span class="o">=</span> <span class="n">ABSOLUTE</span><span class="p">(.);</span> <span class="p">}}</span>
+</pre></div>
+</div>
+</div>
 <p>如果未使用“绝对”，则“ _edata”将相对于“ .data”部分。 使用LOADADDR也会强制表达式为绝对值，因为此特定的内置函数将返回绝对地址。</p>
 </div>
 <div class="section" id="id52">
@@ -1049,20 +1243,32 @@ OVERLAY:为了向后兼容。很少用到。有相同的作用：节应该标记
 <ul>
 <li><p>ABSOLUTE(exp ):返回表达式exp的绝对值（不可重定位，而不是非负值）。 主要用于将绝对值分配给节定义中的符号，其中符号值通常是节相对的。 请参阅第3.10.8节[表达部分]，第86页。</p></li>
 <li><p>ADDR(section ):返回命名部分的地址（VMA）。 您的脚本之前必须已经定义了该部分的位置。 在以下示例中，为start_of_output_1，symbol_1和symbol_2分配了等效值，不同的是symbol_1将相对于.output1部分，而另两个则是绝对值：</p></li>
-<li></li>
+<li><div class="literal-block-wrapper docutils container" id="id99">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id99" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span> <span class="p">{</span> <span class="p">....</span><span class="nl">output1</span> <span class="p">:{</span>       <span class="n">start_of_output_1</span> <span class="o">=</span> <span class="n">ABSOLUTE</span><span class="p">(.);</span>        <span class="p">...}.</span><span class="nl">output</span> <span class="p">:{</span>  <span class="n">symbol_1</span> <span class="o">=</span> <span class="n">ADDR</span><span class="p">(.</span><span class="n">output1</span><span class="p">);</span>      <span class="n">symbol_2</span> <span class="o">=</span> <span class="n">start_of_output_1</span><span class="p">;}...</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</li>
 <li><p>ALIGN(align )/ALIGN(exp ,align ):返回与下一个对齐边界对齐的位置计数器（.）或任意表达式。 单个操作数ALIGN不会更改位置计数器的值，它只是对其进行算术运算。 两个操作数ALIGN允许任意表达式向上对齐（ALIGN（align）等同于ALIGN（ABSOLUTE（.），align））。</p>
 <p>这是一个示例，该示例将输出.data节与前一个节之后的下一个0x2000字节边界对齐，并将该节内的变量设置为与输入节后的下一个0x8000边界：</p>
-<div class="literal-block-wrapper docutils container" id="id76">
-<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id76" title="Permalink to this code">¶</a></div>
-<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span> <span class="p">{</span> <span class="p">...</span>  <span class="p">.</span><span class="n">data</span> <span class="n">ALIGN</span><span class="p">(</span><span class="mh">0x2000</span><span class="p">)</span><span class="o">:</span> <span class="p">{</span>  <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span>        <span class="n">variable</span> <span class="o">=</span> <span class="n">ALIGN</span><span class="p">(</span><span class="mh">0x8000</span><span class="p">);</span>       <span class="p">}...</span> <span class="p">}</span>
+<div class="literal-block-wrapper docutils container" id="id100">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id100" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span> <span class="p">{</span> <span class="p">...</span>  <span class="p">.</span><span class="n">data</span> <span class="n">ALIGN</span><span class="p">(</span><span class="mh">0x2000</span><span class="p">)</span><span class="o">:</span> <span class="p">{</span>  <span class="o">*</span><span class="p">(.</span><span class="n">data</span><span class="p">)</span>        <span class="n">variable</span> <span class="o">=</span> <span class="n">ALIGN</span><span class="p">(</span><span class="mh">0x8000</span><span class="p">);</span>       <span class="p">}...</span> <span class="p">}</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div>
 <p>在此示例中，ALIGN的首次使用指定了节的位置，因为它被用作节定义的可选地址属性（请参见第3.6.3节[输出节地址]，第62页）。 ALIGN的第二种用法用于定义符号的值。</p>
 <p>内建函数NEXT与ALIGN紧密相关。</p>
 </li>
 <li><p>ALIGNOF(section ):返回已命名节的对齐方式（以字节为单位）。 如果在评估时尚未分配该节，则链接器将报告错误。 在下面的示例中，.output节的对齐方式存储为该节中的第一个值。</p></li>
 </ul>
+<div class="literal-block-wrapper docutils container" id="id101">
+<div class="code-block-caption"><span class="caption-text">c test</span><a class="headerlink" href="#id101" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SECTIONS</span><span class="p">{</span> <span class="p">...</span>        <span class="p">.</span><span class="n">output</span> <span class="p">{</span>               <span class="n">LONG</span> <span class="p">(</span><span class="n">ALIGNOF</span> <span class="p">(.</span><span class="n">output</span><span class="p">))</span>                <span class="p">...</span>     <span class="p">}...</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
 <ul class="simple">
 <li><p>BLOCK(exp ):这是ALIGN的同义词，以与较旧的链接程序脚本兼容。 设置输出部分的地址时最常见。</p></li>
 <li><p>DATA_SEGMENT_ALIGN(maxpagesize , commonpagesize )</p></li>

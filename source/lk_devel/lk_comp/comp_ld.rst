@@ -302,7 +302,7 @@ SECTIONS是一个很强大的命令。假设程序只包含代码，初始化数
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    SECTIONS
    {
     . = 0x1000;
@@ -393,7 +393,8 @@ REGION_ALIAS(alias,region)
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
+
    symbol = expression ;
    symbol += expression ;
    symbol -= expression ;
@@ -414,7 +415,7 @@ HIDDEN：不会导出的符号：HIDDEN(symbol = expression )
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    HIDDEN(floating_point = 0);
    SECTIONS
@@ -436,7 +437,7 @@ PROVIDE：在某些情况下，希望链接描述文件仅在符号被引用且�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    SECTIONS
   {
@@ -462,7 +463,7 @@ PROVIDE_HIDDEN:与provide类似，EFL格式文件，符号将会隐藏不导出�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    int foo = 1000;
    
@@ -472,7 +473,7 @@ PROVIDE_HIDDEN:与provide类似，EFL格式文件，符号将会隐藏不导出�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    int *a = &foo;
    
@@ -481,7 +482,7 @@ PROVIDE_HIDDEN:与provide类似，EFL格式文件，符号将会隐藏不导出�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    foo = 1000;
    
@@ -490,7 +491,7 @@ PROVIDE_HIDDEN:与provide类似，EFL格式文件，符号将会隐藏不导出�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    start_of_ROM = .ROM;
    end_of_ROM = .ROM + sizeof (.ROM);
@@ -500,8 +501,7 @@ PROVIDE_HIDDEN:与provide类似，EFL格式文件，符号将会隐藏不导出�
 复制方式如下：
 
 .. code-block:: c
-   :caption: c test
-   :linenos:
+   :caption: c test   
    
    extern char start_of_ROM,end_of_ROM,start_of_FLASH; (为啥我感觉这样是不对的呢？）
    memcpy (& start_of_FLASH, & start_of_ROM, & end_of_ROM - & start_of_ROM);
@@ -510,7 +510,7 @@ PROVIDE_HIDDEN:与provide类似，EFL格式文件，符号将会隐藏不导出�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    extern char start_of_ROM[], end_of_ROM[], start_of_FLASH[];（我就采用这个方式了）
    memcpy (start_of_FLASH, start_of_ROM, end_of_ROM - start_of_ROM);
@@ -522,7 +522,7 @@ SECTIONS 命令
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    SECTIONS
    {
@@ -547,7 +547,7 @@ SECTIONS 命令
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    section [address ] [(type )] :
   	[AT(lma )]
@@ -588,7 +588,7 @@ SECTIONS 命令
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    .text . : { *(.text) }和
    .text : { *(.text) }
@@ -597,7 +597,7 @@ SECTIONS 命令
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    .text ALIGN(0x10) : { *(.text) }
    
@@ -616,7 +616,7 @@ ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
     *(.text)
     
@@ -625,7 +625,7 @@ ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
     EXCLUDE_FILE (*crtend.o *otherfile.o) *(.ctors)
     
@@ -633,7 +633,7 @@ ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。�
  
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    *(EXCLUDE_FILE (*crtend.o *otherfile.o) .ctors)
    
@@ -644,7 +644,7 @@ ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
     *(.text .rdata)
     *(.text) *(.rdata)
@@ -656,14 +656,14 @@ ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    *(EXCLUDE_FILE (*somefile.o) .text .rdata)
 
 则只针对文件列表的.text节，如果想排除掉其中的.rdata节，则需要这样写：
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    (EXCLUDE_FILE (*somefile.o) .text EXCLUDE_FILE (*somefile.o) .rdata)
 
 
@@ -671,7 +671,7 @@ ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    EXCLUDE_FILE (*somefile.o) *(.text .rdata)
 
@@ -680,7 +680,7 @@ ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    data.o(.data)
 
 
@@ -688,7 +688,7 @@ ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    SECTIONS {
        .text : { INPUT_SECTION_FLAGS (SHF_MERGE & SHF_STRINGS) *(.text) }
        .text2 : { INPUT_SECTION_FLAGS (!SHF_WRITE) *(.text) }
@@ -731,7 +731,7 @@ ALIGN 返回基于当前地址计数器 与要求对其数后产生的地址。�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    .data : { *(.data) }
    .data1 : { data.o(.data) }
@@ -761,7 +761,7 @@ SORT_NONE通过忽略命令行节排序选项来禁用节排序。如果您对�
 
 .. code-block:: c
    :caption: c test
-   :linenos:``
+   ``
    SECTIONS {
     .text : { *(.text) }
     .DATA : { [A-Z]*(.data) }
@@ -786,7 +786,7 @@ SORT_NONE通过忽略命令行节排序选项来禁用节排序。如果您对�
 
 .. code-block:: c
    :caption: c test
-   :linenos:``
+   ``
    .bss { *(.bss) *(COMMON)}
 
 可能有多于一个COMMON节，如MIPS中的“COMMON”和'.scommon'。方便各自映射。
@@ -851,7 +851,7 @@ FILL指令与‘=fillexp’输出节属性效果一致，但只影响节中FILL�
  像COFF，ELF支持节属性的目标文件格式，GNU C++通常情况下将全局构建和析构函数分别放置在.ctors 和 .dtors节中。将以下序列放入您的链接器脚本中，将构建gnu C ++运行时代码希望看到的表的种类。 
 .. code-block:: c
    :caption: c test
-   :linenos:``
+   ``
    __CTOR_LIST__ = .;
      LONG((__CTOR_END__ - __CTOR_LIST__) / 4 - 2)
      *(.ctors)
@@ -867,14 +867,14 @@ FILL指令与‘=fillexp’输出节属性效果一致，但只影响节中FILL�
    
 .. code-block:: c
    :caption: c test
-   :linenos:``
+   ``
    ld --verbose可进行查看
    
    必须对构造函数进行排序来保证运行时构造函数的执行顺序的正确性。当使用CONSTRUCTORS命令时，使用‘SORT_BY_NAME(CONSTRUCTORS)'代替。当使用 .ctors 和 .dtors'*节时，使用'*(SORT_BY_NAME(.ctors))'和'*(SORT_BY_NAME(.dtors))'来代替'*(.ctors)'和'*(.dtors)'来实现排序。通常情况下编译器和连接器会自动处理这些操作，不需要手动处理。如果使用的是C ++并编写自己的链接描述文件，则可能需要考虑这一点。
 
 .. code-block:: c
    :caption: c test
-   :linenos:``
+   ``
    .foo : { *(.foo) }
 
 
@@ -891,7 +891,7 @@ FILL指令与‘=fillexp’输出节属性效果一致，但只影响节中FILL�
 
 .. code-block:: c
    :caption: c test
-   :linenos:``
+   ``
    .foo : { *(.foo) }
    
    section [address ] [(type )] :
@@ -923,7 +923,7 @@ FILL指令与‘=fillexp’输出节属性效果一致，但只影响节中FILL�
 
 .. code-block:: c
    :caption: c test
-   :linenos:``
+   ``
    .foo : { *(.foo) }
    
    SECTIONS {
@@ -954,7 +954,7 @@ AT关键字后边跟一个表达式作为参数。指定节加载的确切地址
 
 .. code-block:: c
    :caption: c test
-   :linenos:``
+   ``
    .foo : { *(.foo) }
    ECTIONS
 
@@ -973,7 +973,7 @@ AT关键字后边跟一个表达式作为参数。指定节加载的确切地址
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    extern char _etext,_data,_edata,_bstart,_bend;
    char *src = &_etext;
@@ -1007,7 +1007,7 @@ AT关键字后边跟一个表达式作为参数。指定节加载的确切地址
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    MEMORY { rom : ORIGIN = 0x1000, LENGTH = 0x1000 }
    SECTIONS { ROM : { *(.text) } >rom }
@@ -1021,7 +1021,7 @@ AT关键字后边跟一个表达式作为参数。指定节加载的确切地址
    
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    PHDRS { text PT_LOAD ; }
    SECTIONS { .text : { *(.text) } : text }
    
@@ -1033,7 +1033,7 @@ AT关键字后边跟一个表达式作为参数。指定节加载的确切地址
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    SECTIONS { .text : { *(.text) } =0x90909090 }
 
@@ -1051,7 +1051,7 @@ Overlay 描述
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    OVERLAY [start ] : [NOCROSSREFS] [AT ( ldaddr )]
    {
@@ -1102,7 +1102,7 @@ ELF目标文件格式使用程序标头，也称为段。 程序标头描述了�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    PHDRS
   {
 	name type [ FILEHDR ] [ PHDRS ] [ AT ( address ) ]
@@ -1137,7 +1137,7 @@ expression：该表达式给出程序头的数字类型。 这可以用于上面
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    PHDRS
    {
 	headers PT_PHDR PHDRS ;
@@ -1172,7 +1172,7 @@ VERSION命令的语法很简单 ：
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    VERSION { version-script-commands }
 
 
@@ -1184,7 +1184,7 @@ VERSION命令的语法很简单 ：
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    VERS_1.1 {
 	global:
 	foo1;
@@ -1223,7 +1223,7 @@ VERSION命令的语法很简单 ：
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    { global: foo; bar; local: *; };
 
 
@@ -1236,7 +1236,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    __asm__(".symver original_foo,foo@VERS_1.1");
 
 
@@ -1248,7 +1248,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    __asm__(".symver original_foo,foo@");__asm__(".symver old_foo,foo@VERS_1.1");__asm__(".symver old_foo1,foo@VERS_1.2");__asm__(".symver new_foo,foo@@VERS_2.0");
 
 
@@ -1260,7 +1260,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    VERSION extern "lang" { version-script-commands }
 
 
@@ -1280,7 +1280,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    _fourk_1 = 4K；
    _fourk_2 = 4096；
    _fourk_3 = 0x1000;
@@ -1303,7 +1303,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    _fourk_1 = 4K;_fourk_2 = 4096;_fourk_3 = 0x1000;_fourk_4 = 10000o;
 
 
@@ -1322,7 +1322,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    .text ALIGN (CONSTANT (MAXPAGESIZE)) : { *(.text) }
 
 
@@ -1335,7 +1335,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    "SECTION" = 9;"with a space" = "also with a space" + 10;
 
 由于符号可以包含许多非字母字符，因此用空格定界符号是最安全的。 例如，“ A-B”是一个符号，而“ A-B”是一个包含减法的表达式。 
@@ -1366,7 +1366,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    SECTIONS{	output :	{		file1(.text)		. = . + 1000;		file2(.text)		. += 1000;		file3(.text)	} = 0x12345678;}
 
@@ -1377,7 +1377,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    SECTIONS{	. = 0x100	.text: {		*(.text)		. = 0x200	}	. = 0x500	.data: {	*(.data)	. += 0x600	}}
 
 
@@ -1390,7 +1390,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    
    SECTIONS{	start_of_text = . ;	.text: { *(.text) }	end_of_text = . ;	start_of_data = . ;	.data: { *(.data) }	end_of_data = . ;}
 
@@ -1400,7 +1400,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    SECTIONS{	start_of_text = . ;	.text: { *(.text) }	end_of_text = . ;	start_of_data = . ;	.rodata: { *(.rodata) }	.data: { *(.data) }	end_of_data = . ;}
 
 
@@ -1408,7 +1408,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    SECTIONS{	start_of_text = . ;	.text: { *(.text) }	end_of_text = . ;	. = . ;	start_of_data = . ;	.data: { *(.data) }	end_of_data = . ;}
 
 
@@ -1440,7 +1440,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    SECTIONS{	.text 9+this_isnt_constant :	{ *(.text) }}
 
 
@@ -1460,7 +1460,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    SECTIONS{	. = 0x100;	__executable_start = 0x100;	.data :	{		. = 0x10;		__data_start = 0x10;		*(.data)	}...}
 
 
@@ -1491,7 +1491,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    SECTIONS{	.data : { *(.data) _edata = ABSOLUTE(.); }}
 
 
@@ -1509,7 +1509,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 - 
 	.. code-block:: c
    		:caption: c test
-   		:linenos:
+   		
    		SECTIONS { ....output1 :{	start_of_output_1 = ABSOLUTE(.);	...}.output :{	symbol_1 = ADDR(.output1);	symbol_2 = start_of_output_1;}... }
   
 
@@ -1521,7 +1521,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
 
   .. code-block:: c
    		:caption: c test
-   		:linenos:
+   		
    		
    		SECTIONS { ...	.data ALIGN(0x2000): {	*(.data)	variable = ALIGN(0x8000);	}... }
   
@@ -1535,7 +1535,7 @@ Sun的版本控制方法有多个GNU扩展。 其中的第一个功能是将符�
   
 .. code-block:: c
    :caption: c test
-   :linenos:
+   
    SECTIONS{ ...	.output {		LONG (ALIGNOF (.output))		...	}... }
   
 

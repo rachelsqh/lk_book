@@ -15,7 +15,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="kexec总结" href="kexec.html" />
+    <link rel="next" title="linux 加载ELF 内核文件：kexec" href="kexec.html" />
     <link rel="prev" title="linux 内核竞争处理" href="lock.html" /> 
 </head>
 
@@ -44,30 +44,79 @@
 <li class="toctree-l2"><a class="reference internal" href="notifier.html">linux 内核通知/通信机制</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lock.html">linux 内核竞争处理</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">linux 内核hook</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#hook">动态hook</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id1">底层原理</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#kprobe">kprobe</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#uprobe">uprobe</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#livepath">livepath</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ebpf">ebpf</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#perf">perf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux">linux 底层指令替换原理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-kprobe-kretprobe">linux kprobe/kretprobe 分析总结</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">示例分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#register-kprobe">我们分析register_kprobe</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kprobe-register">kprobe_register处理流程图</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kprobe">kprobe 概述</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">kprobe执行原理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kretprobe">kretprobe</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Kretprobe 入口处理程序</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">黑名单</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kprobe-api">kprobe API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">register_kprobe</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#register-kretprobe">register_kretprobe</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">注销函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kprobes">Kprobes 功能和限制</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kprobes-kretprobes">Kprobes/kretprobes 示例</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">调试接口</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kprobes-sysctl">kprobes sysctl 接口</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">总结</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id11">参考</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">静态hook</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id3">概述</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trace">trace</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#audit">audit</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#security">security</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uprobes">用户空间探针（uprobes)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trace-uprobe">trace uprobe使用场景</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#uprobe-tracer">uprobe_tracer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id12">事件分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id13">使用示例</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id14">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-livepatch">linux 实时补丁-livepatch</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id15">背景</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id16">（取消）修补回调函数</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id17">原子替换和累积补丁</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id18">特征</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id19">局限性：</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#livepatchelf">Livepatch模块Elf格式</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#livepatch">为什么livepatch需要编写自己的重定位？</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id20">livepatch内核模块-从编译到加载原理分析</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ebpf">ebpf</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id21">eBPF指令集</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id22">eBPF安全性验证</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#libbpf">libbpf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#btf">BTF</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bpf-bpf-helpers">bpf辅助函数:bpf helpers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id23">系统调用</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ebpf-maps">eBPF maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bpfebpf">经典BPF和eBPF比较</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bpf">BPF许可</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id24">BPF测试和调试</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id25">BPF重定位</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bpf-demo">BPF demo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id26">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#perf">perf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-kernel-trace">linux kernel trace</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#trace">静态trace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ftrace">ftrace</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="kexec.html">kexec总结</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kexec.html">linux 加载ELF 内核文件：kexec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="struct.html">linux 内核基础算法</a></li>
 <li class="toctree-l2"><a class="reference internal" href="umh.html">第一个应用进程及umh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extable.html">异常表:extable</a></li>
 <li class="toctree-l2"><a class="reference internal" href="jump_label.html">jump_label</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syscall.html">linux 系统调用原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="x86.html">x86架构部分</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../pm.html">电源管理框架</a></li>
@@ -80,6 +129,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../uboot.html">uboot理解</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dot.html">dot画图</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bpf_helper.html">BPF-HELPERS</a></li>
 </ul>
 
         </div>
@@ -109,43 +159,2773 @@
              
   <div class="section" id="linux-hook">
 <h1>linux 内核hook<a class="headerlink" href="#linux-hook" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="hook">
-<h2>动态hook<a class="headerlink" href="#hook" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>底层原理<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="kprobe">
-<h3>kprobe<a class="headerlink" href="#kprobe" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="uprobe">
-<h3>uprobe<a class="headerlink" href="#uprobe" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="livepath">
-<h3>livepath<a class="headerlink" href="#livepath" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="ebpf">
-<h3>ebpf<a class="headerlink" href="#ebpf" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="linux">
+<h2>linux 底层指令替换原理<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p>沙箱</p></li>
+<li><p>x86指令替换实现：arch/x86/kernel/alternative.c,其中实现了ftrace/kprobe/livepatch等实现以来的底层指令替换函数。</p></li>
+<li><p>总结：
+- 下一步任务：详细分析指令替换实现逻辑。</p></li>
 </ul>
 </div>
-<div class="section" id="perf">
-<h3>perf<a class="headerlink" href="#perf" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="linux-kprobe-kretprobe">
+<h2>linux kprobe/kretprobe 分析总结<a class="headerlink" href="#linux-kprobe-kretprobe" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>示例分析<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>k_m1.c</p>
+<div class="literal-block-wrapper docutils container" id="id27">
+<div class="code-block-caption"><span class="caption-text">打印t_fun执行内核函数start_thread时的信息</span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/kprobes.h&gt;</span><span class="cp"></span>
+<span class="hll"><span class="cp">#include</span> <span class="cpf">&lt;linux/sched.h&gt;</span><span class="cp"></span>
+</span><span class="hll">
+</span>
+<span class="cp">#define MAX_SYMBOL_LEN  64</span>
+<span class="cp">#define exe_buf         &quot;t_fun&quot;</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="n">TASK_COMM_LEN</span><span class="p">];</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="n">symbol</span><span class="p">[</span><span class="n">MAX_SYMBOL_LEN</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;start_thread&quot;</span><span class="p">;</span>
+<span class="n">module_param_string</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">symbol</span><span class="p">),</span> <span class="mo">0644</span><span class="p">);</span>
+
+<span class="cm">/* For each probe you need to allocate a k_m1 structure */</span>
+<span class="k">struct</span> <span class="nc">kprobe</span> <span class="n">kp</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">.</span><span class="n">symbol_name</span>    <span class="o">=</span> <span class="n">symbol</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="cm">/* k_m1 pre_handler: called just before the probed instruction is executed */</span>
+<span class="kt">int</span> <span class="n">__kprobes</span> <span class="n">handler_pre</span><span class="p">(</span><span class="k">struct</span> <span class="nc">kprobe</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="k">struct</span> <span class="nc">task_struct</span> <span class="o">*</span><span class="n">tsk</span> <span class="o">=</span> <span class="n">current</span><span class="p">;</span>
+<span class="n">get_task_comm</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="n">tsk</span><span class="p">);</span>
+<span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="n">exe_buf</span><span class="p">)){</span>
+        <span class="k">struct</span> <span class="nc">cred</span> <span class="o">*</span><span class="n">creds</span> <span class="o">=</span> <span class="n">prepare_creds</span><span class="p">();</span>
+        <span class="n">creds</span><span class="o">-&gt;</span><span class="n">uid</span><span class="p">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">creds</span><span class="o">-&gt;</span><span class="n">euid</span><span class="p">.</span><span class="n">val</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">creds</span><span class="o">-&gt;</span><span class="n">gid</span><span class="p">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">creds</span><span class="o">-&gt;</span><span class="n">egid</span><span class="p">.</span><span class="n">val</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">commit_creds</span><span class="p">(</span><span class="n">creds</span><span class="p">);</span>
+        <span class="n">printk</span><span class="p">(</span><span class="s">&quot;%s:%d exec = %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">__func__</span><span class="p">,</span><span class="n">__LINE__</span><span class="p">,</span><span class="n">buf</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="n">k_m1_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+<span class="n">kp</span><span class="p">.</span><span class="n">pre_handler</span> <span class="o">=</span> <span class="n">handler_pre</span><span class="p">;</span>
+
+<span class="n">ret</span> <span class="o">=</span> <span class="n">register_kprobe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">kp</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pr_err</span><span class="p">(</span><span class="s">&quot;register_k_m1 failed, returned %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">pr_info</span><span class="p">(</span><span class="s">&quot;Planted k_m1 at %p</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">kp</span><span class="p">.</span><span class="n">addr</span><span class="p">);</span>
+<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">__exit</span> <span class="n">k_m1_exit</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="n">unregister_kprobe</span><span class="p">(</span><span class="o">&amp;</span><span class="n">kp</span><span class="p">);</span>
+        <span class="n">pr_info</span><span class="p">(</span><span class="s">&quot;k_m1 at %p unregistered</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">kp</span><span class="p">.</span><span class="n">addr</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">module_init</span><span class="p">(</span><span class="n">k_m1_init</span><span class="p">)</span>
+<span class="n">module_exit</span><span class="p">(</span><span class="n">k_m1_exit</span><span class="p">)</span>
+<span class="n">MODULE_LICENSE</span><span class="p">(</span><span class="s">&quot;GPL&quot;</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
 </div>
+</div>
+<div class="section" id="register-kprobe">
+<h3>我们分析register_kprobe<a class="headerlink" href="#register-kprobe" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id28">
+<div class="code-block-caption"><span class="caption-text">struct kprobe</span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">kprobe</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">hlist_node</span> <span class="n">hlist</span><span class="p">;</span>
+
+<span class="hll">        <span class="cm">/* list of kprobes for multi-handler support */</span>
+</span><span class="hll">        <span class="k">struct</span> <span class="nc">list_head</span> <span class="n">list</span><span class="p">;</span>
+</span>
+        <span class="cm">/*count the number of times this probe was temporarily disarmed */</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">nmissed</span><span class="p">;</span>
+
+        <span class="cm">/* location of the probe point */</span>
+        <span class="n">kprobe_opcode_t</span> <span class="o">*</span><span class="n">addr</span><span class="p">;</span>
+
+        <span class="cm">/* Allow user to indicate symbol name of the probe point */</span>
+        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">symbol_name</span><span class="p">;</span>
+
+        <span class="cm">/* Offset into the symbol */</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">offset</span><span class="p">;</span>
+
+        <span class="cm">/* Called before addr is executed. */</span>
+        <span class="n">kprobe_pre_handler_t</span> <span class="n">pre_handler</span><span class="p">;</span>
+
+        <span class="cm">/* Called after addr is executed, unless... */</span>
+        <span class="n">kprobe_post_handler_t</span> <span class="n">post_handler</span><span class="p">;</span>
+
+        <span class="cm">/* Saved opcode (which has been replaced with breakpoint) */</span>
+        <span class="n">kprobe_opcode_t</span> <span class="n">opcode</span><span class="p">;</span>
+
+        <span class="cm">/* copy of the original instruction */</span>
+        <span class="k">struct</span> <span class="nc">arch_specific_insn</span> <span class="n">ainsn</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Indicates various status flags.</span>
+<span class="cm">         * Protected by kprobe_mutex after this kprobe is registered.</span>
+<span class="cm">         */</span>
+        <span class="n">u32</span> <span class="n">flags</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="kprobe-register">
+<h3>kprobe_register处理流程图<a class="headerlink" href="#kprobe-register" title="Permalink to this headline">¶</a></h3>
+<img alt="../../img/kprobe_register.svg" class="align-center" src="../../img/kprobe_register.svg" /><ul class="simple">
+<li><p>查找符号对应的符号地址；</p></li>
+<li><p>地址的有效性、安全性检查；</p></li>
+<li><p>kprobe表处理；</p></li>
+<li><p>指令替换。</p></li>
+</ul>
+</div>
+<div class="section" id="kprobe">
+<h3>kprobe 概述<a class="headerlink" href="#kprobe" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Kprobes能够动态地中断任何内核例程并无中断地收集调试和性能信息,可以在几乎任何内核代码地址处中断并转向注册的特定处理程序进行执行;</p></li>
+<li><p>可以探测除自身之外的大部分内核,这意味着有些函数 kprobes 无法探测。探测（捕获）此类函数可能会导致递归陷阱（例如双重错误），或者可能永远不会调用嵌套的探测处理程序。Kprobes 管理有诸如黑名单之类的功能，如果要将函数添加到黑名单中，linux/kprobes.h 并使用 NOKPROBE_SYMBOL() 宏来指定列入黑名单的函数，Kprobes 根据黑名单检查给定的探测地址，如果给定的地址在黑名单中，则拒绝注册它。</p></li>
+<li><p>目前有两种类型的探针：kprobes 和 kretprobes（也称为返回探针）。kprobe 可以插入到内核中的几乎任何指令上。当指定函数返回时，会触发kretprobes hook。</p></li>
+<li><p>以内核模块进行kprobes进行处理时，模块的 init 函数安装（“注册”）一个或多个探测器，而 exit 函数取消注册它们。诸如 register_kprobe() 之类的注册函数指定要插入探针的位置以及命中探针时要调用的处理程序。<a href="#id61"><span class="problematic" id="id62">还有register_</span></a>/unregister_*probes()批量注册/注销一组*probes. 当需要一次注销大量探针时，这些功能可以加快注销过程。</p></li>
+</ul>
 </div>
 <div class="section" id="id2">
-<h2>静态hook<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<h3>kprobe执行原理<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>当 kprobe 被注册时，Kprobes 会复制被探测的指令，并用断点指令（例如，i386 和 x86_64 上的 int3）替换被探测指令的第一个字节。当 CPU 遇到断点指令时，会发生陷阱，保存 CPU 的寄存器，并通过 notifier_call_chain 机制将控制权传递给 Kprobes。Kprobes 执行与 kprobe 相关的“pre_handler”，将 kprobe 结构的地址和保存的寄存器传递给处理程序。接下来，Kprobes 单步执行其探测指令的副本。（单步执行实际指令会更简单，但 Kprobes 将不得不暂时删除断点指令。这将打开一个小的时间窗口，此时另一个 CPU 可以直接越过探测点。）在指令单步执行后，Kprobes 执行与 kprobe 关联的“post_handler”（如果有）。然后继续执行探测点之后的指令。(注意这个之前之后的含义？？？？）：int3指令替换 –&gt; do_int3 –&gt; kprobe_int3_handler</p>
+</div>
+<div class="section" id="kretprobe">
+<h3>kretprobe<a class="headerlink" href="#kretprobe" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>当您调用 register_kretprobe() 时，Kprobes 在函数的入口处建立一个 kprobe。当被探测的函数被调用并且这个探测被命中时，Kprobes 会保存一份返回地址的副本，并将返回地址替换为“蹦床”的地址。蹦床是一段任意代码——通常只是一条 nop 指令。在启动时，Kprobes 在蹦床上注册一个 kprobe。</p></li>
+<li><p>当被探测的函数执行它的返回指令时，控制权传递给蹦床并且该探测被命中。Kprobes 的 trampoline 处理程序调用与 kretprobe 关联的用户指定的返回处理程序，然后将保存的指令指针设置为保存的返回地址，这就是从陷阱返回后恢复执行的地方。</p></li>
+<li><p>当被探测函数正在执行时，它的返回地址存储在一个 kretprobe_instance 类型的对象中。在调用 register_kretprobe() 之前，用户设置 kretprobe 结构的 maxactive 字段来指定可以同时探测多少个指定函数的实例。register_kretprobe() 预分配指定数量的 kretprobe_instance 对象。</p></li>
+</ul>
+<p>例如，如果函数是非递归的并且在调用时持有自旋锁，那么 maxactive = 1 就足够了。如果函数是非递归的并且永远不会放弃 CPU（例如，通过信号量或抢占），NR_CPUS 应该足够了。如果 maxactive &lt;= 0，则设置为默认值。如果启用了 CONFIG_PREEMPT，则默认值为 max(10, 2*NR_CPUS)。否则，默认值为 NR_CPUS。
+- 如果将 maxactive 设置得太低，这不是灾难；你只会错过一些探测。在 kretprobe 结构中，nmissed 字段在注册返回探针时设置为零，并且每次进入被探测函数但没有可用于建立返回探针的 kretprobe_instance 对象时递增。</p>
+</div>
 <div class="section" id="id3">
-<h3>概述<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<h3>Kretprobe 入口处理程序<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Kretprobes 还提供了一个可选的用户指定的处理程序，它在函数入口上运行。该处理程序是通过设置 kretprobe 结构的 entry_handler 字段来指定的。每当 kretprobe 放置在函数入口处的 kprobe 被命中时，如果定义了entry_handler， 都会调用用户定义的 entry_handler，如果有的话。如果 entry_handler 返回 0（成功），则保证在函数返回时调用相应的返回处理程序。如果 entry_handler 返回非零错误，则 Kprobes 将返回地址保持原样，并且 kretprobe 对该特定函数实例没有进一步的影响。</p>
+<p>使用与它们关联的唯一 kretprobe_instance 对象来匹配多个入口和返回处理程序调用。此外，用户还可以将每个返回实例的私有数据指定为每个 kretprobe_instance 对象的一部分。这在相应的用户条目和返回处理程序之间共享私有数据时特别有用。每个私有数据对象的大小可以在 kretprobe 注册时通过设置 kretprobe 结构的 data_size 字段来指定。可以通过每个 kretprobe_instance 对象的数据字段访问此数据。</p>
+<p>如果输入了探测函数但没有可用的 kretprobe_instance 对象，则除了增加 nmissed 计数外，还会跳过用户 entry_handler 调用。</p>
 </div>
+<div class="section" id="id4">
+<h3>黑名单<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>Kprobes 可以探测除自身之外的大部分内核。这意味着有些函数 kprobes 无法探测。探测（捕获）此类函数可能会导致递归陷阱（例如双重错误），或者可能永远不会调用嵌套的探测处理程序。Kprobes 管理诸如黑名单之类的功能。如果要将函数添加到黑名单中，只需 (1) 包含 linux/kprobes.h 和 (2) 使用 NOKPROBE_SYMBOL() 宏来指定列入黑名单的函数。Kprobes 根据黑名单检查给定的探测地址，如果给定的地址在黑名单中，则拒绝注册它。
+内核配置
+<strong>*****</strong>
+- 使用 make menuconfig/xconfig/oldconfig 配置内核时，确保 CONFIG_KPROBES 设置为“y”。在“常规设置”下，查找“Kprobes”。
+- 为了您可以加载和卸载基于 Kprobes 的检测模块，请确保“可加载模块支持”（CONFIG_MODULES）和“模块卸载”（CONFIG_MODULE_UNLOAD）设置为“y”。
+- 还要确保 CONFIG_KALLSYMS 甚至可能 CONFIG_KALLSYMS_ALL 设置为“y”，因为 kallsyms_lookup_name() 由内核内 kprobe 地址解析代码使用。
+- 如果您需要在函数中间插入探针，您可能会发现“使用调试信息编译内核”（CONFIG_DEBUG_INFO）很有用，因此您可以使用“objdump -d -l vmlinux”查看源代码-目标代码映射。</p>
+</div>
+<div class="section" id="kprobe-api">
+<h3>kprobe API<a class="headerlink" href="#kprobe-api" title="Permalink to this headline">¶</a></h3>
+<p>Kprobes API 为每种类型的探针包括一个“注册”函数和一个“取消注册”函数。API 还包括“register_*probes”和“unregister_*probes”函数，用于（取消）注册探针数组。以下是这些函数和您将编写的相关探针处理程序的简洁、迷你手册页规范。有关示例，请参见 samples/kprobes/ 子目录中的文件。</p>
+</div>
+<div class="section" id="id5">
+<h3>register_kprobe<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id29">
+<div class="code-block-caption"><span class="caption-text">kprobe_register</span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;linux/kprobes.h&gt;</span><span class="cp"></span>
+<span class="kt">int</span> <span class="nf">register_kprobe</span><span class="p">(</span><span class="k">struct</span> <span class="nc">kprobe</span> <span class="o">*</span><span class="n">kp</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>在地址 kp-&gt;addr 处设置断点。当断点被命中时，Kprobes 调用 kp-&gt;pre_handler。被探测的指令单步执行后，Kprobe 调用 kp-&gt;post_handler。任何或所有处理程序都可以为 NULL。如果 kp-&gt;flags 设置为 KPROBE_FLAG_DISABLED，则该 kp 将被注册但禁用，因此，在调用 enable_kprobe(kp) 之前不会触发其处理程序。</p>
+<ol class="arabic simple">
+<li><p>通过在 struct kprobe 中引入“symbol_name”字段，探测点地址解析现在将由内核负责。现在可以执行以下操作：</p></li>
+</ol>
+<div class="literal-block-wrapper docutils container" id="id30">
+<div class="code-block-caption"><span class="caption-text">kprobe_register</span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">kp</span><span class="p">.</span><span class="n">symbol_name</span> <span class="o">=</span> <span class="s">&quot;symbol_name&quot;</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>（64 位 powerpc 错综复杂的功能描述符等被透明处理）</p>
+<ol class="arabic simple" start="2">
+<li><p>如果安装探针点的符号偏移量已知，则使用 struct kprobe 的“偏移量”字段。该字段用于计算探测点。</p></li>
+<li><p>指定 kprobe “symbol_name” 或 “addr”。如果两者都指定，则 kprobe 注册将失败并显示 -EINVAL。</p></li>
+<li><p>对于 CISC 架构（例如 i386 和 x86_64），kprobes 代码不会验证 kprobe.addr 是否位于指令边界。谨慎使用“偏移”。</p></li>
+<li><p>register_kprobe() 成功返回 0，否则返回负 errno。</p></li>
+</ol>
+<p>kp-&gt;pre_handler句柄：</p>
+<div class="literal-block-wrapper docutils container" id="id31">
+<div class="code-block-caption"><span class="caption-text">pre_handler定义</span><a class="headerlink" href="#id31" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span>#include &lt;linux/kprobes.h&gt;
+#include &lt;linux/ptrace.h&gt;
+int pre_handler(struct kprobe *p, struct pt_regs *regs);
+<span class="hll">
+</span><span class="hll">调用时 p 指向与断点关联的 kprobe，而 regs 指向包含在断点被击中时保存的寄存器的结构。除非您是 Kprobes 极客，否则请在此处返回 0。
+</span></pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>kp-&gt;post_handler句柄：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id32">
+<div class="code-block-caption"><span class="caption-text">post_handler</span><a class="headerlink" href="#id32" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span>#include &lt;linux/kprobes.h&gt;
+#include &lt;linux/ptrace.h&gt;
+void post_handler(struct kprobe *p, struct pt_regs *regs,
+<span class="hll">          unsigned long flags);
+</span><span class="hll">
+</span>p 和 regs 与 pre_handler 的描述相同。标志似乎总是为零。
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="register-kretprobe">
+<h3>register_kretprobe<a class="headerlink" href="#register-kretprobe" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id33">
+<div class="code-block-caption"><span class="caption-text">register_kretprobe</span><a class="headerlink" href="#id33" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24</pre></div></td><td class="code"><div class="highlight"><pre><span></span>#include &lt;linux/kprobes.h&gt;
+int register_kretprobe(struct kretprobe *rp);
+成功时返回 0，否则返回负 errno。
+
+用户的返回探针处理程序（rp-&gt;handler）：
+
+#include &lt;linux/kprobes.h&gt;
+#include &lt;linux/ptrace.h&gt;
+int kretprobe_handler(struct kretprobe_instance *ri,
+                      struct pt_regs *regs);
+regs 与 kprobe.pre_handler 的描述相同。ri 指向 kretprobe_instance 对象，可能对其中的以下字段感兴趣：
+
+ret_addr：返回地址
+
+rp：指向对应的kretprobe对象
+
+task：指向对应的task struct
+
+数据：指向每个返回实例的私有数据；见“Kretprobe
+入口处理程序”以获取详细信息。
+
+regs_return_value(regs) 宏提供了一个简单的抽象，用于从架构的 ABI 定义的适当寄存器中提取返回值。
+
+处理程序的返回值当前被忽略。
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>注销函数<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id34">
+<div class="code-block-caption"><span class="caption-text">unregister_*probe</span><a class="headerlink" href="#id34" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span>unregister_*probe
+#include &lt;linux/kprobes.h&gt;
+void unregister_kprobe(struct kprobe *kp);
+void unregister_kretprobe(struct kretprobe *rp);
+移除指定的探针。注册探测器后，可以随时调用取消注册函数。
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="kprobes">
+<h3>Kprobes 功能和限制<a class="headerlink" href="#kprobes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Kprobes 允许在同一个地址进行多个探测。此外，无法优化具有 post_handler 的探测点。因此，如果您在优化的探测点安装带有 post_handler 的 kprobe，则探测点将自动取消优化。</p></li>
+<li><p>通常，可以在内核中的任何位置安装探针。特别是，您可以探测中断处理程序。如果尝试在实现 Kprobes 的代码中安装探针（主要是 kernel/kprobes.c 和arch/<a href="#id7"><span class="problematic" id="id8">*</span></a>/kernel/kprobes.c，但也包括 do_page_fault 和 notifier_call_chain 等函数），则 register_*probe 函数将返回 -EINVAL。</p></li>
+<li><p>如果您在可内联函数中安装探针，Kprobes 不会尝试追踪该函数的所有内联实例并在那里安装探针。gcc 可能会在不被询问的情况下内联函数，因此如果您没有看到预期的探测命中，请记住这一点。</p></li>
+<li><p>探测处理程序可以修改被探测函数的环境——例如，通过修改内核数据结构，或通过修改 pt_regs 结构的内容（从断点返回时恢复到寄存器）。因此，可以使用 Kprobes，例如，安装错误修复程序或注入故障以进行测试。当然，Kprobes 无法区分故意注入的故障和意外注入的故障。</p></li>
+<li><p>Kprobes 不会尝试阻止探针处理程序相互踩踏——例如，探测printk()然后printk()从探针处理程序调用。如果探针处理程序命中探针，则第二个探针的处理程序不会在该实例中运行，并且第二个探针的 kprobe.nmissed 成员将递增。</p></li>
+<li><p>从 Linux v2.6.15-rc1 开始，多个处理程序（或同一处理程序的多个实例）可以在不同的 CPU 上同时运行。</p></li>
+<li><p>除了注册和注销期间，Kprobes 不使用互斥锁或分配内存。</p></li>
+</ul>
+<p>探测处理程序在禁用抢占或禁用中断的情况下运行，这取决于架构和优化状态。（例如，kretprobe 处理程序和优化的 kprobe 处理程序在 x86/x86-64 上运行时不会禁用中断）。在任何情况下，您的处理程序都不应该让出 CPU（例如，通过尝试获取信号量或等待 I/O）。由于返回探测是通过将返回地址替换为蹦床的地址来实现的，因此堆栈回溯和对 __builtin_return_address() 的调用通常会产生蹦床的地址，而不是 kretprobed 函数的实际返回地址。（据我们所知， __builtin_return_address() 仅用于检测和错误报告。）如果调用函数的次数与其返回的次数不匹配，则在该函数上注册返回探针可能会产生不良结果。在这种情况下，会打印一行：kretprobe BUG!: Processing kretprobe d000000000041aa8 &#64; c00000000004f48c。有了这些信息，人们将能够关联导致问题的 kretprobe 的确切实例。我们已经涵盖了 do_exit() 案例。do_execve() 和 do_fork() 不是问题。我们不知道这可能是一个问题的其他具体情况。如果在进入或退出函数时，CPU 运行在当前任务的堆栈以外的堆栈上，则在该函数上注册返回探针可能会产生不希望的结果。出于这个原因，Kprobes 不支持 x86_64 版本的 __switch_to() 上的返回探针（或 kprobes）；注册函数返回-EINVAL。</p>
+<p>在 x86/x86-64 上，由于 Kprobes 的 Jump Optimization 对指令的修改范围很广，因此优化存在一些限制。为了解释它，我们引入一些术语。想象一个由两条 2 字节指令和一条 3 字节指令组成的 3 指令序列。</p>
+</div>
+<div class="section" id="kprobes-kretprobes">
+<h3>Kprobes/kretprobes 示例<a class="headerlink" href="#kprobes-kretprobes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>/kprobes/kprobe_example.c</p></li>
+<li><p>/kprobes/kretprobe_example.c</p></li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h3>调试接口<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>已注册的 kprobes 列表在 /sys/kernel/debug/kprobes/ 目录下可见（假设 debugfs 安装在 //sys/kernel/debug ）。</p>
+<p>/sys/kernel/debug/kprobes/list：列出系统上所有已注册的探针：</p>
+<div class="literal-block-wrapper docutils container" id="id35">
+<div class="code-block-caption"><span class="caption-text">/sys/kernel/debug/kprobes/list</span><a class="headerlink" href="#id35" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">c015d71a</span>  <span class="n">k</span>  <span class="n">vfs_read</span><span class="o">+</span><span class="mh">0x0</span>
+<span class="n">c03dedc5</span>  <span class="n">r</span>  <span class="n">tcp_v4_rcv</span><span class="o">+</span><span class="mh">0x0</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>第一列提供插入探针的内核地址。第二列标识探针的类型（k - kprobe 和 r - kretprobe），而第三列指定探针的符号+偏移量。如果被探测的函数属于一个模块，则还指定模块名称。以下列显示探测状态。如果探测器位于不再有效的虚拟地址（模块初始化部分，对应于已卸载模块的模块虚拟地址），则此类探测器将标记为 [GONE]。如果探针被暂时禁用，则此类探针将标记为 [DISABLED]。如果探头已优化，则标有 [OPTIMIZED]。如果探测是基于 ftrace 的，它会被标记为 [FTRACE]。</p>
+<p>/sys/kernel/debug/kprobes/enabled：强制开启/关闭kprobes。</p>
+<p>提供一个旋钮来全局强制打开或关闭已注册的 kprobes。默认情况下，启用所有 kprobe。通过向该文件回显“0”，所有已注册的探测器将被解除，直到此时向该文件回显“1”。请注意，此旋钮只是解除和武装所有 kprobes，并不会更改每个探测器的禁用状态。这意味着如果您通过此旋钮打开所有 kprobes，则禁用的 kprobes（标记为 [DISABLED]）将不会启用。</p>
+</div>
+<div class="section" id="kprobes-sysctl">
+<h3>kprobes sysctl 接口<a class="headerlink" href="#kprobes-sysctl" title="Permalink to this headline">¶</a></h3>
+<p>/proc/sys/debug/kprobes-optimization：打开/关闭 kprobes 优化。</p>
+<p>当 CONFIG_OPTPROBES=y 时，会出现这个 sysctl 界面，并提供一个旋钮来全局强制开启跳转优化（参见 跳转优化如何工作？）开或关。默认情况下，允许跳转优化 (ON)。如果您在此文件中回显“0”或通过 sysctl 将“debug.kprobes_optimization”设置为 0，则所有优化的探针都将未优化，之后注册的任何新探针都不会优化。</p>
+<p>请注意，此旋钮会更改优化状态。这意味着优化的探针（标记为 [OPTIMIZED]）将未优化（将删除 [OPTIMIZED] 标签）。如果旋钮打开，它们将再次被优化。</p>
+</div>
+<div class="section" id="id10">
+<h3>总结<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>这部分编程上没有太多疑问；</p></li>
+<li><p>实现的底层原理；</p></li>
+<li><p>下一步继续细化。</p></li>
+</ul>
+</div>
+<div class="section" id="id11">
+<h3>参考<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.kernel.org/doc/html/latest/trace/kprobes.html">https://www.kernel.org/doc/html/latest/trace/kprobes.html</a></p></li>
+<li><p><a class="reference external" href="https://lwn.net/Articles/132196/">https://lwn.net/Articles/132196/</a></p></li>
+<li><p><a class="reference external" href="https://www.kernel.org/doc/ols/2006/ols2006v2-pages-109-124.pdf">https://www.kernel.org/doc/ols/2006/ols2006v2-pages-109-124.pdf</a></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="uprobes">
+<h2>用户空间探针（uprobes)<a class="headerlink" href="#uprobes" title="Permalink to this headline">¶</a></h2>
+<p>更多的是在应用部分（程序部分）</p>
+<p>必然针对一个应用进程。</p>
+<p>uprobe_register() –&gt; __uprobe_register –&gt;</p>
+<div class="literal-block-wrapper docutils container" id="id36">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id36" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * __uprobe_register - register a probe</span>
+<span class="cm"> * @inode: the file in which the probe has to be placed.</span>
+<span class="hll"><span class="cm"> * @offset: offset from the start of the file.</span>
+</span><span class="hll"><span class="cm"> * @uc: information on howto handle the probe..</span>
+</span><span class="cm"> *</span>
+<span class="cm"> * Apart from the access refcount, __uprobe_register() takes a creation</span>
+<span class="cm"> * refcount (thro alloc_uprobe) if and only if this @uprobe is getting</span>
+<span class="cm"> * inserted into the rbtree (i.e first consumer for a @inode:@offset</span>
+<span class="cm"> * tuple).  Creation refcount stops uprobe_unregister from freeing the</span>
+<span class="cm"> * @uprobe even before the register operation is complete. Creation</span>
+<span class="cm"> * refcount is released when the last @uc for the @uprobe</span>
+<span class="cm"> * unregisters. Caller of __uprobe_register() is required to keep @inode</span>
+<span class="cm"> * (and the containing mount) referenced.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Return errno if it cannot successully install probes</span>
+<span class="cm"> * else return 0 (success)</span>
+<span class="cm"> */</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__uprobe_register</span><span class="p">(</span><span class="k">struct</span> <span class="nc">inode</span> <span class="o">*</span><span class="n">inode</span><span class="p">,</span> <span class="n">loff_t</span> <span class="n">offset</span><span class="p">,</span>
+                             <span class="n">loff_t</span> <span class="n">ref_ctr_offset</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">uprobe_consumer</span> <span class="o">*</span><span class="n">uc</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">uprobe</span> <span class="o">*</span><span class="n">uprobe</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+
+        <span class="cm">/* Uprobe must have at least one set consumer */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">uc</span><span class="o">-&gt;</span><span class="n">handler</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">uc</span><span class="o">-&gt;</span><span class="n">ret_handler</span><span class="p">)</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+
+        <span class="cm">/* copy_insn() uses read_mapping_page() or shmem_read_mapping_page() */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">inode</span><span class="o">-&gt;</span><span class="n">i_mapping</span><span class="o">-&gt;</span><span class="n">a_ops</span><span class="o">-&gt;</span><span class="n">readpage</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">shmem_mapping</span><span class="p">(</span><span class="n">inode</span><span class="o">-&gt;</span><span class="n">i_mapping</span><span class="p">))</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">EIO</span><span class="p">;</span>
+        <span class="cm">/* Racy, just to catch the obvious mistakes */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">offset</span> <span class="o">&gt;</span> <span class="n">i_size_read</span><span class="p">(</span><span class="n">inode</span><span class="p">))</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * This ensures that copy_from_page(), copy_to_page() and</span>
+<span class="cm">         * __update_ref_ctr() can&#39;t cross page boundary.</span>
+<span class="cm">         */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">IS_ALIGNED</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">UPROBE_SWBP_INSN_SIZE</span><span class="p">))</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">IS_ALIGNED</span><span class="p">(</span><span class="n">ref_ctr_offset</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">short</span><span class="p">)))</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">EINVAL</span><span class="p">;</span>
+
+ <span class="nl">retry</span><span class="p">:</span>
+        <span class="n">uprobe</span> <span class="o">=</span> <span class="n">alloc_uprobe</span><span class="p">(</span><span class="n">inode</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ref_ctr_offset</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">uprobe</span><span class="p">)</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">ENOMEM</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">IS_ERR</span><span class="p">(</span><span class="n">uprobe</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">PTR_ERR</span><span class="p">(</span><span class="n">uprobe</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * We can race with uprobe_unregister()-&gt;delete_uprobe().</span>
+<span class="cm">         * Check uprobe_is_active() and retry if it is false.</span>
+<span class="cm">         */</span>
+        <span class="n">down_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">uprobe</span><span class="o">-&gt;</span><span class="n">register_rwsem</span><span class="p">);</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="o">-</span><span class="n">EAGAIN</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">likely</span><span class="p">(</span><span class="n">uprobe_is_active</span><span class="p">(</span><span class="n">uprobe</span><span class="p">)))</span> <span class="p">{</span>
+                <span class="n">consumer_add</span><span class="p">(</span><span class="n">uprobe</span><span class="p">,</span> <span class="n">uc</span><span class="p">);</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">register_for_each_vma</span><span class="p">(</span><span class="n">uprobe</span><span class="p">,</span> <span class="n">uc</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+                        <span class="n">__uprobe_unregister</span><span class="p">(</span><span class="n">uprobe</span><span class="p">,</span> <span class="n">uc</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">up_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">uprobe</span><span class="o">-&gt;</span><span class="n">register_rwsem</span><span class="p">);</span>
+        <span class="n">put_uprobe</span><span class="p">(</span><span class="n">uprobe</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">ret</span> <span class="o">==</span> <span class="o">-</span><span class="n">EAGAIN</span><span class="p">))</span>
+                <span class="k">goto</span> <span class="n">retry</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="trace-uprobe">
+<h2>trace uprobe使用场景<a class="headerlink" href="#trace-uprobe" title="Permalink to this headline">¶</a></h2>
+<p>kernel/trace/trace_uprobe.c</p>
+<p>debugfs:</p>
+<ul class="simple">
+<li><p>/sys/kernel/debug/tracing/uprobe_events</p></li>
+<li><p>/sys/kernel/debug/tracing/uprobe_profile：配置文件：</p></li>
+</ul>
+<p>要启用此功能，请使用 CONFIG_UPROBE_EVENTS=y 构建内核。通过 /sys/kernel/debug/tracing/uprobe_events 添加探测点，uprobe 事件接口希望用户计算对象中探测点的偏移量。可以使用 /sys/kernel/debug/tracing/dynamic_events 代替 uprobe_events。该接口也将提供对其他动态事件的统一访问。</p>
+<div class="section" id="uprobe-tracer">
+<h3>uprobe_tracer<a class="headerlink" href="#uprobe-tracer" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://www.kernel.org/doc/html/latest/trace/uprobetracer.html">https://www.kernel.org/doc/html/latest/trace/uprobetracer.html</a></p>
+<div class="literal-block-wrapper docutils container" id="id37">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id37" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31</pre></div></td><td class="code"><div class="highlight"><pre><span></span>p[:[GRP/]EVENT] PATH:OFFSET [FETCHARGS] : Set a uprobe
+r[:[GRP/]EVENT] PATH:OFFSET [FETCHARGS] : Set a return uprobe (uretprobe)
+p[:[GRP/]EVENT] PATH:OFFSET%return [FETCHARGS] : Set a return uprobe (uretprobe)
+<span class="hll">-:[GRP/]EVENT                           : Clear uprobe or uretprobe event
+</span><span class="hll">
+</span>GRP           : Group name. If omitted, &quot;uprobes&quot; is the default value.
+EVENT         : Event name. If omitted, the event name is generated based
+                on PATH+OFFSET.
+PATH          : Path to an executable or a library.
+OFFSET        : Offset where the probe is inserted.
+OFFSET%return : Offset where the return probe is inserted.
+
+FETCHARGS     : Arguments. Each probe can have up to 128 args.
+ %REG         : Fetch register REG
+ @ADDR        : Fetch memory at ADDR (ADDR should be in userspace)
+ @+OFFSET     : Fetch memory at OFFSET (OFFSET from same file as PATH)
+ $stackN      : Fetch Nth entry of stack (N &gt;= 0)
+ $stack       : Fetch stack address.
+ $retval      : Fetch return value.(\*1)
+ $comm        : Fetch current task comm.
+ +|-[u]OFFS(FETCHARG) : Fetch memory at FETCHARG +|- OFFS address.(\*2)(\*3)
+ \IMM         : Store an immediate value to the argument.
+ NAME=FETCHARG     : Set NAME as the argument name of FETCHARG.
+ FETCHARG:TYPE     : Set TYPE as the type of FETCHARG. Currently, basic types
+                     (u8/u16/u32/u64/s8/s16/s32/s64), hexadecimal types
+                     (x8/x16/x32/x64), &quot;string&quot; and bitfield are supported.
+
+(\*1) only for return probe.
+(\*2) this is useful for fetching a field of data structures.
+(\*3) Unlike kprobe event, &quot;u&quot; prefix will just be ignored, becuse uprobe
+      events can access only user-space memory.
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id12">
+<h3>事件分析<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<p>您可以通过 /sys/kernel/debug/tracing/uprobe_profile 检查每个事件的探测命中总数。第一列是文件名，第二列是事件名称，第三列是探测命中数。</p>
+</div>
+<div class="section" id="id13">
+<h3>使用示例<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>添加一个探针作为新的 uprobe 事件，将新定义写入 uprobe_events，如下所示（在可执行文件 /bin/bash 中的偏移量 0x4245c0 处设置一个 uprobe）：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id38">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id38" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>echo &#39;p /bin/bash:0x4245c0&#39; &gt; /sys/kernel/debug/tracing/uprobe_events
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>添加一个探针作为新的 uretprobe 事件：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id39">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id39" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>echo &#39;r /bin/bash:0x4245c0&#39; &gt; /sys/kernel/debug/tracing/uprobe_events
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>取消注册事件：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id40">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id40" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>echo &#39;-:p_bash_0x4245c0&#39; &gt;&gt; /sys/kernel/debug/tracing/uprobe_events
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>打印出注册的事件：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id41">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id41" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">kernel</span><span class="o">/</span><span class="n">debug</span><span class="o">/</span><span class="n">tracing</span><span class="o">/</span><span class="n">uprobe_events</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>清除所有事件：</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id42">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id42" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">kernel</span><span class="o">/</span><span class="n">debug</span><span class="o">/</span><span class="n">tracing</span><span class="o">/</span><span class="n">uprobe_events</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>以下示例显示了如何将指令指针和 %ax 寄存器转储到探测的文本地址。探测 /bin/zsh 中的 zfree 函数：</p>
+<div class="literal-block-wrapper docutils container" id="id43">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id43" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># cd /sys/kernel/debug/tracing/</span>
+<span class="cp"># cat /proc/`pgrep zsh`/maps | grep /bin/zsh | grep r-xp</span>
+<span class="mo">00400000-004</span><span class="mi">8</span><span class="n">a000</span> <span class="n">r</span><span class="o">-</span><span class="n">xp</span> <span class="mo">00000000</span> <span class="mi">08</span><span class="o">:</span><span class="mo">03</span> <span class="mi">130904</span> <span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">zsh</span>
+<span class="hll"><span class="cp"># objdump -T /bin/zsh | grep -w zfree</span>
+</span><span class="hll"><span class="mo">0000000000446420</span> <span class="n">g</span>    <span class="n">DF</span> <span class="p">.</span><span class="n">text</span>  <span class="mo">0000000000000012</span>  <span class="n">Base</span>        <span class="n">zfree</span>
+</span></pre></div>
+</td></tr></table></div>
+</div>
+<p>0x46420 是在 0x00400000 加载的对象 /bin/zsh 中 zfree 的偏移量。因此，uprobe 的命令是：</p>
+<div class="literal-block-wrapper docutils container" id="id44">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id44" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># echo &#39;p:zfree_entry /bin/zsh:0x46420 %ip %ax&#39; &gt; uprobe_events</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>与 uretprobe 相同的是：</p>
+<div class="literal-block-wrapper docutils container" id="id45">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id45" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># echo &#39;r:zfree_exit /bin/zsh:0x46420 %ip %ax&#39; &gt;&gt; uprobe_events</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>用户必须明确计算对象中探测点的偏移量。</p>
+<p>我们可以通过查看 uprobe_events 文件来查看注册的事件。</p>
+<div class="literal-block-wrapper docutils container" id="id46">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id46" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># cat uprobe_events</span>
+<span class="nl">p</span><span class="p">:</span><span class="n">uprobes</span><span class="o">/</span><span class="n">zfree_entry</span> <span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="nl">zsh</span><span class="p">:</span><span class="mh">0x00046420</span> <span class="n">arg1</span><span class="o">=%</span><span class="n">ip</span> <span class="n">arg2</span><span class="o">=%</span><span class="n">ax</span>
+<span class="nl">r</span><span class="p">:</span><span class="n">uprobes</span><span class="o">/</span><span class="n">zfree_exit</span> <span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="nl">zsh</span><span class="p">:</span><span class="mh">0x00046420</span> <span class="n">arg1</span><span class="o">=%</span><span class="n">ip</span> <span class="n">arg2</span><span class="o">=%</span><span class="n">ax</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>通过查看文件 events/uprobes/zfree_entry/format 可以看到事件的格式。</p>
+</div>
+<div class="section" id="id14">
+<h3>总结<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>初步总结，这些总归还是在于在某个对应的进程应用地址空间加入跳转指令，hook代码则在内核代码中实现：应该是int3处理程序中完成。（待确定）。</p></li>
+<li><p>下一步需要处理：uprobe hook底层原理细节。</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="linux-livepatch">
+<h2>linux 实时补丁-livepatch<a class="headerlink" href="#linux-livepatch" title="Permalink to this headline">¶</a></h2>
+<p>kernel:v5.10.13
+二进制组织格式
+linux内核代码流程，加载原理，冲突总结等。</p>
+<div class="section" id="id15">
+<h3>背景<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<p>本文对内核实时补丁进行概要性描述。</p>
+<ol class="arabic">
+<li><p>动机：在许多情况下，用户都不愿意重新引导系统。可能是因为他们的系统正在执行复杂的科学计算，或者在高峰使用期间处于高负载下。除了保持系统正常运行之外，用户还希望拥有一个稳定而安全的系统。 Livepatching通过允许重定向函数调用来为用户提供服务；这样，无需系统重新启动即可修复关键功能。</p></li>
+<li><p>Kprobes,Ftrace,Livepatching：Linux内核中有多种与代码执行重定向直接相关的机制。即：内核探测，函数跟踪和实时修补：</p>
+<ol class="arabic simple">
+<li><p>内核探针是最通用的。可以通过放置断点指令来重定向代码;</p></li>
+<li><p>函数跟踪器从靠近函数入口点的预定义位置调用代码。该位置是由编译器使用“ -pg” gcc选项生成的(空指令替换？）;</p></li>
+<li><p>Livepatching通常需要在修改函数参数或堆栈之前，在函数条目的最开始处重定向代码;</p></li>
+</ol>
+<p>这三种方法都需要在运行时修改现有代码。 因此，他们需要彼此了解，不要跨过彼此的脚趾。 通过使用动态ftrace框架作为基础可以解决大多数这些问题。 探测到函数条目时，会将Kprobe注册为ftrace处理程序，请参见CONFIG_KPROBES_ON_FTRACE。 此外，还可以通过自定义ftrace处理程序调用实时补丁的替代功能。 但是有一些限制，请参见下文。</p>
+</li>
+<li><p>一致性模型:<strong>有功能是有原因的</strong>。 它们采用一些输入参数，获取或释放锁，读取，处理甚至以定义的方式写入某些数据，并具有返回值。 换句话说，每个功能都有定义的语义。</p>
+<p>许多修复程序不会更改已修改函数的语义。 例如，它们添加NULL指针或边界检查，通过添加缺少的内存屏障来解决争用问题，或在关键部分周围添加一些锁定。 这些更改大多数都是自包含的，并且该功能以相同的方式向系统的其余部分显示。 在这种情况下，功能可能会一个接一个地独立更新。</p>
+<p>但是，还有更复杂的修复程序。 例如，补丁可能会同时更改多个功能中的锁定顺序。 或者补丁可以交换一些临时结构的含义并更新所有相关功能。 在这种情况下，受影响的单元（线程，整个内核）需要同时开始使用所有新版本的功能。 而且，只有在安全的情况下，例如，在进行切换时，才必须进行切换。 当受影响的锁被释放或当前没有数据存储在修改后的结构中时。</p>
+<p>关于如何安全地应用功能的理论非常复杂。 目的是定义一个所谓的一致性模型。 它尝试定义可以使用新实现的条件，以使系统保持一致。</p>
+<p>Livepatch的一致性模型是kGraft和kpatch的混合体：它使用kGraft的每任务一致性和syscall障碍切换以及kpatch的堆栈跟踪切换。 还有许多后备选项，使其非常灵活。</p>
+<p>当认为任务可以安全切换时，将基于每个任务应用补丁。 启用修补程序后，livepatch会进入过渡状态，在此状态下任务将收敛到修补状态。 通常，此过渡状态可以在几秒钟内完成。 禁用修补程序时，发生相同的顺序，除了任务从修补状态收敛到未修补状态。</p>
+<p>中断处理程序继承其中断的任务的修补状态。 分叉任务也是如此：子代继承父代的修补状态。</p>
+<p>Livepatch使用几种补充方法来确定何时可以安全地修补任务:</p>
+<ol class="arabic simple">
+<li><p>第一种也是最有效的方法是对睡眠任务进行堆栈检查。 如果给定任务的堆栈上没有受影响的函数，则对该任务进行修补。 在大多数情况下，这将在第一次尝试时修补大多数或所有任务。 否则，它将继续定期尝试。 仅当体系结构具有可靠的堆栈（HAVE_RELIABLE_STACKTRACE）时，此选项才可用。</p></li>
+<li><p>如果需要，第二种方法是内核出口切换。 当任务从系统调用，用户空间IRQ或信号返回到用户空间时，将切换任务。 在以下情况下很有用：
+1. 修补在受影响的功能上处于休眠状态的受I / O约束的用户任务。 在这种情况下，您必须发送SIGSTOP和SIGCONT强制其退出内核并进行修补。
+2. 修补受CPU约束的用户任务。 如果任务是CPU高度绑定的，则下次被IRQ中断时将对其进行修补。</p></li>
+<li><p>对于空闲的“交换器”任务，由于它们从未退出内核，因此它们在空闲循环中具有klp_update_patch_state（）调用，该调用使它们可以在CPU进入空闲状态之前进行修补。</p></li>
+</ol>
+<p>（请注意，目前还没有针对kthreads的方法。）</p>
+<p>没有HAVE_RELIABLE_STACKTRACE的架构仅依靠第二种方法。 在此功能返回之前，很可能某些任务可能仍在使用该功能的旧版本运行。 在这种情况下，您将必须发出信号。 这尤其适用于kthreads。 他们可能不会被唤醒，需要被迫。 请参阅下面的详细信息。</p>
+<p>除非我们能提出另一种修补kthread的方法，否则内核livepatching不会完全支持没有HAVE_RELIABLE_STACKTRACE的体系结构。</p>
+<p>/ sys / kernel / livepatch / &lt;patch&gt; / transition文件显示修补程序是否正在过渡。 在给定时间只能转换一个补丁。 如果有任何任务停留在初始补丁程序状态，则补丁程序可以无限期保持过渡状态。</p>
+<p>通过在转换进行过程中将相反的值写入/ sys / kernel / livepatch / &lt;patch&gt; / enabled文件，可以撤消转换并有效取消转换。 然后，所有任务将尝试收敛回到原始修补程序状态。</p>
+<p>还有一个/ proc / &lt;pid&gt; / patch_state文件，可用于确定哪些任务阻止了修补操作的完成。 如果正在执行补丁程序，则此文件显示0表示任务尚未打补丁，显示1表示任务已打补丁。 否则，如果没有补丁在过渡，则显示-1。 可以使用SIGSTOP和SIGCONT发出任何阻止转换的任务的信号，以强制它们更改其修补状态。 但是，这可能对系统有害。 向所有剩余的阻止任务发送虚假信号是更好的选择。 实际上没有传递适当的信号（信号暂挂结构中没有数据）。 任务被中断或唤醒，并被迫更改其修补状态。 伪信号每15秒自动发送一次。</p>
+<p>管理员还可以通过/ sys / kernel / livepatch / &lt;patch&gt; / force属性影响过渡。 在此处写入1将清除所有任务的TIF_PATCH_PENDING标志，从而将任务强制为修补状态。 重要的提示！ force属性适用于由于阻塞任务而导致过渡卡住很长时间的情况。 管理员应收集所有必要的数据（即此类阻止任务的堆栈跟踪），并请求补丁分发者许可以强制过渡。 未经授权的使用可能会损坏系统。 这取决于修补程序的性质，哪些功能是（未）修补的，阻塞任务正在休眠的是哪些功能（/ proc / &lt;pid&gt; / stack在这里可能会有所帮助）。 使用强制功能时，永久禁用补丁模块的移除（rmmod）。 无法保证在此类模块中没有任何任务处于休眠状态。 如果补丁模块在循环中被禁用和启用，则意味着无限制的引用计数。</p>
+<p>此外，使用武力还可能会影响实时补丁的未来应用，甚至会对系统造成更大的伤害。 管理员应首先考虑简单地取消过渡（请参见上文）。 如果使用强制，则应计划重新启动，并且不再应用任何实时补丁。</p>
+<ol class="arabic">
+<li><p>​ 向新架构添加一致性模型支持 :为了向新架构添加一致性模型支持，有以下几种选择：</p>
+<ol class="arabic">
+<li><p>添加CONFIG_HAVE_RELIABLE_STACKTRACE。 这意味着要移植objtool，对于非DWARF展开器，还应确保堆栈跟踪代码有一种方法可以检测堆栈上的中断。</p></li>
+<li><p>或者，确保每个kthread在安全的位置都有对klp_update_patch_state（）的调用。 Kthread通常处于无限循环中，该循环会重复执行某些操作。 切换kthread补丁程序状态的安全位置将在循环中的指定点，其中没有采取任何锁定，并且所有数据结构都处于定义良好的状态。</p>
+<p>使用工作队列或kthread worker API时，该位置很清楚。 这些kthread在通用循环中处理独立的动作。</p>
+<p>它与具有自定义循环的kthreads更复杂。 必须在逐案的基础上仔细选择安全位置。</p>
+<p>在那种情况下，没有pass_relize_stacktrace的拱门仍然能够使用一致性模型的非堆叠检查部分：</p>
+<ol class="arabic simple">
+<li><p>在跨越内核/用户空间边界时修补用户任务; 和</p></li>
+<li><p>在其指定的补丁点修补kthreads和空闲任务。</p></li>
+</ol>
+<p>此选项不像选项1一样好，因为它需要发信号通知用户任务并唤醒kthreads来修补它们。 但对于那些没有可靠的堆栈迹线，它仍然是一个很好的备份选项。</p>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+<li><p>livepatch 模块</p>
+<p>LiveCatches使用内核模块分发，请参阅示例/ LivePatch / LivePatch-Sample.c。</p>
+<p>该模块包括我们要替换的功能的新实现。 此外，它定义了一些描述原始和新实现之间关系的结构。 然后，有代码使内核在加载LivePatch模块时使用新代码开始。 此外，还有在删除LivePatch模块之前清理的代码。 所有这些都在下一节中的更多细节中解释。</p>
+<ol class="arabic">
+<li><p>新函数</p>
+<p>新版本的功能通常只是从原始来源复制。 良好的做法是向名称添加前缀，以便它们可以与原始的前缀区分开，例如，它们可以区分开。 在回程中。 此外，它们也可以被声明为静态，因为它们不会直接调用，不需要全局可见性。</p>
+<p>该修补程序仅包含真正修改的函数。 但他们可能希望从原始源文件中访问函数或数据，该文件只能是本地可访问的。 这可以通过生成的LivePatch模块中的特殊重定位部分来解决，请参阅LivePatch模块ELF格式以获取更多详细信息。</p>
+</li>
+<li><p>元数据</p>
+<p>该补丁由几个结构描述了将信息拆分为三个级别：</p>
+<ol class="arabic">
+<li><p>为每个修补函数定义struct klp_func。 它描述了原始功能与新实现之间的关系。</p>
+<p>该结构包括原始函数的名称，作为字符串。 在运行时通过Kallsyms找到函数地址。</p>
+<p>然后它包括新功能的地址。 它通过分配函数指针直接定义。 请注意，新功能通常在相同的源文件中定义。 作为可选参数，Kallsyms数据库中的符号位置可用于消除相同名称的函数。 这不是数据库中的绝对位置，而是只针对特定对象（vmlinux或内核模块）找到的顺序。 请注意，Kallsyms允许根据对象名称搜索符号。</p>
+</li>
+<li><p>struct klp_object在同一对象中定义了一个修补函数数组（结构klp_func）。 该对象是vmlinux（null）或模块名称的位置。</p>
+<p>该结构有助于为每个对象组合在一起并处理每个对象的功能。 请注意，修补模块可能会在稍后加载而不是修补程序本身，并且只有在可用时才会修补相关功能。</p>
+</li>
+<li><p>struct klp_patch定义了一个修补的对象数组（struct klp_object）。该结构始终如一地处理所有修补的功能，并最终同步地处理所有修补的功能。 仅在找到所有修补符号时才会应用整个补丁。 唯一的例外是尚未加载的对象（内核模块）的符号。</p>
+<p>有关如何在每次任务的基础上应用补丁如何应用程序的更多详细信息，请参阅“一致性模型”部分。</p>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+<li><p>Livepatch生命周期</p>
+<p>Livepatching可以通过五个基本操作来描述：加载，启用，替换，禁用，删除。</p>
+<p>替换和禁用操作的互斥互斥。 它们对给定的补丁具有相同的结果，但不适用于系统。</p>
+<ol class="arabic">
+<li><p>装载</p>
+<p>唯一合理的方式是在加载LivePatch内核模块时启用修补程序。 为此，必须在module_init（）回调中调用klp_enable_patch（）。 有两个主要原因：</p>
+<p>首先，只有模块才能轻松访问相关的结构klp_patch。</p>
+<p>其次，当修补程序无法启用时，错误代码可用于拒绝加载模块。</p>
+</li>
+<li><p>启用</p>
+<p>通过从module_init（）回调的klp_enable_patch（）通过调用klp_enable_patch（）启用LivePatch。 该系统将在此阶段开始使用修补功能的新实现。</p>
+<p>首先，根据修补函数的名称查找它们的地址。 应用“新功能”一节中提到的特殊重定位。 相关条目在/ sys / kernel / livepatch / &lt;名称&gt;下创建。 当上述任何操作失败时，补丁将被拒绝。</p>
+<p>其次，livepatch进入过渡状态，在此状态下任务正在收敛到修补状态。 如果是第一次修补原始函数，则会创建特定于函数的struct klp_ops并注册通用ftrace处理程序1。 / sys / kernel / livepatch / &lt;name&gt; / transition中的值“ 1”表示该阶段。 有关此过程的更多信息，请参见“一致性模型”部分</p>
+<p>最后，修补完所有任务后，“ transition”值将变为“ 0”。</p>
+<p>请注意，功能可能会多次打补丁。 对于给定的函数，ftrace处理程序仅注册一次。 进一步的补丁程序仅将一个条目添加到struct klp_ops的列表中（请参见func_stack字段）。 正确的实现由ftrace处理程序选择，请参见“一致性模型”部分。</p>
+<p>也就是说，强烈建议使用累积实时修补程序，因为它们有助于保持所有更改的一致性。 在这种情况下，可能仅在过渡期间对功能进行了两次修补。</p>
+</li>
+<li><p>更换 :所有启用的修补程序都可能会被设置了.replace标志的累积修补程序替换。 一旦启用了新补丁并完成了“转换”，与替换的补丁相关联的所有功能（结构klp_func）就会从相应的结构klp_ops中删除。 同样当相关功能未被新补丁修改且func_stack列表为空时，ftrace处理程序也将取消注册，并释放struct klp_ops。 有关更多详细信息，请参见原子替换和累积补丁。</p></li>
+<li><p>禁用:通过将“ 0”写入/ sys / kernel / livepatch / &lt;name&gt; / enabled，可能会禁用已启用的修补程序。首先，livepatch进入过渡状态，在此状态下任务正在收敛到未修补状态。 系统开始使用以前启用的补丁中的代码，甚至使用原始补丁中的代码。 / sys / kernel / livepatch / &lt;name&gt; / transition中的值“ 1”表示该阶段。 有关此过程的更多信息，请参见“一致性模型”部分。 其次，一旦所有任务均未打补丁，“ transition”值将变为“ 0”。 与待禁用补丁相关联的所有功能（struct klp_func）都从相应的struct klp_ops中删除。 当func_stack列表为空时，将取消注册ftrace处理程序，并释放struct klp_ops。 第三，sysfs接口被破坏。</p></li>
+<li><p>卸载：仅当没有用户使用该模块提供的功能时，才可以安全地卸下模块。 这就是强制功能永久禁用删除的原因。 仅当系统成功转换为新的补丁程序状态（已补丁/未补丁）而没有被强制执行时，才可以确保没有任务在旧代码中休眠或运行。</p></li>
+</ol>
+</li>
+<li><p>sysfs:可在/ sys / kernel / livepatch下找到有关已注册补丁的信息。 可以通过在其中写入来启用和禁用补丁。 / sys / kernel / livepatch / &lt;patch&gt; / force属性允许管理员影响修补操作。 有关更多详细信息，请参见文档/ ABI / testing / sysfs-kernel-livepatch。</p></li>
+<li><p>局限性 :当前的Livepatch实现有几个限制：</p>
+<ol class="arabic simple">
+<li><p>只能修补可以跟踪的功能。 Livepatch基于动态ftrace。 特别是，无法修补实现ftrace或livepatch ftrace处理程序的函数。 否则，代码将陷入无限循环。 通过用“ notrace”标记有问题的功能可以防止潜在的错误。</p></li>
+<li><p>仅当动态ftrace位于函数的开头时，Livepatch才能可靠地工作。 在以任何方式修改堆栈或函数参数之前，都需要对函数进行重定向。 例如，livepatch要求在x86_64上使用-fentry gcc编译器选项。PPC端口是一种例外。 它使用相对寻址和TOC。 每个函数都必须先处理TOC并保存LR，然后才能调用ftrace处理程序。 此操作必须在返回时恢复。 幸运的是，通用ftrace代码具有相同的问题，所有这些都在ftrace级别上进行了处理。</p></li>
+<li><p>使用ftrace框架的Kretprobes与修补的函数冲突。kretprobes和livepatches都使用ftrace处理程序来修改返回地址。 第一个用户获胜。 当处理程序已被另一个使用时，探针或修补程序都会被拒绝。</p></li>
+<li><p>当代码重定向到新的实现时，原始函数中的Kprobes被忽略。 正在进行一项工作以添加关于这种情况的警告。</p></li>
+</ol>
+</li>
+</ol>
+</div>
+<div class="section" id="id16">
+<h3>（取消）修补回调函数<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<p>Livepatch（un）patch-callbacks为livepatch模块提供了一种机制，该机制可在（未）修补内核对象时执行回调函数。 可以将它们视为一项强大功能，将实时修补功能扩展为：</p>
+<ol class="arabic simple">
+<li><p>安全更新全局数据 ;</p></li>
+<li><p>初始化和探测功能的“补丁” ;</p></li>
+<li><p>修补否则无法修补的代码（即汇编）</p></li>
+</ol>
+<p>在大多数情况下，（un）patch回调将需要与内存屏障和内核同步原语（例如互斥锁/自旋锁，甚至stop_machine（））结合使用，以避免并发问题。</p>
+<ol class="arabic">
+<li><p>动机：回调不同于现有的内核功能：</p>
+<ol class="arabic simple">
+<li><p>禁用和重新启用修补程序时，模块初始化/退出代码无法运行。</p></li>
+<li><p>模块通知程序无法阻止要修补的模块加载。</p></li>
+</ol>
+<p>回调是klp_object结构的一部分，其实现特定于该klp_object。 不论目标klp_object的当前状态如何，其他livepatch对象都可能会被打补丁，也可能不会被打补丁。</p>
+</li>
+<li><p>回调类型 ：可以为以下实时补丁操作注册回调：</p>
+<ol class="arabic simple">
+<li><p>Pre-patch：在修补klp_object之前 ;</p></li>
+<li><p>Post-patch：在对klp_object进行修补并在所有任务中处于活动状态之后 ;</p></li>
+<li><p>Pre-unpatch：在未对klp_object进行修补之前（即，已修补的代码处于活动状态），用于清理修补后的回调资源</p></li>
+<li><p>Post-unpatch：修补了klp_object之后，所有代码都已还原，并且没有任务正在运行修补的代码，用于清除修补前的回调资源</p></li>
+</ol>
+</li>
+<li><p>How it works:</p>
+<p>每个回调都是可选的，省略一个并不排除指定其他任何回调。 但是，livepatching核心是对称地执行处理程序的：补丁前的回调有后释放的对应，而补丁后的回调有前释放的对应。 仅当执行了其对应的补丁程序回调时，才会执行unpatch回调程序。 典型的用例是将获取和配置资源的补丁处理程序与取消补丁处理程序配对，以拆除并释放相同的资源。</p>
+<p>仅当加载了其主机klp_object时才执行回调。 对于内核内vmlinux目标，这意味着启用/禁用livepatch时将始终执行回调。 对于补丁程序目标内核模块，仅当目标模块已加载时才执行回调。 加载（取消）模块目标时，仅当启用livepatch模块时，才会执行其回调。</p>
+<p>补丁程序前的回调，如果已指定，则应返回状态码（0为成功，-ERRNO为错误）。 错误状态代码向livepatching内核指示对当前klp_object的修补是不安全的，并且将停止当前的修补请求。 （如果未提供补丁前回调，则认为过渡是安全的。）如果补丁前回调返回失败，则内核的模块加载器将：</p>
+<ol class="arabic simple">
+<li><p>如果在目标代码之后加载了实时补丁，则拒绝加载实时补丁。 或</p></li>
+<li><p>如果已成功加载livepatch，则拒绝加载模块。</p></li>
+</ol>
+<p>如果由于pre_patch回调失败或任何其他原因而导致对象修补失败，则不会为给定的klp_object执行补丁后，补丁前或补丁后回调。如果补丁转换被反向，则将不运行预补丁处理程序（这遵循前面提到的对称性-仅在执行其相应的补丁后回调时才会发生补丁前回调）。 如果对象确实成功修补，但是由于某种原因（例如，如果另一个对象修补失败），修补过渡从未开始，则仅会调用解后的回调。</p>
+</li>
+<li><p>用例 ：可以在samples / livepatch /目录中找到演示回调API的示例livepatch模块。 修改了这些样本以用于kselftests，可以在lib / livepatch目录中找到它们。</p></li>
+<li><p>全局数据更新 ：补丁程序前的回调对更新全局变量很有用。 例如，75ff39ccc1bd（“ tcp：降低挑战性可预测性”）更改了全局sysctl，并修补了tcp_send_challenge_ack（）函数。 在这种情况下，如果我们超级偏执，那么在修补完成后使用修补程序后的回调对数据进行修补可能是有意义的，因此可以首先将tcp_send_challenge_ack（）更改为使用READ_ONCE读取sysctl_tcp_challenge_ack_limit。</p></li>
+<li><p>__init和探针功能补丁支持 ：</p>
+<p>尽管__init和probe函数不能直接进行实时修补，但是可以通过修补前/修补后回调实现类似的更新。 提交48900cb6af42（“ virtio-net：删除NETIF_F_FRAGLIST”）更改了virtnet_probe（）初始化其驱动程序的net_device功能的方式。 补丁前/补丁后回调可以遍历所有此类设备，并对它们的hw_features值进行类似的更改。 （该值的客户端功能可能需要相应地更新。）</p>
+</li>
+</ol>
+</div>
+<div class="section" id="id17">
+<h3>原子替换和累积补丁<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>实时补丁之间可能存在依赖关系。 如果多个补丁程序需要对同一功能进行不同的更改，那么我们需要定义补丁程序的安装顺序。 而且，任何较新的livepatch的函数实现都必须在较旧的livepatch之上完成。</p>
+<p>这可能会成为维护的噩梦。 尤其是当更多补丁以不同方式修改相同功能时。</p>
+<p>一个优雅的解决方案带有称为“原子替换”的功能。 它允许创建所谓的“累积补丁”。 它们包括所有较旧的实时补丁的所有所需更改，并在一个过渡中完全替换了它们。</p>
+<p>用法</p>
+</div></blockquote>
+</div>
+<div class="section" id="id18">
+<h3>特征<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<p>原子替换允许：</p>
+<ul class="simple">
+<li><p>在升级其他功能时，以原子方式还原先前补丁中的某些功能。</p></li>
+<li><p>消除由于核心重定向对不再打补丁的功能造成的最终性能影响。</p></li>
+<li><p>减少用户对实时补丁之间的依赖关系的困惑。</p></li>
+</ul>
+</div>
+<div class="section" id="id19">
+<h3>局限性：<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>操作完成后，没有直接的方法可以将其恢复并自动恢复被替换的补丁。 好的做法是在任何已发布的Livepatch中设置.replace标志。 然后，重新添加较旧的livepatch等效于降级到该补丁。 只要livepatches在（未）修补回调中或在module_init（）或module_exit（）函数中进行_not_额外的修改，这是安全的，请参见下文。 还要注意，只有在不强制过渡的情况下，才能删除并重新加载替换的补丁。</p></li>
+<li><p>仅执行_new_累积livepatch中的（未）补丁回调。 来自替换补丁的任何回调都将被忽略。 换句话说，累积修补程序负责执行适当替换任何较旧修补程序所必需的任何操作。 结果，用较旧的累积补丁替换较新的累积补丁可能很危险。 旧的实时修补程序可能未提供必要的回调。在某些情况下，这可能被视为限制。 但这使许多其他人的生活更加轻松。 只有新的累积性Livepatch知道添加/删除了哪些修复程序/功能，以及为平稳过渡需要采取哪些特殊措施。 无论如何，如果调用了所有已启用补丁的回调，则考虑各种回调的顺序及其交互将是一场噩梦。</p></li>
+<li><p>阴影变量没有特殊处理。 Livepatch作者必须创建自己的规则，如何将它们从一个累积修补程序传递到另一个累积修补程序。 特别是它们不应该在module_exit（）函数中盲目地将其删除。 一个好的实践可能是在解压后回调中删除阴影变量。 仅当适当禁用livepatch时，才调用它。</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="livepatchelf">
+<h2>Livepatch模块Elf格式<a class="headerlink" href="#livepatchelf" title="Permalink to this headline">¶</a></h2>
+<p>1.背景和动机</p>
+<p>以前，livepatch需要单独的体系结构特定代码来编写重定位。 但是，模块加载程序中已经存在用于写重定位的特定于arch的代码，因此前一种方法产生了冗余代码。 因此，livepatch无需复制代码并重新实现模块加载器已经可以执行的操作，而是利用模块加载器中的现有代码来执行所有特定于架构的重定位工作。 具体而言，livepatch重用模块加载器中的apply_relocate_add（）函数以写入重定位。 本文档中描述的补丁模块Elf格式使livepatch能够执行此操作。 希望这将使livepatch更容易移植到其他体系结构，并减少将livepatch移植到特定体系结构所需的特定于arch的代码量。</p>
+<p>由于apply_relocate_add（）要求访问模块的节头表，符号表和重定位节索引，因此将为livepatch模块保留Elf信息（请参阅第5节）。 Livepatch管理其自己的重定位部分和符号，本文档中对此进行了描述。 根据glibc的定义，从OS特定范围中选择了用于标记livepatch符号和重定位部分的Elf常数。</p>
+<div class="section" id="livepatch">
+<h3>为什么livepatch需要编写自己的重定位？<a class="headerlink" href="#livepatch" title="Permalink to this headline">¶</a></h3>
+<p>典型的livepatch模块包含可引用未导出的全局符号和未包含的本地符号的功能的修补版本。不能照原样保留引用这些类型的符号的重定位，因为内核模块加载器无法解析它们，因此将拒绝livepatch模块。此外，我们无法应用影响补丁程序模块加载时尚未加载的模块的重定位（例如，补丁程序未加载的驱动程序）。以前，livepatch通过在生成的补丁模块Elf输出中嵌入特殊的“ dynrela”（动态rela）部分来解决此问题。使用这些dynrela部分，livepatch可以在考虑符号范围和符号所属模块的情况下解析符号，然后手动应用动态重定位。但是，此方法需要livepatch提供特定于拱的代码才能编写这些重定位。在新格式中，livepatch代替dynrela节管理其自己的SHT_RELA重定位节，并且relas引用的符号是特殊的livepatch符号（请参见第2和3节）。特定于拱的livepatch重定位代码被对apply_relocate_add（）的调用所代替。</p>
+<p>2.Livepatch modinfo字段</p>
+<p>Livepatch模块必须具有“ livepatch” modinfo属性。 有关如何完成的操作，请参阅samples / livepatch /中的示例livepatch模块。</p>
+<p>用户可以通过使用“ modinfo”命令并查找“ livepatch”字段的存在来标识Livepatch模块。 内核模块加载程序还使用此字段来标识实时补丁模块。</p>
+<p>例子：Modinfo输出：</p>
+<div class="literal-block-wrapper docutils container" id="id47">
+<div class="code-block-caption"><span class="caption-text">modinfo livepatch-meminfo.ko</span><a class="headerlink" href="#id47" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">%</span> <span class="n">modinfo</span> <span class="n">livepatch</span><span class="o">-</span><span class="n">meminfo</span><span class="p">.</span><span class="n">ko</span>
+<span class="nl">filename</span><span class="p">:</span>               <span class="n">livepatch</span><span class="o">-</span><span class="n">meminfo</span><span class="p">.</span><span class="n">ko</span>
+<span class="nl">livepatch</span><span class="p">:</span>              <span class="n">Y</span>
+<span class="nl">license</span><span class="p">:</span>                <span class="n">GPL</span>
+<span class="nl">depends</span><span class="p">:</span>
+<span class="nl">vermagic</span><span class="p">:</span>               <span class="mf">4.3.0</span><span class="o">+</span> <span class="n">SMP</span> <span class="n">mod_unload</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>3.Livepatch重定位部分</p>
+<p>livepatch模块管理自己的Elf重定位部分，以在适当的时候将重定位应用于模块以及内核（vmlinux）。 例如，如果修补程序模块修补当前未加载的驱动程序，则livepatch将在加载后将相应的livepatch重定位部分应用于驱动程序。</p>
+<p>补丁模块中的每个“对象”（例如vmlinux或模块）都可以具有与其关联的多个livepatch重定位部分（例如，同一对象中多个功能的补丁）。 实时修补程序重定位部分与适用重定位的目标部分（通常是函数的文本部分）之间存在1-1对应关系。 livepatch模块也可能没有livepatch的重定位部分，例如在示例livepatch模块的情况下（请参见samples / livepatch）。</p>
+<p>由于Elf信息是为livepatch模块保留的（请参见第5节），因此只需将适当的段索引传递给apply_relocate_add（），即可应用livepatch重定位节，然后使用它访问relocation节并应用重定位。</p>
+<p>实时修补程序重定位部分中，rela引用的每个符号都是实时修补程序符号。 必须先解决这些问题，然后livepatch才能调用apply_relocate_add（）。 有关更多信息，请参见第3节。</p>
+<p>3.1Livepatch重定位部分格式</p>
+<p>Livepatch重定位部分必须标记为SHF_RELA_LIVEPATCH部分标志。 有关定义，请参见include / uapi / linux / elf.h。 模块加载器会识别此标志，并将避免在补丁模块加载时应用那些重定位部分。 这些部分还必须标有SHF_ALLOC，以便模块加载程序不会在模块加载时将其丢弃（即，它们将与其他SHF_ALLOC部分一起复制到内存中）。</p>
+<p>livepatch重定位部分的名称必须符合以下格式：</p>
+<div class="literal-block-wrapper docutils container" id="id48">
+<div class="code-block-caption"><span class="caption-text">klp节</span><a class="headerlink" href="#id48" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">.</span><span class="n">klp</span><span class="p">.</span><span class="n">rela</span><span class="p">.</span><span class="n">objname</span><span class="p">.</span><span class="n">section_name</span>
+<span class="o">^</span>        <span class="o">^^</span>     <span class="o">^</span> <span class="o">^</span>          <span class="o">^</span>
+<span class="o">|</span><span class="n">________</span><span class="o">||</span><span class="n">_____</span><span class="o">|</span> <span class="o">|</span><span class="n">__________</span><span class="o">|</span>
+   <span class="p">[</span><span class="n">A</span><span class="p">]</span>      <span class="p">[</span><span class="n">B</span><span class="p">]</span>        <span class="p">[</span><span class="n">C</span><span class="p">]</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul>
+<li><p><strong>[A]</strong></p>
+<p>重定位节名称的前缀为字符串“ .klp.rela”。</p>
+</li>
+<li><p><strong>[B]</strong></p>
+<p>重定位部分所属的对象的名称（即“ vmlinux”或模块的名称）紧随前缀之后。</p>
+</li>
+<li><p><strong>[C]</strong></p>
+<p>此重定位部分适用于的部分的实际名称。</p>
+</li>
+</ul>
+</div>
+<div class="section" id="id20">
+<h3>livepatch内核模块-从编译到加载原理分析<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<p>首先我们已经分析过linux内核模块原理及加载方式，这一节我们补充livepatch在内核模块基础上的差异部分。
+我们以系统提供的livepatch sample程序为例进行分析：livepatch-sample.c</p>
+<div class="literal-block-wrapper docutils container" id="id49">
+<div class="code-block-caption"><span class="caption-text">livepatch-sample.c</span><a class="headerlink" href="#id49" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1">// SPDX-License-Identifier: GPL-2.0-or-later</span>
+<span class="cm">/*</span>
+<span class="cm"> * livepatch-sample.c - Kernel Live Patching Sample Module</span>
+<span class="cm"> *</span>
+<span class="cm"> * Copyright (C) 2014 Seth Jennings &lt;sjenning@redhat.com&gt;</span>
+<span class="cm"> */</span>
+
+<span class="cp">#define pr_fmt(fmt) KBUILD_MODNAME &quot;: &quot; fmt</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/kernel.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/livepatch.h&gt;</span><span class="cp"></span>
+
+<span class="cm">/*</span>
+<span class="cm"> * This (dumb) live patch overrides the function that prints the</span>
+<span class="cm"> * kernel boot cmdline when /proc/cmdline is read.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Example:</span>
+<span class="cm"> *</span>
+<span class="cm"> * $ cat /proc/cmdline</span>
+<span class="cm"> * &lt;your cmdline&gt;</span>
+<span class="cm"> *</span>
+<span class="cm"> * $ insmod livepatch-sample.ko</span>
+<span class="cm"> * $ cat /proc/cmdline</span>
+<span class="cm"> * this has been live patched</span>
+<span class="cm"> *</span>
+<span class="cm"> * $ echo 0 &gt; /sys/kernel/livepatch/livepatch_sample/enabled</span>
+<span class="cm"> * $ cat /proc/cmdline</span>
+<span class="cm"> * &lt;your cmdline&gt;</span>
+<span class="cm"> */</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;linux/seq_file.h&gt;</span><span class="cp"></span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">livepatch_cmdline_proc_show</span><span class="p">(</span><span class="k">struct</span> <span class="nc">seq_file</span> <span class="o">*</span><span class="n">m</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">v</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="n">seq_printf</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;this has been live patched&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">struct</span> <span class="nc">klp_func</span> <span class="n">funcs</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">{</span>
+                <span class="p">.</span><span class="n">old_name</span> <span class="o">=</span> <span class="s">&quot;cmdline_proc_show&quot;</span><span class="p">,</span>
+                <span class="p">.</span><span class="n">new_func</span> <span class="o">=</span> <span class="n">livepatch_cmdline_proc_show</span><span class="p">,</span>
+        <span class="p">},</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">struct</span> <span class="nc">klp_object</span> <span class="n">objs</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">{</span>
+                <span class="cm">/* name being NULL means vmlinux */</span>
+                <span class="p">.</span><span class="n">funcs</span> <span class="o">=</span> <span class="n">funcs</span><span class="p">,</span>
+        <span class="p">},</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">struct</span> <span class="nc">klp_patch</span> <span class="n">patch</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">.</span><span class="n">mod</span> <span class="o">=</span> <span class="n">THIS_MODULE</span><span class="p">,</span>
+        <span class="p">.</span><span class="n">objs</span> <span class="o">=</span> <span class="n">objs</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">livepatch_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">return</span> <span class="nf">klp_enable_patch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">patch</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">livepatch_exit</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="p">}</span>
+
+<span class="n">module_init</span><span class="p">(</span><span class="n">livepatch_init</span><span class="p">);</span>
+<span class="n">module_exit</span><span class="p">(</span><span class="n">livepatch_exit</span><span class="p">);</span>
+<span class="n">MODULE_LICENSE</span><span class="p">(</span><span class="s">&quot;GPL&quot;</span><span class="p">);</span>
+<span class="n">MODULE_INFO</span><span class="p">(</span><span class="n">livepatch</span><span class="p">,</span> <span class="s">&quot;Y&quot;</span><span class="p">);</span>
+
+
+<span class="n">livepatch</span><span class="o">-</span><span class="n">sample</span><span class="p">.</span><span class="n">mod</span><span class="p">.</span><span class="nl">c</span><span class="p">:</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;linux/module.h&gt;</span><span class="cp"></span>
+<span class="cp">#define INCLUDE_VERMAGIC</span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/build-salt.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/elfnote-lto.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/vermagic.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/compiler.h&gt;</span><span class="cp"></span>
+
+<span class="n">BUILD_SALT</span><span class="p">;</span>
+<span class="n">BUILD_LTO_INFO</span><span class="p">;</span>
+
+<span class="n">MODULE_INFO</span><span class="p">(</span><span class="n">vermagic</span><span class="p">,</span> <span class="n">VERMAGIC_STRING</span><span class="p">);</span>
+<span class="n">MODULE_INFO</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">KBUILD_MODNAME</span><span class="p">);</span>
+
+<span class="n">__visible</span> <span class="k">struct</span> <span class="nc">module</span> <span class="n">__this_module</span>
+<span class="n">__section</span><span class="p">(</span><span class="s">&quot;.gnu.linkonce.this_module&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">KBUILD_MODNAME</span><span class="p">,</span>
+        <span class="p">.</span><span class="n">init</span> <span class="o">=</span> <span class="n">init_module</span><span class="p">,</span>
+<span class="cp">#ifdef CONFIG_MODULE_UNLOAD</span>
+        <span class="p">.</span><span class="n">exit</span> <span class="o">=</span> <span class="n">cleanup_module</span><span class="p">,</span>
+<span class="cp">#endif</span>
+        <span class="p">.</span><span class="n">arch</span> <span class="o">=</span> <span class="n">MODULE_ARCH_INIT</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="cp">#ifdef CONFIG_RETPOLINE</span>
+<span class="n">MODULE_INFO</span><span class="p">(</span><span class="n">retpoline</span><span class="p">,</span> <span class="s">&quot;Y&quot;</span><span class="p">);</span>
+<span class="cp">#endif</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="k">struct</span> <span class="nc">modversion_info</span> <span class="n">____versions</span><span class="p">[]</span>
+<span class="n">__used</span> <span class="n">__section</span><span class="p">(</span><span class="s">&quot;__versions&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">{</span> <span class="mh">0x9736759a</span><span class="p">,</span> <span class="s">&quot;module_layout&quot;</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="mh">0x167cddf5</span><span class="p">,</span> <span class="s">&quot;klp_enable_patch&quot;</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="mh">0x9672b9cd</span><span class="p">,</span> <span class="s">&quot;seq_printf&quot;</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="mh">0xbdfb6dbb</span><span class="p">,</span> <span class="s">&quot;__fentry__&quot;</span> <span class="p">},</span>
+<span class="p">};</span>
+
+<span class="n">MODULE_INFO</span><span class="p">(</span><span class="n">depends</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>发现livepatch内核模块与普通内核模块相比多了：MODULE_INFO(livepatch, “Y”);</p>
+<p>看内核模块加载部分对livepatch的处理</p>
+<div class="literal-block-wrapper docutils container" id="id50">
+<div class="code-block-caption"><span class="caption-text">内核模块特定于livepatch的定义</span><a class="headerlink" href="#id50" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">is_livepatch_module</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span><span class="o">:</span>
+<span class="k">static</span> <span class="kr">inline</span> <span class="kt">bool</span> <span class="n">is_livepatch_module</span><span class="p">(</span><span class="k">struct</span> <span class="nc">module</span> <span class="o">*</span><span class="n">mod</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">return</span> <span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="nc">module</span> <span class="p">{</span>
+<span class="p">......</span>
+<span class="cp">#ifdef CONFIG_LIVEPATCH</span>
+        <span class="kt">bool</span> <span class="n">klp</span><span class="p">;</span> <span class="cm">/* Is this a livepatch module? */</span>
+        <span class="kt">bool</span> <span class="n">klp_alive</span><span class="p">;</span>
+
+        <span class="cm">/* Elf information */</span>
+        <span class="k">struct</span> <span class="nc">klp_modinfo</span> <span class="o">*</span><span class="n">klp_info</span><span class="p">;</span>
+<span class="cp">#endif</span>
+<span class="p">......</span>
+<span class="p">}</span>
+
+
+<span class="cp">#ifdef CONFIG_LIVEPATCH</span>
+<span class="k">struct</span> <span class="nc">klp_modinfo</span> <span class="p">{</span>
+        <span class="n">Elf_Ehdr</span> <span class="n">hdr</span><span class="p">;</span> <span class="cm">/* 文件头表 */</span>
+        <span class="n">Elf_Shdr</span> <span class="o">*</span><span class="n">sechdrs</span><span class="p">;</span><span class="cm">/* 节头表 */</span>
+        <span class="kt">char</span> <span class="o">*</span><span class="n">secstrings</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">symndx</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="cp">#endif</span>
+
+<span class="n">load_module</span> <span class="o">--&gt;</span> <span class="n">is_livepatch_module</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span><span class="o">:</span><span class="n">copy_module_elf</span><span class="p">(</span><span class="n">mod</span><span class="p">.</span><span class="n">info</span><span class="p">);</span>
+
+
+<span class="n">layout_symtab</span><span class="p">()</span> <span class="o">--&gt;</span> <span class="nl">is_livepatch_module</span><span class="p">:</span><span class="nl">is_core_symbol</span><span class="p">:</span><span class="n">strtab_size</span> <span class="n">_</span><span class="o">=</span><span class="p">....;</span>
+
+<span class="n">add_kallsyms</span><span class="p">()</span> <span class="o">--&gt;</span> <span class="nl">is_livepatch_module</span><span class="p">:......</span>
+
+<span class="n">free_module</span><span class="p">()</span> <span class="o">--&gt;</span> <span class="nl">is_livepatch_module</span><span class="p">:</span><span class="n">free_module_elf</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>关注copy_module_elf():</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id51">
+<div class="code-block-caption"><span class="caption-text">copy_module_elf</span><a class="headerlink" href="#id51" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#ifdef CONFIG_LIVEPATCH</span>
+<span class="cm">/*</span>
+<span class="cm"> * Persist Elf information about a module. Copy the Elf header,</span>
+<span class="cm"> * section header table, section string table, and symtab section</span>
+<span class="cm"> * index from info to mod-&gt;klp_info.</span>
+<span class="cm"> * 这是复制了struct module中的关于内核模块ELF相关信息。</span>
+<span class="cm"> */</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">copy_module_elf</span><span class="p">(</span><span class="k">struct</span> <span class="nc">module</span> <span class="o">*</span><span class="n">mod</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">load_info</span> <span class="o">*</span><span class="n">info</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="p">,</span> <span class="n">symndx</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+
+        <span class="n">size</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="o">*</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="p">);</span>
+        <span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span> <span class="o">=</span> <span class="n">kmalloc</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">GFP_KERNEL</span><span class="p">);</span><span class="cm">/*分配指针 */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">ENOMEM</span><span class="p">;</span>
+
+        <span class="cm">/* Elf header */</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">hdr</span><span class="p">);</span>
+        <span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">hdr</span><span class="p">,</span> <span class="n">info</span><span class="o">-&gt;</span><span class="n">hdr</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span><span class="cm">/* 将内核模块头复制到klp_info中 */</span>
+
+        <span class="cm">/* Elf section header table */</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="o">*</span><span class="n">info</span><span class="o">-&gt;</span><span class="n">sechdrs</span><span class="p">)</span> <span class="o">*</span> <span class="n">info</span><span class="o">-&gt;</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_shnum</span><span class="p">;</span> <span class="cm">/* 分配节头表空间 */</span>
+        <span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">sechdrs</span> <span class="o">=</span> <span class="n">kmemdup</span><span class="p">(</span><span class="n">info</span><span class="o">-&gt;</span><span class="n">sechdrs</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">GFP_KERNEL</span><span class="p">);</span> <span class="cm">/*将内核模块文件的字节头表复制到klp_info中 */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">sechdrs</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="o">-</span><span class="n">ENOMEM</span><span class="p">;</span>
+                <span class="k">goto</span> <span class="n">free_info</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* Elf section name string table */</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">info</span><span class="o">-&gt;</span><span class="n">sechdrs</span><span class="p">[</span><span class="n">info</span><span class="o">-&gt;</span><span class="n">hdr</span><span class="o">-&gt;</span><span class="n">e_shstrndx</span><span class="p">].</span><span class="n">sh_size</span><span class="p">;</span>
+        <span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">secstrings</span> <span class="o">=</span> <span class="n">kmemdup</span><span class="p">(</span><span class="n">info</span><span class="o">-&gt;</span><span class="n">secstrings</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">GFP_KERNEL</span><span class="p">);</span> <span class="cm">/* 复制节字符串表 */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">secstrings</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="o">-</span><span class="n">ENOMEM</span><span class="p">;</span>
+                <span class="k">goto</span> <span class="n">free_sechdrs</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* Elf symbol section index */</span>
+        <span class="n">symndx</span> <span class="o">=</span> <span class="n">info</span><span class="o">-&gt;</span><span class="n">index</span><span class="p">.</span><span class="n">sym</span><span class="p">;</span> <span class="cm">/* 符号节索引 */</span>
+        <span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">symndx</span> <span class="o">=</span> <span class="n">symndx</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * For livepatch modules, core_kallsyms.symtab is a complete</span>
+<span class="cm">         * copy of the original symbol table. Adjust sh_addr to point</span>
+<span class="cm">         * to core_kallsyms.symtab since the copy of the symtab in module</span>
+<span class="cm">         * init memory is freed at the end of do_init_module().</span>
+<span class="cm">         */</span>
+        <span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">sechdrs</span><span class="p">[</span><span class="n">symndx</span><span class="p">].</span><span class="n">sh_addr</span> <span class="o">=</span> \
+                <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span> <span class="n">mod</span><span class="o">-&gt;</span><span class="n">core_kallsyms</span><span class="p">.</span><span class="n">symtab</span><span class="p">;</span> <span class="cm">/* 符号表指向 */</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="nl">free_sechdrs</span><span class="p">:</span>
+        <span class="n">kfree</span><span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">sechdrs</span><span class="p">);</span>
+<span class="nl">free_info</span><span class="p">:</span>
+        <span class="n">kfree</span><span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">free_module_elf</span><span class="p">(</span><span class="k">struct</span> <span class="nc">module</span> <span class="o">*</span><span class="n">mod</span><span class="p">)</span><span class="cm">/* 释放部分 */</span>
+<span class="p">{</span>
+        <span class="n">kfree</span><span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">sechdrs</span><span class="p">);</span>
+        <span class="n">kfree</span><span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="o">-&gt;</span><span class="n">secstrings</span><span class="p">);</span>
+        <span class="n">kfree</span><span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">klp_info</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>总结</p>
+<ul>
+<li><p>livepatch相比较于一般的内核模块有其单独的存储空间；</p></li>
+<li><p>下一步结合livepatch实现更深入分析。</p></li>
+</ul>
+</li>
+<li><p>参考
+- <a class="reference external" href="https://kernel.org/doc/html/latest/livepatch/index.html">https://kernel.org/doc/html/latest/livepatch/index.html</a></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="ebpf">
+<h2>ebpf<a class="headerlink" href="#ebpf" title="Permalink to this headline">¶</a></h2>
+<p>eBPF 是一种内核机制，用于在 Linux 内核中提供沙盒运行时环境，用于运行时扩展和检测，而无需更改内核源代码或加载内核模块。eBPF 程序可以附加到各种内核子系统，包括网络、跟踪和 Linux 安全模块 (LSM)。</p>
+<div class="section" id="id21">
+<h3>eBPF指令集<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<p>参考：<a class="reference external" href="https://www.kernel.org/doc/html/latest/bpf/instruction-set.html">https://www.kernel.org/doc/html/latest/bpf/instruction-set.html</a></p>
+</div>
+<div class="section" id="id22">
+<h3>eBPF安全性验证<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<p>eBPF 程序的安全性分两步确定。</p>
+<ul class="simple">
+<li><p>进行 DAG 检查以禁止循环和其他 CFG 验证。特别是，它将检测具有无法访问指令的程序。（尽管经典的 BPF 检查器允许它们）</p></li>
+<li><p>从第一个 insn 开始并下降所有可能的路径。它模拟每个insn的执行并观察寄存器和堆栈的状态变化。</p></li>
+</ul>
+<p>参考：<a class="reference external" href="https://www.kernel.org/doc/html/latest/bpf/verifier.html">https://www.kernel.org/doc/html/latest/bpf/verifier.html</a></p>
+</div>
+<div class="section" id="libbpf">
+<h3>libbpf<a class="headerlink" href="#libbpf" title="Permalink to this headline">¶</a></h3>
+<p>手动从零编写bpf程序是非常麻烦的，编写bpf程序最简单的方式就是利用libbpf提供的接口进行操作。libbpf它是一个用于加载和与 bpf 程序交互的用户空间库。其依赖libelf和zlib。
+参考：<a class="reference external" href="https://www.kernel.org/doc/html/latest/bpf/libbpf/index.html">https://www.kernel.org/doc/html/latest/bpf/libbpf/index.html</a></p>
+</div>
+<div class="section" id="btf">
+<h3>BTF<a class="headerlink" href="#btf" title="Permalink to this headline">¶</a></h3>
+<p>BTF（BPF Type Format）是元数据格式，对与BPF程序/映射相关的调试信息进行编码。BTF 这个名字最初是用来描述数据类型的。BTF 后来被扩展为包括定义子程序的函数信息，以及源/行信息的行信息。</p>
+<p>调试信息用于映射漂亮打印、函数签名等。函数签名可实现更好的 bpf 程序/函数内核符号。行信息有助于生成源注释的翻译字节代码、jited 代码和验证者日志。</p>
+<p>BTF 规范包含两部分，</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>BTF 内核 API</p></li>
+<li><p>BTF ELF 文件格式</p></li>
+</ul>
+</div></blockquote>
+<p>内核API是用户空间与内核之间的接口。内核在使用BTF会对其进行验证。ELF 文件格式是 ELF 文件和 libbpf 加载器之间的用户空间契约。type和string 部分是 BTF 内核 API 的一部分，描述了 bpf 程序引用的调试信息（主要是类型相关的）。</p>
+<p>具体参考：<a class="reference external" href="https://www.kernel.org/doc/html/latest/bpf/btf.html">https://www.kernel.org/doc/html/latest/bpf/btf.html</a></p>
+</div>
+<div class="section" id="bpf-bpf-helpers">
+<h3>bpf辅助函数:bpf helpers<a class="headerlink" href="#bpf-bpf-helpers" title="Permalink to this headline">¶</a></h3>
+<p>list of eBPF helper functions: bpf kernel 部分只能调用这部分函数</p>
+<p>扩展的 Berkeley 包过滤器 (eBPF) 子系统包含用伪汇编语言编写的程序，然后附加到几个内核挂钩之一并在特定事件的反应中运行。这个框架在几个方面与旧的“经典”BPF（或“cBPF”）不同，其中之一是从程序中调用特殊函数（或“帮助程序”）的能力。这些函数仅限于内核中定义的程序白名单。eBPF 程序使用这些程序与系统上下文进行交互。例如，它们可用于打印调试消息、获取系统启动后的时间、与 eBPF 映射交互或操作网络数据包。由于存在多种 eBPF 程序类型，并且它们不在同一个上下文中运行，因此每种程序类型只能调用这些帮助程序的一个子集。eBPF 约定，一个程序不能有超过五个参数。eBPF 程序直接调用已编译的辅助函数，而不需要任何外部函数接口。调用程序不会引入任何开销，从而提供出色的性能。以下是可供 eBPF 开发人员使用的程序。它们按时间顺序排序。</p>
+</div>
+<div class="section" id="id23">
+<h3>系统调用<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<p>非常复杂的系统调用。</p>
+<p>bpf:https://www.kernel.org/doc/html/latest/userspace-api/ebpf/syscall.html</p>
+</div>
+<div class="section" id="ebpf-maps">
+<h3>eBPF maps<a class="headerlink" href="#ebpf-maps" title="Permalink to this headline">¶</a></h3>
+<p>‘maps’ 是不同类型的通用存储，用于在内核和用户空间之间共享数据。
+参考：<a class="reference external" href="https://www.kernel.org/doc/html/latest/bpf/maps.html">https://www.kernel.org/doc/html/latest/bpf/maps.html</a></p>
+</div>
+<div class="section" id="bpfebpf">
+<h3>经典BPF和eBPF比较<a class="headerlink" href="#bpfebpf" title="Permalink to this headline">¶</a></h3>
+<p>参考：<a class="reference external" href="https://www.kernel.org/doc/html/latest/bpf/classic_vs_extended.html">https://www.kernel.org/doc/html/latest/bpf/classic_vs_extended.html</a></p>
+</div>
+<div class="section" id="bpf">
+<h3>BPF许可<a class="headerlink" href="#bpf" title="Permalink to this headline">¶</a></h3>
+<p>参考：<a class="reference external" href="https://www.kernel.org/doc/html/latest/bpf/bpf_licensing.html">https://www.kernel.org/doc/html/latest/bpf/bpf_licensing.html</a></p>
+</div>
+<div class="section" id="id24">
+<h3>BPF测试和调试<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<p>BPF drgn工具：<a class="reference external" href="https://www.kernel.org/doc/html/latest/bpf/drgn.html">https://www.kernel.org/doc/html/latest/bpf/drgn.html</a></p>
+</div>
+<div class="section" id="id25">
+<h3>BPF重定位<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<p>参考：<a class="reference external" href="https://www.kernel.org/doc/html/latest/bpf/llvm_reloc.html">https://www.kernel.org/doc/html/latest/bpf/llvm_reloc.html</a></p>
+</div>
+<div class="section" id="bpf-demo">
+<h3>BPF demo<a class="headerlink" href="#bpf-demo" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id52">
+<div class="code-block-caption"><span class="caption-text">load.c</span><a class="headerlink" href="#id52" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;linux/bpf.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;bpf_load.h&quot;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span><span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">load_bpf_file</span><span class="p">(</span><span class="s">&quot;trace_kprobe_kern.o&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">printf</span><span class="p">(</span><span class="s">&quot;The kernel didn&#39;t load the BPF program</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+                <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">read_trace_pipe</span><span class="p">();</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id53">
+<div class="code-block-caption"><span class="caption-text">bpf:trace_kprobe_kern.c</span><a class="headerlink" href="#id53" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;bpf/bpf_tracing.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;vmlinux.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;bpf/bpf_helpers.h&gt;</span><span class="cp"></span>
+<span class="cp">#ifndef SEC</span>
+<span class="cp">#define SEC(NAME) __attribute__((section(NAME),used))</span>
+<span class="cp">#endif</span>
+<span class="n">SEC</span><span class="p">(</span><span class="s">&quot;tracepoint/syscalls/sys_enter_execve&quot;</span><span class="p">)</span>
+ <span class="kt">int</span> <span class="n">bpf_prog</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">ctx</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="kt">char</span> <span class="n">msg</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;hello,bpf world&quot;</span><span class="p">;</span>
+
+        <span class="n">bpf_trace_printk</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">msg</span><span class="p">));</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cp">#define _(P)                                                                   \</span>
+<span class="cp">        ({                                                                     \</span>
+<span class="cp">                typeof(P) val = 0;                                             \</span>
+<span class="cp">                bpf_probe_read_kernel(&amp;val, sizeof(val), &amp;(P));                \</span>
+<span class="cp">                val;                                                           \</span>
+<span class="cp">        })</span>
+
+<span class="n">SEC</span><span class="p">(</span><span class="s">&quot;kprobe/begin_new_exec&quot;</span><span class="p">)</span>
+<span class="kt">int</span> <span class="n">prog</span><span class="p">(</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">ctx</span><span class="p">)</span>
+<span class="p">{</span>
+
+        <span class="kt">char</span> <span class="n">file_name</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;comm = %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+        <span class="kt">char</span> <span class="n">buf_comm</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>
+        <span class="n">bpf_get_current_comm</span><span class="p">(</span><span class="n">buf_comm</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">buf_comm</span><span class="p">));</span>
+
+
+        <span class="n">bpf_trace_printk</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">file_name</span><span class="p">),</span><span class="n">buf_comm</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">char</span> <span class="n">_license</span><span class="p">[]</span> <span class="n">SEC</span><span class="p">(</span><span class="s">&quot;license&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="s">&quot;GPL&quot;</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id54">
+<div class="code-block-caption"><span class="caption-text">Makefile</span><a class="headerlink" href="#id54" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">srctree</span> <span class="o">=</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">linux</span><span class="o">-</span><span class="n">source</span><span class="mf">-5.14</span>
+<span class="n">objtree</span> <span class="o">=</span> <span class="n">srctree</span>
+<span class="nl">all</span><span class="p">:</span>
+        <span class="n">$</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span><span class="n">clang</span> <span class="o">-</span><span class="n">O2</span> <span class="o">-</span><span class="n">D__KERNEL__</span> <span class="o">-</span><span class="n">target</span> <span class="n">bpf</span> <span class="o">-</span><span class="n">I</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span> <span class="o">-</span><span class="n">c</span> <span class="n">trace_kprobe_kern</span><span class="p">.</span><span class="n">c</span> <span class="o">-</span><span class="n">o</span> <span class="n">trace_kprobe_kern</span><span class="p">.</span><span class="n">o</span>
+        <span class="n">$</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span><span class="n">gcc</span> <span class="o">-</span><span class="n">o</span> <span class="n">loader</span> <span class="n">loader</span><span class="p">.</span><span class="n">c</span> <span class="n">bpf_load</span><span class="p">.</span><span class="n">c</span> <span class="n">$</span><span class="p">(</span><span class="n">srctree</span><span class="p">)</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">bpf</span><span class="o">/</span><span class="n">libbpf</span><span class="p">.</span><span class="n">a</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">libz</span><span class="p">.</span><span class="n">a</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">/</span><span class="n">libelf</span><span class="p">.</span><span class="n">a</span>
+<span class="nl">clean</span><span class="p">:</span>
+        <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">*</span><span class="p">.</span><span class="n">o</span> <span class="n">loader</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>二进制分析：readelf -S trace_kprobe_kern.o</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id55">
+<div class="code-block-caption"><span class="caption-text">trace_kprobe_kern.o二进制信息</span><a class="headerlink" href="#id55" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50</pre></div></td><td class="code"><div class="highlight"><pre><span></span>root@rachel:/usr/src/bpf_trace_kprobe_demo# readelf -a trace_kprobe_kern.o
+ELF 头：
+  Magic：  7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+  类别:                              ELF64
+  数据:                              2 补码，小端序 (little endian)
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI 版本:                          0
+  类型:                              REL (可重定位文件)
+  系统架构:                          Linux BPF
+  版本:                              0x1
+  入口点地址：              0x0
+  程序头起点：              0 (bytes into file)
+  Start of section headers:          616 (bytes into file)
+  标志：             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           0 (bytes)
+  Number of program headers:         0
+  Size of section headers:           64 (bytes)
+  Number of section headers:         9
+  Section header string table index: 1
+
+节头：
+  [号] 名称              类型             地址              偏移量
+       大小              全体大小          旗标   链接   信息   对齐
+  [ 0]                   NULL             0000000000000000  00000000
+       0000000000000000  0000000000000000           0     0     0
+  [ 1] .strtab           STRTAB           0000000000000000  000001d3
+       0000000000000095  0000000000000000           0     0     1
+  [ 2] .text             PROGBITS         0000000000000000  00000040
+       0000000000000000  0000000000000000  AX       0     0     4
+  [ 3] tracepoint/s[...] PROGBITS         0000000000000000  00000040
+       0000000000000060  0000000000000000  AX       0     0     8
+  [ 4] kprobe/begin[...] PROGBITS         0000000000000000  000000a0
+       0000000000000098  0000000000000000  AX       0     0     8
+  [ 5] .rodata.str1.1    PROGBITS         0000000000000000  00000138
+       000000000000001b  0000000000000001 AMS       0     0     1
+  [ 6] license           PROGBITS         0000000000000000  00000153
+       0000000000000004  0000000000000000  WA       0     0     1
+  [ 7] .llvm_addrsig     LOOS+0xfff4c03   0000000000000000  000001d0
+       0000000000000003  0000000000000000   E       8     0     1
+  [ 8] .symtab           SYMTAB           0000000000000000  00000158
+       0000000000000078  0000000000000018           1     2     8
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+  L (link order), O (extra OS processing required), G (group), T (TLS),
+  C (compressed), x (unknown), o (OS specific), E (exclude),
+  D (mbind), p (processor specific)
+
+There are no section groups in this file.
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>运行load的过程就是函数将编译好的BPF程序中需要的节分离出来通过bpf系统调用加载到内核，内核将分离出来的BPF二进制代码加载到BPF虚拟机中进行执行。整个过程并没有伴随内核模块的加载。</p>
+</div>
+<div class="section" id="id26">
+<h3>总结<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>这部分跟kprobe,livepatch的最大不同就是hook处跳到了bpf虚拟机中执行。整个加载过程通过系统调用实现，没有内核模块的加载过程；</p></li>
+<li><p>bpf部分调用的内核函数被严格控制；</p></li>
+<li><p>下一步根据实验一步步补充。</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="perf">
+<h2>perf<a class="headerlink" href="#perf" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="linux-kernel-trace">
+<h2>linux kernel trace<a class="headerlink" href="#linux-kernel-trace" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="trace">
-<h3>trace<a class="headerlink" href="#trace" title="Permalink to this headline">¶</a></h3>
+<h3>静态trace<a class="headerlink" href="#trace" title="Permalink to this headline">¶</a></h3>
+<p>这是集大成的跟踪系统，此处主要分析其实现原理，以进行阶段性总结。</p>
 </div>
-<div class="section" id="audit">
-<h3>audit<a class="headerlink" href="#audit" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="ftrace">
+<h3>ftrace<a class="headerlink" href="#ftrace" title="Permalink to this headline">¶</a></h3>
+<p>Ftrace 是一个内部跟踪器，旨在帮助系统的开发人员和设计人员找到内核内部发生的事情。它可用于调试或分析发生在用户空间之外的延迟和性能问题。尽管 ftrace 通常被认为是函数跟踪器，但它实际上是一个包含多种跟踪实用程序的框架。有延迟跟踪来检查中断禁用和启用之间发生的情况，以及抢占和从任务被唤醒到任务实际被调度的时间。ftrace 最常见的用途之一是事件跟踪。在整个内核中，有数百个静态事件点可以通过 tracefs 文件系统启用，以查看内核某些部分发生了什么。
+ftrace（函数跟踪）是内核跟踪的“瑞士军刀”。它是内建在Linux内核中的一种跟踪机制。它能深入内核去发现里面究竟发生了什么，并调试它。ftrace不只是一个函数跟踪工具，它的跟踪能力之强大，还能调试和分析诸如延迟、意外代码路径、性能问题等一大堆问题。它也是一种很好的学习工具。
+<a class="reference external" href="https://www.cnblogs.com/jefree/p/4439013.html">https://www.cnblogs.com/jefree/p/4439013.html</a>
+实现原理：
+1. 首先ftrace.c 文件注释为：infrastructure for profiling code inserted by ‘gcc -pg’
+2. mcount ==&gt; nop</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id56">
+<div class="code-block-caption"><span class="caption-text">ftrace基本结构</span><a class="headerlink" href="#id56" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">vmlinux</span><span class="p">.</span><span class="nl">lds</span><span class="p">:</span><span class="n">mcount部分布局</span>
+<span class="p">......</span>
+<span class="n">__start_mcount_loc</span> <span class="o">=</span> <span class="p">.;</span> <span class="n">KEEP</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">__mcount_loc</span><span class="p">))</span> <span class="n">KEEP</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">__patchable_function_entries</span><span class="p">))</span> <span class="n">__stop_mcount_loc</span> <span class="o">=</span> <span class="p">.;</span>
+<span class="p">......</span>
+
+<span class="k">struct</span> <span class="nc">dyn_ftrace</span> <span class="p">{</span><span class="cm">/* mcount每个地址初始化一个结构 */</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span>           <span class="n">ip</span><span class="p">;</span> <span class="cm">/* address of mcount call-site */</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span>           <span class="n">flags</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">dyn_arch_ftrace</span>  <span class="n">arch</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nc">ftrace_page</span> <span class="p">{</span><span class="cm">/*组织每个地址单元结构，每个内核模块插入后产生一个结构，以链表形式组织。 */</span>
+        <span class="k">struct</span> <span class="nc">ftrace_page</span>      <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">dyn_ftrace</span>       <span class="o">*</span><span class="n">records</span><span class="p">;</span>
+        <span class="kt">int</span>                     <span class="n">index</span><span class="p">;</span>
+        <span class="kt">int</span>                     <span class="n">order</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">union</span> <span class="nc">text_poke_insn</span> <span class="p">{</span>
+        <span class="n">u8</span> <span class="n">text</span><span class="p">[</span><span class="n">POKE_MAX_OPCODE_SIZE</span><span class="p">];</span>
+        <span class="k">struct</span> <span class="p">{</span>
+                <span class="n">u8</span> <span class="n">opcode</span><span class="p">;</span>
+                <span class="n">s32</span> <span class="n">disp</span><span class="p">;</span>
+        <span class="p">}</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">packed</span><span class="p">));</span>
+<span class="p">};</span>
+
+<span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">kernel</span><span class="o">/</span><span class="n">ftrace_64</span><span class="p">.</span><span class="n">S</span>
+<span class="cp">#ifdef CONFIG_DYNAMIC_FTRACE</span>
+
+<span class="n">SYM_FUNC_START</span><span class="p">(</span><span class="n">__fentry__</span><span class="p">)</span>
+        <span class="n">retq</span>
+<span class="n">SYM_FUNC_END</span><span class="p">(</span><span class="n">__fentry__</span><span class="p">)</span>
+<span class="n">EXPORT_SYMBOL</span><span class="p">(</span><span class="n">__fentry__</span><span class="p">)</span>
+<span class="p">....</span>
+
+
+<span class="cp">#define MCOUNT_ADDR ((unsigned long)(__fentry__)</span>
+</pre></div>
+</td></tr></table></div>
 </div>
-<div class="section" id="security">
-<h3>security<a class="headerlink" href="#security" title="Permalink to this headline">¶</a></h3>
+<p>将内核的__start_mcount_loc/__stop_mcount_loc节初始化为struct ftrace_page结构，并将mcount初始化为struct dyn_ftrace列表。将ip指向的地址内容初始化为nop</p>
+<div class="literal-block-wrapper docutils container" id="id57">
+<div class="code-block-caption"><span class="caption-text">内核__start_mcount_loc/__stop_mcount_loc节初始化</span><a class="headerlink" href="#id57" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44</pre></div></td><td class="code"><div class="highlight"><pre><span></span>ftrace_init():
+        ftrace_dyn_arch_init():/* 空  */
+        count = __stop_mcount_loc - __start_mcount_loc;
+
+
+        ftrace_process_locs(NULL,__start_mcount_loc,__stop_mcount_loc);
+                构建：ftrace_process_locs: count * sizeof(struct dyn_ftrace)
+                     struct ftrae_page:每个单元一个结构
+
+                ftrace_call_adjust: return addr;
+
+                初始化struct ftrace_page结构：根据mcount表（地址表）；
+                             rec-&gt;ip = addr;
+
+                ftrace_pages = pg;/* 初始化全局变量 */
+
+                ftrace_update_code(NULL,struct ftrace_page *new_pgs)
+                        start = ftrace_now();
+                        ftrace_nop_initialize(struct module *mod,struct dyn_ftrace *rec)//循环替换，全部替换为nop
+                                ftrace_init_nop(mod,rec):
+                                        ftrace_make_nop(mod,struct dyn_ftrace *rec,MCOUNT_ADD);
+                                                old = ftrace_call_replace(rec-&gt;ip,addr);
+                                                        return text_gen_insn(CALL_INSN_OPCODE,(void *)ip,(void *)addr);
+                                                                static union text_poke_insn insn;
+                                                                insn.opcode = CALL_INSN_OPCODE;
+                                                                insn.disp = (long)dest - (long)(addr + size);
+                                                                return &amp;insn.text;
+
+                                                new = ftrace_nop_replace()
+                                                        return x86_nops[5];
+
+                                                ftrace_modify_code_direct(ip,old,new);
+                                                        ftrace_verify_code(ip,lod_code);//判断*ip 是否与 old相同；如果相同则继续；
+                                                        text_poke_early((void *)ip,new_code,MCOUNT_INSN_SIZE);//将地址中指令替换为nop
+                                                                void __init_or_module text_poke_early(void *addr,const void *opcode,size_t len)
+                                                                        memcpy(addr,opcode,len);/* 指令替换 */
+                                                                        sync_code();
+
+
+                        stop = ftrace_now();
+                        ftrace_update_time = stop - start;
+                        strace_update_tot_cnt += update_cnt;
+
+        set_ftrace_early_filters();     /*下一轮补上 */
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>此时把所有mcount指向的地址中的指令替换为nop指令。</p>
+<p>我们看内核模块中的ftrace处理：</p>
+<div class="literal-block-wrapper docutils container" id="id58">
+<div class="code-block-caption"><span class="caption-text">内核模块__mcount_loc节初始化</span><a class="headerlink" href="#id58" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61</pre></div></td><td class="code"><div class="highlight"><pre><span></span>readelf -S livepatch_sample.ko
+.....
+  [ 6] __mcount_loc      PROGBITS         0000000000000000  00000117
+       0000000000000018  0000000000000000   A       0     0     1
+  [ 7] .rela__mcount_loc RELA             0000000000000000  000200b0
+       0000000000000048  0000000000000018   I      33     6     8
+.....
+
+
+
+struct module {
+.....
+#ifdef CONFIG_FTRACE_MCOUNT_RECORD
+        unsigned int num_ftrace_callsites;/*__mcount数目 */
+        unsigned long *ftrace_callsites;/* 地址列表 */
+#endif
+......
+};
+
+#define FTRACE_CALLSITE_SECTION &quot;__mcount_loc&quot;
+
+load_module(struct load_info *info,const char __user *uarge,int flags)
+
+#ifdef CONFIG_FTRACE_MCOUNT_RECORD
+        /* sechdrs[0].sh_size is always zero *//* __mcount_loc?*/
+        mod-&gt;ftrace_callsites = section_objs(info, FTRACE_CALLSITE_SECTION,
+                                             sizeof(*mod-&gt;ftrace_callsites),
+                                             &amp;mod-&gt;num_ftrace_callsites);
+#endif
+        ftrace_module_init(mod);
+                ftrace_process_locs(mod,mod-&gt;ftrace_callsiztes,mod-&gt;ftrace_callsites + mod-&gt;num_ftrace_callsites);
+                        ftrace_pages-&gt;next = start_pg; /* 申请一个ftrace_pages，并插入以ftrae_pages_start为第一个结构的链表中*/
+                        while: rec-&gt;ip = addr;/* 地址列表中所有地址内容 */
+
+        prepare_coming_module(mod);
+                ftrace_module_enable(mod){
+                         ftrace_start_up: ftrace_arch_code_modify_prepare();
+                         do_for_each_ftrace_rec(pg,rec);/* 遍历获取每个ftrace_pages 结构，并遍历其中的records*/
+分析：
+
+                                if:within_module_core(rec-&gt;ip,mod); /* 找到属于当前模块的ip */
+                                        within_module_init(rec-&gt;ip,mod); /* 找到属于当前模块的ip */
+
+                                if(ftrace_start_up)
+                                        cnt += referenced_filters(rec);
+
+                                __ftrace_replace_code(rec,1);
+                                        ftrace_addr = ftrace_get_addr_new(rec):
+                                                        return FTRACE_ADDR;
+                                        ftrace_old_addr = ftrace_get_addr_curr(rec);
+                                                        return FTRACE_ADDR;
+                                        ftrace_update_record(rec,enable);
+                                                ftrace_check_record(rec,enable,true);
+                                                        return FTRACE_UPDATE_MAKE_NOP;
+                                        ftrace_make_nop(NULL,rec,ftrace_old_addr);/* 将ip指向的内容设置为nop */
+                        } while_for_each_ftrace_rec();
+
+                        ftrace_arch_code_modify_post_process();
+                                        text_poke_finish();
+                                                text_poke_flush(NULL);
+                        process_cached_mods(mod-&gt;name);/*下一步补充 */
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>到这儿同样把mcount地址中的值替换为nop;</p>
+</div></blockquote>
+<ol class="arabic" start="3">
+<li><p>nop ==&gt; ftrace_call</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id59">
+<div class="code-block-caption"><span class="caption-text">ftrace_call替换</span><a class="headerlink" href="#id59" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">trace_init</span><span class="p">()</span>
+        <span class="n">trace_event_init</span><span class="p">()</span>
+                <span class="n">event_trace_enable</span>
+                        <span class="n">register_event_cmds</span>
+                                <span class="n">trace_trace_probe_callback</span>
+                                        <span class="n">register_ftrace_function_probe</span><span class="p">()</span>
+                                                        <span class="n">ftrace_hash_move_and_update_ops</span><span class="p">()</span>
+                                                                <span class="n">ftrace_ops_update_code</span><span class="p">()</span>
+                                                                        <span class="n">ftrace_run_modify_code</span><span class="p">(</span><span class="k">struct</span> <span class="nc">ftrace_ops</span> <span class="o">*</span><span class="n">ops</span><span class="p">,</span><span class="kt">int</span> <span class="n">command</span><span class="p">,</span><span class="k">struct</span> <span class="nc">ftrace_ops_hash</span> <span class="o">*</span><span class="n">old_hash</span><span class="p">)</span>
+                                                                                <span class="n">ftrace_startup_enable</span><span class="p">(</span><span class="kt">int</span> <span class="n">command</span><span class="p">);</span>
+                                                                                <span class="n">ftrace_shutdown</span><span class="p">(</span><span class="k">struct</span> <span class="nc">ftrace_ops</span> <span class="o">*</span><span class="n">ops</span><span class="p">,</span><span class="kt">int</span> <span class="n">command</span><span class="p">)</span>
+                                                                                <span class="n">ftrace_shutdown_sysctl</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="o">:</span> <span class="n">FTRACE_DISABLE_CALLS</span><span class="p">;</span>
+
+                                                                                        <span class="n">ftrace_run_update_code</span><span class="p">(</span><span class="n">command</span><span class="p">);</span>
+                                                                                                <span class="n">arch_ftrace_update_code</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+                                                                                                        <span class="n">ftrace_modify_all_code</span><span class="p">(</span><span class="o">&amp;</span><span class="n">command</span><span class="p">);</span>
+                                                                                                                <span class="nl">FTRACE_UPDATE_TRACE_FUNC</span><span class="p">:</span>
+                                                                                                                        <span class="n">ftrace_update_ftrace_func</span><span class="p">(</span><span class="n">ftrace_ops_list_func</span><span class="p">);</span>
+                                                                                                                                <span class="kt">int</span> <span class="nf">ftrace_update_ftrace_func</span><span class="p">(</span><span class="n">ftrace_func_t</span> <span class="n">func</span><span class="p">)</span>
+                                                                                                                                <span class="p">{</span>
+                                                                                                                                        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">ip</span><span class="p">;</span>
+                                                                                                                                        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">new</span><span class="p">;</span>
+
+                                                                                                                                        <span class="n">ip</span> <span class="o">=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">ftrace_call</span><span class="p">);</span>
+                                                                                                                                        <span class="n">new</span> <span class="o">=</span> <span class="n">ftrace_call_replace</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">func</span><span class="p">);</span>
+                                                                                                                                        <span class="n">text_poke_bp</span><span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">ip</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="n">MCOUNT_INSN_SIZE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+                                                                                                                                        <span class="n">ip</span> <span class="o">=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">ftrace_regs_call</span><span class="p">);</span>
+                                                                                                                                        <span class="n">new</span> <span class="o">=</span> <span class="n">ftrace_call_replace</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">func</span><span class="p">);</span>
+                                                                                                                                        <span class="n">text_poke_bp</span><span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">ip</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="n">MCOUNT_INSN_SIZE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+                                                                                                                                        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+                                                                                                                                <span class="p">}</span>
+
+                                                                                                                <span class="nl">FTRACE_UPDATE_CALLS</span><span class="p">:</span>
+                                                                                                                        <span class="n">ftrace_replace_code</span><span class="p">(</span><span class="n">mod_flags</span> <span class="o">|</span> <span class="n">FTRACE_MODIFY_ENABLE_FL</span><span class="p">);</span>
+                                                                                                                <span class="nl">FTRACE_DISABLE_CALLS</span><span class="p">:</span>
+                                                                                                                        <span class="n">ftrace_replace_code</span><span class="p">(</span><span class="n">mod_flags</span><span class="p">);</span>
+                                                                                                                <span class="nl">FTRACE_START_FUNC_RET</span><span class="p">:</span>
+                                                                                                                        <span class="n">ftrace_enable_ftrace_graph_caller</span><span class="p">();</span>
+                                                                                                                <span class="nl">FTRACE_STOP_FUNC_RET</span><span class="p">:</span>
+                                                                                                                        <span class="n">ftrace_disable_ftrace_graph_caller</span><span class="p">();</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id60">
+<div class="code-block-caption"><span class="caption-text">具体指令替换</span><a class="headerlink" href="#id60" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">ftrace_update_ftrace_func</span><span class="p">(</span><span class="n">ftrace_func_t</span> <span class="n">func</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">ip</span><span class="p">;</span>
+        <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">new</span><span class="p">;</span>
+
+        <span class="n">ip</span> <span class="o">=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">ftrace_call</span><span class="p">);</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">ftrace_call_replace</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">func</span><span class="p">);</span><span class="cm">/* 解释：call func */</span>
+        <span class="n">text_poke_bp</span><span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">ip</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="n">MCOUNT_INSN_SIZE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span><span class="cm">/* 更新指令*/</span>
+
+        <span class="n">ip</span> <span class="o">=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">ftrace_regs_call</span><span class="p">);</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">ftrace_call_replace</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">func</span><span class="p">);</span>
+        <span class="n">text_poke_bp</span><span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">ip</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="n">MCOUNT_INSN_SIZE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="n">ip</span> <span class="o">-&gt;</span>
+<span class="n">SYM_FUNC_START</span><span class="p">(</span><span class="n">ftrace_caller</span><span class="p">)</span>
+        <span class="cm">/* save_mcount_regs fills in first two parameters */</span>
+        <span class="n">save_mcount_regs</span>
+
+        <span class="cm">/* Stack - skipping return address of ftrace_caller */</span>
+        <span class="n">leaq</span> <span class="n">MCOUNT_REG_SIZE</span><span class="o">+</span><span class="mi">8</span><span class="p">(</span><span class="o">%</span><span class="n">rsp</span><span class="p">),</span> <span class="o">%</span><span class="n">rcx</span>
+        <span class="n">movq</span> <span class="o">%</span><span class="n">rcx</span><span class="p">,</span> <span class="n">RSP</span><span class="p">(</span><span class="o">%</span><span class="n">rsp</span><span class="p">)</span>
+
+<span class="n">SYM_INNER_LABEL</span><span class="p">(</span><span class="n">ftrace_caller_op_ptr</span><span class="p">,</span> <span class="n">SYM_L_GLOBAL</span><span class="p">)</span>
+        <span class="cm">/* Load the ftrace_ops into the 3rd parameter */</span>
+        <span class="n">movq</span> <span class="n">function_trace_op</span><span class="p">(</span><span class="o">%</span><span class="n">rip</span><span class="p">),</span> <span class="o">%</span><span class="n">rdx</span>
+
+        <span class="cm">/* regs go into 4th parameter */</span>
+        <span class="n">leaq</span> <span class="p">(</span><span class="o">%</span><span class="n">rsp</span><span class="p">),</span> <span class="o">%</span><span class="n">rcx</span>
+
+        <span class="cm">/* Only ops with REGS flag set should have CS register set */</span>
+        <span class="n">movq</span> <span class="n">$0</span><span class="p">,</span> <span class="n">CS</span><span class="p">(</span><span class="o">%</span><span class="n">rsp</span><span class="p">)</span>
+
+<span class="n">SYM_INNER_LABEL</span><span class="p">(</span><span class="n">ftrace_call</span><span class="p">,</span> <span class="n">SYM_L_GLOBAL</span><span class="p">)</span>
+        <span class="n">call</span> <span class="n">ftrace_stub</span>
+
+        <span class="cm">/* Handlers can change the RIP */</span>
+        <span class="n">movq</span> <span class="n">RIP</span><span class="p">(</span><span class="o">%</span><span class="n">rsp</span><span class="p">),</span> <span class="o">%</span><span class="n">rax</span>
+        <span class="n">movq</span> <span class="o">%</span><span class="n">rax</span><span class="p">,</span> <span class="n">MCOUNT_REG_SIZE</span><span class="p">(</span><span class="o">%</span><span class="n">rsp</span><span class="p">)</span>
+
+        <span class="n">restore_mcount_regs</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * The code up to this label is copied into trampolines so</span>
+<span class="cm">         * think twice before adding any new code or changing the</span>
+<span class="cm">         * layout here.</span>
+<span class="cm">         */</span>
+<span class="n">SYM_INNER_LABEL</span><span class="p">(</span><span class="n">ftrace_caller_end</span><span class="p">,</span> <span class="n">SYM_L_GLOBAL</span><span class="p">)</span>
+
+        <span class="n">jmp</span> <span class="n">ftrace_epilogue</span>
+<span class="n">SYM_FUNC_END</span><span class="p">(</span><span class="n">ftrace_caller</span><span class="p">);</span>
+
+
+
+
+<span class="k">static</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">ftrace_call_replace</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">ip</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">addr</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">return</span> <span class="nf">text_gen_insn</span><span class="p">(</span><span class="n">CALL_INSN_OPCODE</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">ip</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">addr</span><span class="p">);</span><span class="cm">/* 相对地址：CALL_INSN_OPCODE*/</span>
+<span class="p">}</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * text_poke_bp() -- update instructions on live kernel on SMP</span>
+<span class="cm"> * @addr:       address to patch</span>
+<span class="cm"> * @opcode:     opcode of new instruction</span>
+<span class="cm"> * @len:        length to copy</span>
+<span class="cm"> * @emulate:    instruction to be emulated</span>
+<span class="cm"> *</span>
+<span class="cm"> * Update a single instruction with the vector in the stack, avoiding</span>
+<span class="cm"> * dynamically allocated memory. This function should be used when it is</span>
+<span class="cm"> * not possible to allocate memory.</span>
+<span class="cm"> */</span>
+<span class="kt">void</span> <span class="n">__ref</span> <span class="n">text_poke_bp</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">addr</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">opcode</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">emulate</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">text_poke_loc</span> <span class="n">tp</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">system_state</span> <span class="o">==</span> <span class="n">SYSTEM_BOOTING</span><span class="p">))</span> <span class="p">{</span>
+                <span class="n">text_poke_early</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">opcode</span><span class="p">,</span> <span class="n">len</span><span class="p">);</span>
+                <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">text_poke_loc_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tp</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">opcode</span><span class="p">,</span> <span class="n">len</span><span class="p">,</span> <span class="n">emulate</span><span class="p">);</span><span class="cm">/* */</span>
+        <span class="n">text_poke_bp_batch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tp</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="cm">/**</span>
+<span class="cm"> * text_poke_bp_batch() -- update instructions on live kernel on SMP</span>
+<span class="cm"> * @tp:                 vector of instructions to patch</span>
+<span class="cm"> * @nr_entries:         number of entries in the vector</span>
+<span class="cm"> *</span>
+<span class="cm"> * Modify multi-byte instruction by using int3 breakpoint on SMP.</span>
+<span class="cm"> * We completely avoid stop_machine() here, and achieve the</span>
+<span class="cm"> * synchronization using int3 breakpoint.</span>
+<span class="cm"> *</span>
+<span class="cm"> * The way it is done:</span>
+<span class="cm"> *      - For each entry in the vector:</span>
+<span class="cm"> *              - add a int3 trap to the address that will be patched</span>
+<span class="cm"> *      - sync cores</span>
+<span class="cm"> *      - For each entry in the vector:</span>
+<span class="cm"> *              - update all but the first byte of the patched range</span>
+<span class="cm"> *      - sync cores</span>
+<span class="cm"> *      - For each entry in the vector:</span>
+<span class="cm"> *              - replace the first byte (int3) by the first byte of</span>
+<span class="cm"> *                replacing opcode</span>
+<span class="cm"> *      - sync cores</span>
+<span class="cm"> */</span>
+<span class="k">static</span> <span class="kt">void</span> <span class="n">text_poke_bp_batch</span><span class="p">(</span><span class="k">struct</span> <span class="nc">text_poke_loc</span> <span class="o">*</span><span class="n">tp</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">nr_entries</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">bp_patching_desc</span> <span class="n">desc</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="p">.</span><span class="n">vec</span> <span class="o">=</span> <span class="n">tp</span><span class="p">,</span>
+                <span class="p">.</span><span class="n">nr_entries</span> <span class="o">=</span> <span class="n">nr_entries</span><span class="p">,</span>
+                <span class="p">.</span><span class="n">refs</span> <span class="o">=</span> <span class="n">ATOMIC_INIT</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">};</span>
+        <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">int3</span> <span class="o">=</span> <span class="n">INT3_INSN_OPCODE</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">do_sync</span><span class="p">;</span>
+
+        <span class="n">lockdep_assert_held</span><span class="p">(</span><span class="o">&amp;</span><span class="n">text_mutex</span><span class="p">);</span>
+
+        <span class="n">smp_store_release</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bp_desc</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">desc</span><span class="p">);</span> <span class="cm">/* rcu_assign_pointer */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Corresponding read barrier in int3 notifier for making sure the</span>
+<span class="cm">         * nr_entries and handler are correctly ordered wrt. patching.</span>
+<span class="cm">         */</span>
+        <span class="n">smp_wmb</span><span class="p">();</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * First step: add a int3 trap to the address that will be patched.</span>
+<span class="cm">         */</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nr_entries</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">old</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">u8</span> <span class="o">*</span><span class="p">)</span><span class="n">text_poke_addr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+                <span class="n">text_poke</span><span class="p">(</span><span class="n">text_poke_addr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="o">&amp;</span><span class="n">int3</span><span class="p">,</span> <span class="n">INT3_INSN_SIZE</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="n">text_poke_sync</span><span class="p">();</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Second step: update all but the first byte of the patched range.</span>
+<span class="cm">         */</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">do_sync</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nr_entries</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">u8</span> <span class="n">old</span><span class="p">[</span><span class="n">POKE_MAX_OPCODE_SIZE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">old</span><span class="p">,</span> <span class="p">};</span>
+                <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">text_opcode_size</span><span class="p">(</span><span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">opcode</span><span class="p">);</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">-</span> <span class="n">INT3_INSN_SIZE</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="n">memcpy</span><span class="p">(</span><span class="n">old</span> <span class="o">+</span> <span class="n">INT3_INSN_SIZE</span><span class="p">,</span>
+                               <span class="n">text_poke_addr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="n">INT3_INSN_SIZE</span><span class="p">,</span>
+                               <span class="n">len</span> <span class="o">-</span> <span class="n">INT3_INSN_SIZE</span><span class="p">);</span>
+                        <span class="n">text_poke</span><span class="p">(</span><span class="n">text_poke_addr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="n">INT3_INSN_SIZE</span><span class="p">,</span>
+                                  <span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">text</span> <span class="o">+</span> <span class="n">INT3_INSN_SIZE</span><span class="p">,</span>
+                                  <span class="n">len</span> <span class="o">-</span> <span class="n">INT3_INSN_SIZE</span><span class="p">);</span>
+                        <span class="n">do_sync</span><span class="o">++</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="cm">/*</span>
+<span class="cm">                 * Emit a perf event to record the text poke, primarily to</span>
+<span class="cm">                 * support Intel PT decoding which must walk the executable code</span>
+<span class="cm">                 * to reconstruct the trace. The flow up to here is:</span>
+<span class="cm">                 *   - write INT3 byte</span>
+<span class="cm">                 *   - IPI-SYNC</span>
+<span class="cm">                 *   - write instruction tail</span>
+<span class="cm">                 * At this point the actual control flow will be through the</span>
+<span class="cm">                 * INT3 and handler and not hit the old or new instruction.</span>
+<span class="cm">                 * Intel PT outputs FUP/TIP packets for the INT3, so the flow</span>
+<span class="cm">                 * can still be decoded. Subsequently:</span>
+<span class="cm">                 *   - emit RECORD_TEXT_POKE with the new instruction</span>
+<span class="cm">                 *   - IPI-SYNC</span>
+<span class="cm">                 *   - write first byte</span>
+<span class="cm">                 *   - IPI-SYNC</span>
+<span class="cm">                 * So before the text poke event timestamp, the decoder will see</span>
+<span class="cm">                 * either the old instruction flow or FUP/TIP of INT3. After the</span>
+<span class="cm">                 * text poke event timestamp, the decoder will see either the</span>
+<span class="cm">                 * new instruction flow or FUP/TIP of INT3. Thus decoders can</span>
+<span class="cm">                 * use the timestamp as the point at which to modify the</span>
+<span class="cm">                 * executable code.</span>
+<span class="cm">                 * The old instruction is recorded so that the event can be</span>
+<span class="cm">                 * processed forwards or backwards.</span>
+<span class="cm">                 */</span>
+                <span class="n">perf_event_text_poke</span><span class="p">(</span><span class="n">text_poke_addr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">old</span><span class="p">,</span> <span class="n">len</span><span class="p">,</span>
+                                     <span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">text</span><span class="p">,</span> <span class="n">len</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">do_sync</span><span class="p">)</span> <span class="p">{</span>
+                <span class="cm">/*</span>
+<span class="cm">                 * According to Intel, this core syncing is very likely</span>
+<span class="cm">                 * not necessary and we&#39;d be safe even without it. But</span>
+<span class="cm">                 * better safe than sorry (plus there&#39;s not only Intel).</span>
+<span class="cm">                 */</span>
+                <span class="n">text_poke_sync</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Third step: replace the first byte (int3) by the first byte of</span>
+<span class="cm">         * replacing opcode.</span>
+<span class="cm">         */</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">do_sync</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nr_entries</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">INT3_INSN_OPCODE</span><span class="p">)</span>
+                        <span class="k">continue</span><span class="p">;</span>
+
+                <span class="n">text_poke</span><span class="p">(</span><span class="n">text_poke_addr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">tp</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">text</span><span class="p">,</span> <span class="n">INT3_INSN_SIZE</span><span class="p">);</span>
+                <span class="n">do_sync</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">do_sync</span><span class="p">)</span>
+                <span class="n">text_poke_sync</span><span class="p">();</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Remove and synchronize_rcu(), except we have a very primitive</span>
+<span class="cm">         * refcount based completion.</span>
+<span class="cm">         */</span>
+        <span class="n">WRITE_ONCE</span><span class="p">(</span><span class="n">bp_desc</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span> <span class="cm">/* RCU_INIT_POINTER */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">atomic_dec_and_test</span><span class="p">(</span><span class="o">&amp;</span><span class="n">desc</span><span class="p">.</span><span class="n">refs</span><span class="p">))</span>
+                <span class="n">atomic_cond_read_acquire</span><span class="p">(</span><span class="o">&amp;</span><span class="n">desc</span><span class="p">.</span><span class="n">refs</span><span class="p">,</span> <span class="o">!</span><span class="n">VAL</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">text_poke_loc_init</span><span class="p">(</span><span class="k">struct</span> <span class="nc">text_poke_loc</span> <span class="o">*</span><span class="n">tp</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">addr</span><span class="p">,</span>
+                               <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">opcode</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">len</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">emulate</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">insn</span> <span class="n">insn</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+
+        <span class="n">memcpy</span><span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">tp</span><span class="o">-&gt;</span><span class="n">text</span><span class="p">,</span> <span class="n">opcode</span><span class="p">,</span> <span class="n">len</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">emulate</span><span class="p">)</span>
+                <span class="n">emulate</span> <span class="o">=</span> <span class="n">opcode</span><span class="p">;</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">insn_decode_kernel</span><span class="p">(</span><span class="o">&amp;</span><span class="n">insn</span><span class="p">,</span> <span class="n">emulate</span><span class="p">);</span>
+
+        <span class="n">BUG_ON</span><span class="p">(</span><span class="n">ret</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="n">BUG_ON</span><span class="p">(</span><span class="n">len</span> <span class="o">!=</span> <span class="n">insn</span><span class="p">.</span><span class="n">length</span><span class="p">);</span>
+
+        <span class="n">tp</span><span class="o">-&gt;</span><span class="n">rel_addr</span> <span class="o">=</span> <span class="n">addr</span> <span class="o">-</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">_stext</span><span class="p">;</span>
+        <span class="n">tp</span><span class="o">-&gt;</span><span class="n">opcode</span> <span class="o">=</span> <span class="n">insn</span><span class="p">.</span><span class="n">opcode</span><span class="p">.</span><span class="n">bytes</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+
+        <span class="k">switch</span> <span class="p">(</span><span class="n">tp</span><span class="o">-&gt;</span><span class="n">opcode</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="nl">INT3_INSN_OPCODE</span><span class="p">:</span>
+        <span class="k">case</span> <span class="nl">RET_INSN_OPCODE</span><span class="p">:</span>
+                <span class="k">break</span><span class="p">;</span>
+
+        <span class="k">case</span> <span class="nl">CALL_INSN_OPCODE</span><span class="p">:</span>
+        <span class="k">case</span> <span class="nl">JMP32_INSN_OPCODE</span><span class="p">:</span>
+        <span class="k">case</span> <span class="nl">JMP8_INSN_OPCODE</span><span class="p">:</span>
+                <span class="n">tp</span><span class="o">-&gt;</span><span class="n">rel32</span> <span class="o">=</span> <span class="n">insn</span><span class="p">.</span><span class="n">immediate</span><span class="p">.</span><span class="n">value</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+
+        <span class="k">default</span><span class="o">:</span> <span class="cm">/* assume NOP */</span>
+                <span class="k">switch</span> <span class="p">(</span><span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">case</span> <span class="mi">2</span><span class="o">:</span> <span class="cm">/* NOP2 -- emulate as JMP8+0 */</span>
+                        <span class="n">BUG_ON</span><span class="p">(</span><span class="n">memcmp</span><span class="p">(</span><span class="n">emulate</span><span class="p">,</span> <span class="n">x86_nops</span><span class="p">[</span><span class="n">len</span><span class="p">],</span> <span class="n">len</span><span class="p">));</span>
+                        <span class="n">tp</span><span class="o">-&gt;</span><span class="n">opcode</span> <span class="o">=</span> <span class="n">JMP8_INSN_OPCODE</span><span class="p">;</span>
+                        <span class="n">tp</span><span class="o">-&gt;</span><span class="n">rel32</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                        <span class="k">break</span><span class="p">;</span>
+
+                <span class="k">case</span> <span class="mi">5</span><span class="o">:</span> <span class="cm">/* NOP5 -- emulate as JMP32+0 */</span>
+                        <span class="n">BUG_ON</span><span class="p">(</span><span class="n">memcmp</span><span class="p">(</span><span class="n">emulate</span><span class="p">,</span> <span class="n">x86_nops</span><span class="p">[</span><span class="n">len</span><span class="p">],</span> <span class="n">len</span><span class="p">));</span>
+                        <span class="n">tp</span><span class="o">-&gt;</span><span class="n">opcode</span> <span class="o">=</span> <span class="n">JMP32_INSN_OPCODE</span><span class="p">;</span>
+                        <span class="n">tp</span><span class="o">-&gt;</span><span class="n">rel32</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                        <span class="k">break</span><span class="p">;</span>
+
+                <span class="k">default</span><span class="o">:</span> <span class="cm">/* unknown instruction */</span>
+                        <span class="n">BUG</span><span class="p">();</span>
+                <span class="p">}</span>
+                <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+<dl class="simple">
+<dt>3.总结</dt><dd><dl class="simple">
+<dt>a.ftrace 原理总结。</dt><dd><p>1.CFLAGS +=-pg ==&gt; mcount
+2.ftrace_init():kernel:__mcount_loc + 模块加载：load_module:__mcount_loc  处理 __mcount_loc节信息，并替换地址中指令为nop;
+3.trace_init()及具体使用时将IP地址中的指令进行进一步替换。</p>
+</dd>
+<dt>b.下一步需要完善：</dt><dd><ul class="simple">
+<li><p>细化当前引用代码注释；</p></li>
+<li><p>增加内核模块部分第二步的替换部分；</p></li>
+<li><p>对指令替换部分进行更深入总结；</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
 </div>
 </div>
 </div>
@@ -155,7 +2935,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="lock.html" class="btn btn-neutral float-left" title="linux 内核竞争处理" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="kexec.html" class="btn btn-neutral float-right" title="kexec总结" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="kexec.html" class="btn btn-neutral float-right" title="linux 加载ELF 内核文件：kexec" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

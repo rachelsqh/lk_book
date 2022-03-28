@@ -51,27 +51,89 @@
 <li class="toctree-l4"><a class="reference internal" href="#kernel-unwind">5. kernel unwind 实现</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id2">6. 用户态常见取栈方法</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id3">函数调用序列</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">寄存器和栈帧</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#id6">栈帧</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id7">参数传递</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id9">操作系统接口</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id19">处理器初始化</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id26">编码示例</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">异常接口</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">虚拟地址空间</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">页长度</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id13">虚拟地址对齐</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id18">处理器初始化</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id19">初始化栈和寄存器状态</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id20">辅助向量</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id23">编码示例</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id24">架构约束</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id25">约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id26">位置无关的函数序言</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id27">数据对象</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id28">函数调用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id29">分支</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id30">变量参数列表</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#dwarf">DWARF定义</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id36">栈展开算法</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id31">DWARF 发行值</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id32">DWARF 寄存器号映射</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id33">栈展开算法</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#elf">ELF头</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id38">节</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id43">符号表</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id44">重定位</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id47">程序加载</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id49">动态链接</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id34">机器信息</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id35">节</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id36">节标识</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id37">节类型</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id38">特定节</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id39">EH_FRAME节</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id40">符号表</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id41">重定位</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id42">重定位类型</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id43">大模式</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id44">程序加载</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id45">程序头</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id46">动态链接</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id47">程序加载器</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id48">初始化和结束函数</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#c">C库</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id49">全局数据符号</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id50">浮点环境函数</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#unwind">Unwind库接口</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id61">汇编代码中的展开</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id51">异常句柄架构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id52">数据结构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id53">丢出异常</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id54">异常对象管理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id55">上下文管理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id56">私有例程</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id57">汇编代码中的展开</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gotip">GOT指针和IP相对寻址</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id62">32位程序执行</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id58">32位程序执行</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#amd64-linux">AMD64 linux 内核约定</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#id59">调用约定</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id60">栈布局</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id61">请求处理器特性</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id63">其他问题</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_as.html">AS:内核汇编</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_ld.html">ld 在linux中的应用</a></li>
 <li class="toctree-l3"><a class="reference internal" href="comp_gcc.html">GCC 在linux 内核中的应用</a></li>
@@ -98,6 +160,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../uboot.html">uboot理解</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dot.html">dot画图</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bpf_helper.html">BPF-HELPERS</a></li>
 </ul>
 
         </div>
@@ -128,12 +191,12 @@
              
   <div class="section" id="linux">
 <h1>linux 二进制接口<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h1>
+<p>应用程序二进制接口参考：<a class="reference external" href="https://refspecs.linuxbase.org/">https://refspecs.linuxbase.org/</a></p>
 <p>跟踪信息的实现原理</p>
 <p><a class="reference external" href="https://www.kernel.org/doc/html/latest/x86/orc-unwinder.html">https://www.kernel.org/doc/html/latest/x86/orc-unwinder.html</a></p>
 <p>linux kernel unwinder选择：</p>
-<dl>
-<dt>kernel hacking</dt><dd><blockquote>
-<div><dl class="simple">
+<dl class="simple">
+<dt>kernel hacking</dt><dd><dl class="simple">
 <dt>–&gt; x86 Debugging</dt><dd><dl class="simple">
 <dt>–&gt;Choose kernel unwinder:  UNWINDER_ORC:               ORC unwinder</dt><dd><p>UNWINDER_FRAME_POINTER:     Frame pointer unwinder
 UNWINDER_GUESS:             Guess unwinder</p>
@@ -141,10 +204,12 @@ UNWINDER_GUESS:             Guess unwinder</p>
 </dl>
 </dd>
 </dl>
-</div></blockquote>
-<p>这一段与gcc,elf,ld搅和在一起。</p>
 </dd>
 </dl>
+<p>我们当前一般设定为UNWINDER_ORC。</p>
+<blockquote>
+<div><p>这一段与gcc,elf,ld搅和在一起。</p>
+</div></blockquote>
 <p>参考：</p>
 <p><a class="reference external" href="https://blog.csdn.net/pwl999/article/details/107569603">https://blog.csdn.net/pwl999/article/details/107569603</a></p>
 <p>unwind栈回溯
@@ -178,9 +243,9 @@ x86_64的frame point模式</p>
 1. 拥有源语言信息。
 2. 编码紧凑，并随程序一起加载。</p>
 <p>但是.debug_frame和.eh_frame同时面临一个难题：怎么样生成堆栈信息表？</p>
-<p>CFI directives:
-为了解决上述难题，GAS(GCC Assembler)汇编编译器定义了一组伪指令来协助生成调用栈信息CFI(Call Frame Information)。
-CFI directives伪指令是一组生成CFI调试信息的高级语言，它的形式类似于：</p>
+<p>CFI 指令：</p>
+<p>GAS(GCC Assembler)汇编编译器定义了一组伪指令来协助生成调用栈信息CFI(Call Frame Information)。
+CFI 伪指令是一组生成CFI调试信息的高级语言，它的形式类似于：</p>
 <blockquote>
 <div><dl class="simple">
 <dt>f：</dt><dd><p>.cfi_startproc
@@ -224,14 +289,14 @@ pushl％ebp
 <h2>函数调用序列<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <p>标准函数调用顺序，包括堆栈、框架布局、寄存器使用、参数传递等。
 标准调用顺序要求仅适用于全局函数。其他编译单元无法访问的本地函数可能使用不同的约定。尽管如此，建议所有函数尽可能使用标准调用序列。</p>
+</div>
+</div>
 <div class="section" id="id4">
-<h3>寄存器和栈帧<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<h1>寄存器和栈帧<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h1>
 <p>AMD64 架构提供 16 个通用 64 位寄存器。此外，该架构还提供 16 个 SSE 寄存器，每个 128 位宽和 8 个 x87 浮点寄存器，每个 80 位宽。每个 x87 浮点寄存器都可以在 MMX/3DNow! 中引用！模式作为 64 位寄存器。所有这些寄存器对于正在运行的程序中的所有过程都是全局的。</p>
 <img alt="../../_images/stack_frame_base_pointer.png" class="align-center" id="id5" src="../../_images/stack_frame_base_pointer.png" />
 <p>寄存器 %rbp、%rbx 和 %r12 到 %r15 “属于”调用函数，并且被调用函数需要保留它们的值。换句话说，被调用函数必须为其调用者保留这些寄存器的值。剩余的寄存器“属于”被调用的函数。如果调用函数想要在函数调用中保留这样的寄存器值，它必须将值保存在其本地堆栈帧中。</p>
 <p>CPU 在进入函数时应处于 x87 模式。因此，每个使用 MMX 寄存器的函数都需要在使用 MMX 寄存器后，在返回或调用另一个函数之前发出 emms 或 femms 指令。%eflags 中的方向标志register 必须在函数入口和函数返回时清除。</p>
-</div>
-</div>
 <div class="section" id="id6">
 <h2>栈帧<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <p>除了寄存器之外，每个函数在运行时堆栈上都有一个帧。这个堆栈从高地址向下增长。图一 显示了堆栈组织。
@@ -252,38 +317,32 @@ pushl％ebp
 </div>
 <div class="section" id="id9">
 <h2>操作系统接口<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id10">
-<h3>异常接口<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id11">
-<h4>硬件异常类型<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
 </div>
+</div>
+<div class="section" id="id10">
+<h1>异常接口<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="id11">
+<h1>虚拟地址空间<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h1>
 </div>
 <div class="section" id="id12">
-<h3>虚拟地址空间<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<h1>页长度<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h1>
 </div>
 <div class="section" id="id13">
-<h3>页长度<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id14">
-<h3>虚拟地址对齐<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
-<img alt="../../_images/had_e_s.png" class="align-center" id="id15" src="../../_images/had_e_s.png" />
+<h1>虚拟地址对齐<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h1>
+<img alt="../../_images/had_e_s.png" class="align-center" id="id14" src="../../_images/had_e_s.png" />
 <p>浮点异常</p>
-<img alt="../../_images/fpe.png" class="align-center" id="id16" src="../../_images/fpe.png" />
+<img alt="../../_images/fpe.png" class="align-center" id="id15" src="../../_images/fpe.png" />
 <p>虚拟地址配置</p>
-<img alt="lk_devel/lk_comp/img/vac.png" class="align-center" id="id17" src="lk_devel/lk_comp/img/vac.png" />
+<img alt="lk_devel/lk_comp/img/vac.png" class="align-center" id="id16" src="lk_devel/lk_comp/img/vac.png" />
 <p>传统段对齐</p>
-<img alt="../../_images/vsa.png" class="align-center" id="id18" src="../../_images/vsa.png" />
+<img alt="../../_images/vsa.png" class="align-center" id="id17" src="../../_images/vsa.png" />
+<div class="section" id="id18">
+<h2>处理器初始化<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 <div class="section" id="id19">
-<h2>处理器初始化<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id20">
-<h3>初始化栈和寄存器状态<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id21">
-<h4>特定寄存器<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h4>
-</div>
-<div class="section" id="id22">
-<h4>栈状态<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h4>
+<h1>初始化栈和寄存器状态<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h1>
 <p>本节描述 exec (BA_OS) 为新进程创建的机器状态。各种语言实现将这个初始程序状态转换为语言标准要求的状态。</p>
 <p>例如，一个 C 程序从一个名为 main 的函数开始执行，声明为：
 extern int main ( int argc , char <em>argv[ ] , char</em> envp[ ] );</p>
@@ -294,13 +353,12 @@ extern int main ( int argc , char <em>argv[ ] , char</em> envp[ ] );</p>
 </ol>
 <p>initial process stack:</p>
 </div>
-</div>
-<div class="section" id="id23">
-<h3>辅助向量<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id20">
+<h1>辅助向量<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h1>
 <p>辅助向量是以下结构的数组（参考图 3.10），根据 a_type 成员进行解释。</p>
-<img alt="../../_images/auxv_t.png" class="align-center" id="id24" src="../../_images/auxv_t.png" />
+<img alt="../../_images/auxv_t.png" class="align-center" id="id21" src="../../_images/auxv_t.png" />
 <p>Auxiliary Vector Types:</p>
-<img alt="../../_images/avt.png" class="align-center" id="id25" src="../../_images/avt.png" />
+<img alt="../../_images/avt.png" class="align-center" id="id22" src="../../_images/avt.png" />
 <ol class="arabic simple">
 <li><p>AT_NULL:</p></li>
 <li><p>AT_IGNORE:</p></li>
@@ -318,15 +376,15 @@ extern int main ( int argc , char <em>argv[ ] , char</em> envp[ ] );</p>
 <li><p>AT_GID:</p></li>
 <li><p>AT_EGID:</p></li>
 </ol>
+<div class="section" id="id23">
+<h2>编码示例<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
-<div class="section" id="id26">
-<h2>编码示例<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id27">
-<h3>架构约束<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id24">
+<h1>架构约束<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h1>
 </div>
-<div class="section" id="id28">
-<h3>约定<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id25">
+<h1>约定<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h1>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="mailto:name&#37;&#52;&#48;GOT">name<span>&#64;</span>GOT</a>:指定符号名称从 GOT 的基础到 GOT 条目的偏移量。</p></li>
 <li><p><a class="reference external" href="mailto:name&#37;&#52;&#48;GOTPLT">name<span>&#64;</span>GOTPLT</a></p></li>
@@ -337,96 +395,94 @@ extern int main ( int argc , char <em>argv[ ] , char</em> envp[ ] );</p>
 <li><p>_GLOBAL_OFFSET_TABLE_:</p></li>
 </ol>
 </div>
+<div class="section" id="id26">
+<h1>位置无关的函数序言<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="id27">
+<h1>数据对象<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="id28">
+<h1>函数调用<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h1>
+</div>
 <div class="section" id="id29">
-<h3>位置无关的函数序言<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<h1>分支<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h1>
 </div>
 <div class="section" id="id30">
-<h3>数据对象<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id31">
-<h3>函数调用<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id32">
-<h3>分支<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id33">
-<h3>变量参数列表<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
+<h1>变量参数列表<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="dwarf">
 <h2>DWARF定义<a class="headerlink" href="#dwarf" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id34">
-<h3>DWARF 发行值<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id35">
-<h3>DWARF 寄存器号映射<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
-<div class="section" id="id36">
-<h2>栈展开算法<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id31">
+<h1>DWARF 发行值<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="id32">
+<h1>DWARF 寄存器号映射<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id33">
+<h2>栈展开算法<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h2>
 <p>对象文件
 ————————</p>
 </div>
 <div class="section" id="elf">
 <h2>ELF头<a class="headerlink" href="#elf" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id37">
-<h3>机器信息<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
 </div>
+</div>
+<div class="section" id="id34">
+<h1>机器信息<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id35">
+<h2>节<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+<div class="section" id="id36">
+<h1>节标识<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="id37">
+<h1>节类型<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h1>
 </div>
 <div class="section" id="id38">
-<h2>节<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id39">
-<h3>节标识<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
+<h1>特定节<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h1>
 </div>
+<div class="section" id="id39">
+<h1>EH_FRAME节<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id40">
-<h3>节类型<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
+<h2>符号表<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="id41">
-<h3>特定节<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
+<h2>重定位<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 <div class="section" id="id42">
-<h3>EH_FRAME节<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h3>
-</div>
+<h1>重定位类型<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h1>
 </div>
 <div class="section" id="id43">
-<h2>符号表<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="id44">
-<h2>重定位<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id45">
-<h3>重定位类型<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id46">
-<h3>大模式<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
+<h1>大模式<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h1>
 <p>程序加载和动态链接</p>
+<div class="section" id="id44">
+<h2>程序加载<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+<div class="section" id="id45">
+<h1>程序头<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id46">
+<h2>动态链接<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 <div class="section" id="id47">
-<h2>程序加载<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h2>
+<h1>程序加载器<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h1>
+</div>
 <div class="section" id="id48">
-<h3>程序头<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
+<h1>初始化和结束函数<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h1>
+<p>库</p>
+<p>进一步理解需要参考Intel386 ABI</p>
+<div class="section" id="c">
+<h2>C库<a class="headerlink" href="#c" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 <div class="section" id="id49">
-<h2>动态链接<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h2>
+<h1>全局数据符号<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h1>
+</div>
 <div class="section" id="id50">
-<h3>程序加载器<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id51">
-<h3>初始化和结束函数<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
-<p>库</p>
-<p>进一步理解需要参考Intel386 ABI</p>
-</div>
-</div>
-<div class="section" id="c">
-<h2>C库<a class="headerlink" href="#c" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id52">
-<h3>全局数据符号<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id53">
-<h3>浮点环境函数<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
+<h1>浮点环境函数<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="unwind">
 <h2>Unwind库接口<a class="headerlink" href="#unwind" title="Permalink to this headline">¶</a></h2>
 <p>本节定义了 Unwind Library 接口，预计将由任何 AMD64 psABI 兼容系统提供。这是构建 C++ ABI 异常处理工具的接口。我们假设 DWARF 调试信息格式文档中描述的调用帧信息表作为基础。</p>
@@ -447,10 +503,10 @@ _Unwind_GetCFA</p>
 </div></blockquote>
 <p>此外，定义了两种数据类型（_Unwind_Context 和 _Unwind_Exception）来接口调用运行时（例如 C++ 运行时）和上述例程。所有例程和接口的行为都如同定义了 extern “C”。特别是，名称没有被破坏。作为该接口的一部分定义的所有名称都有一个“_Unwind_”前缀。</p>
 <p>最后，编译器会将语言和供应商特定的个性例程存储在需要异常处理的堆栈帧的展开描述符中。 展开程序调用个性例程来处理特定于语言的任务，例如识别处理特定异常的帧。</p>
-<div class="section" id="id54">
-<h3>异常句柄架构<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="unwinding">
-<h4>unwinding的原因，两个：<a class="headerlink" href="#unwinding" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+<div class="section" id="id51">
+<h1>异常句柄架构<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h1>
 <ol class="arabic simple">
 <li><p>异常，由支持它们的语言定义</p></li>
 <li><p>“强制”展开（例如由 longjmp 或线程终止引起）</p></li>
@@ -460,9 +516,6 @@ _Unwind_GetCFA</p>
 2. 另一方面，在“强制展开”期间，外部因素正在推动展开。 例如，这可以是 longjmp 例程。 这个外部代理，不是每个个性惯例，知道什么时候停止放松。 _UA_FORCE_UNWIND 标志指示了个性例程没有选择是否继续展开的事实。</p>
 <p>为了适应这些差异，提出了两种不同的例程。 _Unwind_RaiseExceptio 在个性例程的控制下执行异常风格的展开。 另一方面，_Unwind_ForcedUnwind 执行展开，但让外部代理有机会拦截对个性例程的调用。 这是使用代理个性例程完成的，该例程拦截对个性例程的调用，让外部代理覆盖堆栈帧的个性例程的默认值。</p>
 <p>因此，每个人格例程都没有必要知道任何可能导致放松的外部因素。 例如，C++ 个性例程只需要处理 C++ 异常（并且可能伪装外部异常），但它不需要知道代表 longjmp 或 pthreads 取消完成的任何具体的展开。</p>
-</div>
-<div class="section" id="id55">
-<h4>unwind过程<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h4>
 <p>标准 ABI 异常处理/展开过程以上述形式之一引发异常开始。 这个调用指定了一个异常对象和一个异常类。
 然后运行时框架开始一个两阶段的过程：</p>
 <ol class="arabic simple">
@@ -475,25 +528,22 @@ _Unwind_GetCFA</p>
 <p>例如，如果展开的前两帧仅包含清理代码，而第三帧包含 C++ catch 子句，则阶段 1 中的个性例程并不表示它为前两帧找到了处理程序。 它必须对第三帧这样做，因为不知道异常将如何从第三帧传播出去，例如 通过重新抛出异常或在 C++ 中抛出一个新异常。</p>
 <p>AMD64 psABI 指定的用于实现此框架的 API 在以下部分中描述。</p>
 </div>
+<div class="section" id="id52">
+<h1>数据结构<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="id53">
+<h1>丢出异常<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="id54">
+<h1>异常对象管理<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="id55">
+<h1>上下文管理<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h1>
 </div>
 <div class="section" id="id56">
-<h3>数据结构<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h3>
-</div>
+<h1>私有例程<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id57">
-<h3>丢出异常<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id58">
-<h3>异常对象管理<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id59">
-<h3>上下文管理<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="id60">
-<h3>私有例程<a class="headerlink" href="#id60" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="id61">
-<h2>汇编代码中的展开<a class="headerlink" href="#id61" title="Permalink to this headline">¶</a></h2>
+<h2>汇编代码中的展开<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h2>
 <p>开发环境</p>
 <p>约定</p>
 </div>
@@ -501,13 +551,15 @@ _Unwind_GetCFA</p>
 <h2>GOT指针和IP相对寻址<a class="headerlink" href="#gotip" title="Permalink to this headline">¶</a></h2>
 <p>linux 约定</p>
 </div>
-<div class="section" id="id62">
-<h2>32位程序执行<a class="headerlink" href="#id62" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id58">
+<h2>32位程序执行<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="amd64-linux">
 <h2>AMD64 linux 内核约定<a class="headerlink" href="#amd64-linux" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id63">
-<h3>调用约定<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id59">
+<h1>调用约定<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h1>
 <p>Linux AMD64 内核在内部使用与用户级应用程序相同的调用约定,喜欢调用系统调用的用户级应用程序应该使用 C 库中的函数。C 库和 Linux 内核之间的接口与用户级应用程序的接口相同，但有以下区别：</p>
 <ol class="arabic simple">
 <li><p>用户级应用程序中通过整数寄存器进行参数传递的顺序，%rdi, %rsi, %rdx, %rcx, %r8 和 %r9；内核接口采用如下顺序：%rdi,%rsi, %rdx, %r10, %r8 和 %r9。</p></li>
@@ -518,19 +570,17 @@ _Unwind_GetCFA</p>
 <li><p>只能向内核中传递INTEGER或MEMORY类型参数。</p></li>
 </ol>
 </div>
-<div class="section" id="id64">
-<h3>栈布局<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id60">
+<h1>栈布局<a class="headerlink" href="#id60" title="Permalink to this headline">¶</a></h1>
 <p>Linux 内核不遵守红色区域</p>
 </div>
-<div class="section" id="id65">
-<h3>请求处理器特性<a class="headerlink" href="#id65" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id61">
+<h1>请求处理器特性<a class="headerlink" href="#id61" title="Permalink to this headline">¶</a></h1>
 <p>Required Processor Features</p>
-<img alt="../../_images/rpf.png" class="align-center" id="id66" src="../../_images/rpf.png" />
+<img alt="../../_images/rpf.png" class="align-center" id="id62" src="../../_images/rpf.png" />
 </div>
-<div class="section" id="id67">
-<h3>其他问题<a class="headerlink" href="#id67" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
+<div class="section" id="id63">
+<h1>其他问题<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
