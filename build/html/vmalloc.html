@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vmalloc分析 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动(待修正）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gitlab.html">基于gitlab的项目管理(待修正)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>vmalloc分析</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/vmalloc.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="vmalloc">
+<h1>vmalloc分析<a class="headerlink" href="#vmalloc" title="Permalink to this headline">¶</a></h1>
+<p>kmalloc返回的内存是物理的，连续的，更适合于类似设备驱动的程序来使用。 但vmalloc能使用更多的资源，因为vmalloc还可以处理交换空间。 kmalloc对应于kfree，可以分配连续的物理内存； vmalloc对应于vfree，分配连续的虚拟内存，但是物理上不一定连续。</p>
+<p>vmalloc –&gt; alloc_page –&gt;更新到页表：
+进行页表录页表项的设置， mm_struct的pgd-&gt;p4d-&gt;pud-&gt;pmd-&gt;pte逐层填充, 如果页表项涉及变化通过`arch_sync_kernel_mappings(start, end);进行更新</p>
+<p>vmalloc使用SLUB使用伙伴系统的申请的是其结构信息, 物理页面是通过伙伴系统申请, 并完成映射。</p>
+<p>在最近的版本中， 已经将vmalloc缺页中断处理移除， 通过XXX_alloc_track跟踪页目录及页表项变化，通过 arch_sync_kernel_mappings在申请和释放阶段同步通知所有页表
+参见:x86/mm: remove vmalloc faulting</p>
+<p>X86-64 处理如下，将全局pgd同步到每个建立映射的物理页面.</p>
+<p>在Linux中，伙伴系统（buddy system）是以页为单位管理和分配内存。但是现实的需求却以字节为单位，假如我们需要申请20Bytes，总不能分配一页吧！那岂不是严重浪费内存。那么该如何分配呢？slab分配器就应运而生了，专为小内存分配而生。slab分配器分配内存以Byte为单位。但是slab分配器并没有脱离伙伴系统，而是基于伙伴系统分配的大内存进一步细分成小内存分配。</p>
+<p>前段时间学习了下slab分配器工作原理。因为自己本身是做手机的，发现现在好像都在使用slub分配器，想想还是再研究一下slub的工作原理。之前看了代码，感觉挺多数据结构和成员的。成员的意思是什么？数据结构之间的关系是什么？不知道你是否感觉云里雾里。既然代码阅读起来晦涩难懂，如果有精美的配图，不知是否有助于阁下理解slub的来龙去脉呢？我想表达的意思就是文章图多，图多，图多。我们只说原理，尽量不看代码。因为所有代码中包含的内容我都会用图来说明。你感兴趣绝对有助于你看代码。</p>
+<p>说明：slub是slab中的一种，slab也是slab中的一种。有时候用slab来统称slab, slub和slob。slab, slub和slob仅仅是分配内存策略不同。本篇文章中说的是slub分配器工作的原理。但是针对分配器管理的内存，下文统称为slab缓存池。所以文章中slub和slab会混用，表示同一个意思。</p>
+<p>注：文章代码分析基于linux-4.15.0-rc3。 图片有点走形，请单独点开图片查看。</p>
+<p>　kmalloc() 申请的内存位于物理内存映射区域，而且在物理上也是连续的，它们与真实的物理地址只有一个固定的偏移，因为存在较简单的转换关系，所以对申请的内存大小有限制，不能超过128KB。</p>
+<p>较常用的 flags（分配内存的方法）：</p>
+<p>GFP_ATOMIC —— 分配内存的过程是一个原子过程，分配内存的过程不会被（高优先级进程或中断）打断；
+GFP_KERNEL —— 正常分配内存；
+GFP_DMA —— 给 DMA 控制器分配内存，需要使用该标志（DMA要求分配虚拟地址和物理地址连续）。
+flags 的参考用法：
+　<a href="#id1"><span class="problematic" id="id2">|</span></a>– 进程上下文，可以睡眠　　　　　GFP_KERNEL
+　<a href="#id3"><span class="problematic" id="id4">|</span></a>– 进程上下文，不可以睡眠　　　　GFP_ATOMIC
+　|　　<a href="#id5"><span class="problematic" id="id6">|</span></a>– 中断处理程序　　　　　　　GFP_ATOMIC
+　|　　<a href="#id7"><span class="problematic" id="id8">|</span></a>– 软中断　　　　　　　　　　GFP_ATOMIC
+　|　　<a href="#id9"><span class="problematic" id="id10">|</span></a>– Tasklet　　　　　　　　　GFP_ATOMIC
+　<a href="#id11"><span class="problematic" id="id12">|</span></a>– 用于DMA的内存，可以睡眠　　　GFP_DMA | GFP_KERNEL
+　<a href="#id13"><span class="problematic" id="id14">|</span></a>– 用于DMA的内存，不可以睡眠　　GFP_DMA <a href="#id15"><span class="problematic" id="id16">|</span></a>GFP_ATOMIC</p>
+<p>对应的内存释放函数为：</p>
+<p>void kfree(const void <a href="#id17"><span class="problematic" id="id18">*</span></a>objp);</p>
+<p>kzalloc()
+　　kzalloc() 函数与 kmalloc() 非常相似，参数及返回值是一样的，可以说是前者是后者的一个变种，因为 kzalloc() 实际上只是额外附加了 __GFP_ZERO 标志。所以它除了申请内核内存外，还会对申请到的内存内容清零。</p>
+<p>/** * kzalloc - allocate memory. The memory is set to zero. * &#64;size: how many bytes of memory are required. * &#64;flags: the type of memory to allocate (see kmalloc). <a href="#id19"><span class="problematic" id="id20">*</span></a>/
+static inline void <a href="#id21"><span class="problematic" id="id22">*</span></a>kzalloc(size_t size, gfp_t flags)
+{</p>
+<blockquote>
+<div><p>return kmalloc(size, flags | __GFP_ZERO);</p>
+</div></blockquote>
+<p>}
+kzalloc() 对应的内存释放函数也是 kfree()。</p>
+<p>vmalloc()
+函数原型：</p>
+<p>void <a href="#id23"><span class="problematic" id="id24">*</span></a>vmalloc(unsigned long size);
+　　vmalloc() 函数则会在虚拟内存空间给出一块连续的内存区，但这片连续的虚拟内存在物理内存中并不一定连续。由于 vmalloc() 没有保证申请到的是连续的物理内存，因此对申请的内存大小没有限制，如果需要申请较大的内存空间就需要用此函数了。</p>
+<p>对应的内存释放函数为：</p>
+<p>void vfree(const void <a href="#id25"><span class="problematic" id="id26">*</span></a>addr);
+注意：vmalloc() 和 vfree() 可以睡眠，因此不能从中断上下文调用。</p>
+<p>总结
+kmalloc()、kzalloc()、vmalloc() 的共同特点是：</p>
+<p>用于申请内核空间的内存；
+内存以字节为单位进行分配；
+所分配的内存虚拟地址上连续；
+kmalloc()、kzalloc()、vmalloc() 的区别是：</p>
+<p>kzalloc 是强制清零的 kmalloc 操作；（以下描述不区分 kmalloc 和 kzalloc）
+kmalloc 分配的内存大小有限制（128KB），而 vmalloc 没有限制；
+kmalloc 可以保证分配的内存物理地址是连续的，但是 vmalloc 不能保证；
+kmalloc 分配内存的过程可以是原子过程（使用 GFP_ATOMIC），而 vmalloc 分配内存时则可能产生阻塞；
+kmalloc 分配内存的开销小，因此 kmalloc 比 vmalloc 要快；
+一般情况下，内存只有在要被 DMA 访问的时候才需要物理上连续，但为了性能上的考虑，内核中一般使用 kmalloc()，而只有在需要获得大块内存时才使用 vmalloc()。例如，当模块被动态加载到内核当中时，就把模块装载到由 vmalloc() 分配的内存上。</p>
+<p>需要有一种手段可以分配非连续的页映射到一段连续的虚拟地址上. 这就是vmalloc的目的,接着就是32TB的vmalloc空间,以VMALLOC_START(64TB+1TB)开始,VMALLOC_END(64TB+1TB+32TB)结尾.非连续的页</p>
+<p>/* bits in flags of vmalloc’s vm_struct below <em>/
+#define VM_IOREMAP              0x00000001      /</em> ioremap() and friends <em>/
+#define VM_ALLOC                0x00000002      /</em> vmalloc() <em>/
+#define VM_MAP                  0x00000004      /</em> vmap()ed pages <em>/
+#define VM_USERMAP              0x00000008      /</em> suitable for remap_vmalloc_range <em>/
+#define VM_DMA_COHERENT         0x00000010      /</em> dma_alloc_coherent <em>/
+#define VM_UNINITIALIZED        0x00000020      /</em> vm_struct is not fully initialized <em>/
+#define VM_NO_GUARD             0x00000040      /</em> don’t add guard page <em>/
+#define VM_KASAN                0x00000080      /</em> has allocated kasan shadow memory <em>/
+#define VM_FLUSH_RESET_PERMS    0x00000100      /</em> reset direct map and flush TLB on unmap, can’t be freed in atomic context <em>/
+#define VM_MAP_PUT_PAGES        0x00000200      /</em> put pages and free array in vfree <em>/
+#define VM_NO_HUGE_VMAP         0x00000400      /</em> force PAGE_SIZE pte mapping <a href="#id27"><span class="problematic" id="id28">*</span></a>/</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>VM_KASAN is used slightly differently depending on CONFIG_KASAN_VMALLOC.</p></li>
+<li></li>
+<li><p>If IS_ENABLED(CONFIG_KASAN_VMALLOC), VM_KASAN is set on a vm_struct after</p></li>
+<li><p>shadow memory has been mapped. It’s used to handle allocation errors so that</p></li>
+<li><p>we don’t try to poison shadow on free if it was never allocated.</p></li>
+<li></li>
+<li><p>Otherwise, VM_KASAN is set for kasan_module_alloc() allocations and used to</p></li>
+<li><p>determine which allocations need the module shadow freed.</p></li>
+</ul>
+<p><a href="#id29"><span class="problematic" id="id30">*</span></a>/</p>
+</dd>
+</dl>
+<p>/* bits [20..32] reserved for arch specific ioremap internals <a href="#id31"><span class="problematic" id="id32">*</span></a>/</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Maximum alignment for ioremap() regions.</p></li>
+<li><p>Can be overridden by arch-specific value.</p></li>
+</ul>
+<p><a href="#id33"><span class="problematic" id="id34">*</span></a>/</p>
+</dd>
+</dl>
+<p>#ifndef IOREMAP_MAX_ORDER
+#define IOREMAP_MAX_ORDER       (7 + PAGE_SHIFT)        /* 128 pages <a href="#id35"><span class="problematic" id="id36">*</span></a>/
+#endif</p>
+<dl class="simple">
+<dt>struct vm_struct {/* 主要数据结构 <a href="#id37"><span class="problematic" id="id38">*</span></a>/</dt><dd><p>struct vm_struct        <a href="#id39"><span class="problematic" id="id40">*</span></a>next;
+void                    <a href="#id41"><span class="problematic" id="id42">*</span></a>addr;
+unsigned long           size;
+unsigned long           flags;
+struct page             <a href="#id43"><span class="problematic" id="id44">**</span></a>pages;</p>
+</dd>
+<dt>#ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC</dt><dd><p>unsigned int            page_order;</p>
+</dd>
+<dt>#endif</dt><dd><p>unsigned int            nr_pages;
+phys_addr_t             phys_addr;
+const void              <a href="#id45"><span class="problematic" id="id46">*</span></a>caller;</p>
+</dd>
+</dl>
+<p>};</p>
+<dl>
+<dt>struct vmap_area {</dt><dd><p>unsigned long va_start;
+unsigned long va_end;</p>
+<p>struct rb_node rb_node;         /* address sorted rbtree <em>/
+struct list_head list;          /</em> address sorted list <a href="#id47"><span class="problematic" id="id48">*</span></a>/</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>The following two variables can be packed, because</p></li>
+<li><p>a vmap_area object can be either:</p></li>
+<li><ol class="arabic simple">
+<li><p>in “free” tree (root is vmap_area_root)</p></li>
+</ol>
+</li>
+<li><ol class="arabic simple" start="2">
+<li><p>or “busy” tree (root is free_vmap_area_root)</p></li>
+</ol>
+</li>
+</ul>
+<p><a href="#id49"><span class="problematic" id="id50">*</span></a>/</p>
+</dd>
+<dt>union {</dt><dd><p>unsigned long subtree_max_size; /* in “free” tree <em>/
+struct vm_struct *vm;           /</em> in “busy” tree <a href="#id51"><span class="problematic" id="id52">*</span></a>/</p>
+</dd>
+</dl>
+<p>};</p>
+</dd>
+</dl>
+<p>};</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

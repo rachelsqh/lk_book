@@ -37,17 +37,16 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统概述</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发基础</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../x86_kernel_base.html">linux X86内核基础</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">linux 内核基础代码分析</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="base_arch.html">linux 内核代码目录结构</a></li>
 <li class="toctree-l2"><a class="reference internal" href="module.html">linux 内核模块原理分析</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">linux 内核通知/通信机制</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ipi">核间通信:IPI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#irq-work">irq work</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id87">等待队列（进程/线程)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id88">工作队列</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id89">基础</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id90">总结(个人理解）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">等待队列（进程/线程)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">工作队列</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id5">基础</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">总结(个人理解）</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#linux-softirq">linux 软中断：softirq</a></li>
@@ -64,17 +63,10 @@
 <li class="toctree-l2"><a class="reference internal" href="x86.html">x86架构部分</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../pm.html">电源管理框架</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cpu.html">cpu管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../ps.html">进程管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../mem.html">内存管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../fs.html">文件系统</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sec.html">linux 内核安全</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../uboot.html">uboot理解</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dot.html">dot画图</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../bpf_helper.html">BPF-HELPERS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动(待修正）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gitlab.html">基于gitlab的项目管理(待修正)</a></li>
 </ul>
 
         </div>
@@ -108,453 +100,708 @@
 <h2>核间通信:IPI<a class="headerlink" href="#ipi" title="Permalink to this headline">¶</a></h2>
 <p>触发本CPU或单个或几个或全部CPU的某个中断向量。
 x86-64中断向量总结为：</p>
-<iframe src="./x86-64_vec.html" height="345px" width="100%"></iframe><p>arch/x86/kernel/apic/ipi.c
-*</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>Send a ‘reschedule’ IPI to another CPU. It goes straight through and</p></li>
-<li><p>wastes no time serializing anything. Worst case is that we lose a</p></li>
-<li><p>reschedule …</p></li>
-</ul>
-<p><a href="#id1"><span class="problematic" id="id2">*</span></a>/</p>
-</div></blockquote>
-<p>void native_smp_send_reschedule(int cpu)
-{</p>
-<blockquote>
-<div><dl class="simple">
-<dt>if (unlikely(cpu_is_offline(cpu))) {</dt><dd><p>WARN(1, “sched: Unexpected reschedule of offline CPU#%d!n”, cpu);
-return;</p>
-</dd>
-</dl>
-<p>}
-apic-&gt;send_IPI(cpu, RESCHEDULE_VECTOR);</p>
-</div></blockquote>
-<p>}</p>
-<p>void native_send_call_func_single_ipi(int cpu)
-{</p>
-<blockquote>
-<div><p>apic-&gt;send_IPI(cpu, CALL_FUNCTION_SINGLE_VECTOR);</p>
-</div></blockquote>
-<p>}</p>
-<p>void native_send_call_func_ipi(const struct cpumask <a href="#id3"><span class="problematic" id="id4">*</span></a>mask)
-{</p>
-<blockquote>
-<div><dl>
-<dt>if (static_branch_likely(&amp;apic_use_ipi_shorthand)) {</dt><dd><p>unsigned int cpu = smp_processor_id();</p>
-<dl class="simple">
-<dt>if (!cpumask_or_equal(mask, cpumask_of(cpu), cpu_online_mask))</dt><dd><p>goto sendmask;</p>
-</dd>
-<dt>if (cpumask_test_cpu(cpu, mask))</dt><dd><p>apic-&gt;send_IPI_all(CALL_FUNCTION_VECTOR);</p>
-</dd>
-<dt>else if (num_online_cpus() &gt; 1)</dt><dd><p>apic-&gt;send_IPI_allbutself(CALL_FUNCTION_VECTOR);</p>
-</dd>
-</dl>
-<p>return;</p>
-</dd>
-</dl>
-<p>}</p>
-</div></blockquote>
-<dl class="simple">
-<dt>sendmask:</dt><dd><p>apic-&gt;send_IPI_mask(mask, CALL_FUNCTION_VECTOR);</p>
-</dd>
-</dl>
-<p>}</p>
-<p>void __default_send_IPI_shortcut(unsigned int shortcut, int vector)
-{</p>
-<blockquote>
-<div><dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>Subtle. In the case of the ‘never do double writes’ workaround</p></li>
-<li><p>we have to lock out interrupts to be safe.  As we don’t care</p></li>
-<li><p>of the value read we use an atomic rmw access to avoid costly</p></li>
-<li><p>cli/sti.  Otherwise we use an even cheaper single atomic write</p></li>
-<li><p>to the APIC.</p></li>
-</ul>
-<p><a href="#id5"><span class="problematic" id="id6">*</span></a>/</p>
-</dd>
-</dl>
-<p>unsigned int cfg;</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>Wait for idle.</p></li>
-</ul>
-<p><a href="#id7"><span class="problematic" id="id8">*</span></a>/</p>
-</dd>
-<dt>if (unlikely(vector == NMI_VECTOR))</dt><dd><p>safe_apic_wait_icr_idle();</p>
-</dd>
-<dt>else</dt><dd><p>__xapic_wait_icr_idle();</p>
-</dd>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>No need to touch the target chip field. Also the destination</p></li>
-<li><p>mode is ignored when a shorthand is used.</p></li>
-</ul>
-<p><a href="#id9"><span class="problematic" id="id10">*</span></a>/</p>
-</dd>
-</dl>
-<p>cfg = __prepare_ICR(shortcut, vector, 0);</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>Send the IPI. The write to APIC_ICR fires this off.</p></li>
-</ul>
-<p><a href="#id11"><span class="problematic" id="id12">*</span></a>/</p>
-</dd>
-</dl>
-<p>native_apic_mem_write(APIC_ICR, cfg);</p>
-</div></blockquote>
-<p>}</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>This is used to send an IPI with no shorthand notation (the destination is</p></li>
-<li><p>specified in bits 56 to 63 of the ICR).</p></li>
-</ul>
-<p><a href="#id13"><span class="problematic" id="id14">*</span></a>/</p>
-</dd>
-</dl>
-<p>void __default_send_IPI_dest_field(unsigned int mask, int vector, unsigned int dest)
-{</p>
-<blockquote>
-<div><p>unsigned long cfg;</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>Wait for idle.</p></li>
-</ul>
-<p><a href="#id15"><span class="problematic" id="id16">*</span></a>/</p>
-</dd>
-<dt>if (unlikely(vector == NMI_VECTOR))</dt><dd><p>safe_apic_wait_icr_idle();</p>
-</dd>
-<dt>else</dt><dd><p>__xapic_wait_icr_idle();</p>
-</dd>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>prepare target chip field</p></li>
-</ul>
-<p><a href="#id17"><span class="problematic" id="id18">*</span></a>/</p>
-</dd>
-</dl>
-<p>cfg = __prepare_ICR2(mask);
-native_apic_mem_write(APIC_ICR2, cfg);</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>program the ICR</p></li>
-</ul>
-<p><a href="#id19"><span class="problematic" id="id20">*</span></a>/</p>
-</dd>
-</dl>
-<p>cfg = __prepare_ICR(0, vector, dest);</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>Send the IPI. The write to APIC_ICR fires this off.</p></li>
-</ul>
-<p><a href="#id21"><span class="problematic" id="id22">*</span></a>/</p>
-</dd>
-</dl>
-<p>native_apic_mem_write(APIC_ICR, cfg);</p>
-</div></blockquote>
-<p>}</p>
-<p>void default_send_IPI_single_phys(int cpu, int vector)
-{</p>
-<blockquote>
-<div><p>unsigned long flags;</p>
-<p>local_irq_save(flags);
-__default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid, cpu),</p>
-<blockquote>
-<div><p>vector, APIC_DEST_PHYSICAL);</p>
-</div></blockquote>
-<p>local_irq_restore(flags);</p>
-</div></blockquote>
-<p>}</p>
-<p>void default_send_IPI_mask_sequence_phys(const struct cpumask <a href="#id23"><span class="problematic" id="id24">*</span></a>mask, int vector)
-{</p>
-<blockquote>
-<div><p>unsigned long query_cpu;
-unsigned long flags;</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>Hack. The clustered APIC addressing mode doesn’t allow us to send</p></li>
-<li><p>to an arbitrary mask, so I do a unicast to each CPU instead.</p></li>
-<li><ul>
-<li><p>mbligh</p></li>
-</ul>
-</li>
-</ul>
-<p><a href="#id25"><span class="problematic" id="id26">*</span></a>/</p>
-</dd>
-</dl>
-<p>local_irq_save(flags);
-for_each_cpu(query_cpu, mask) {</p>
-<blockquote>
-<div><dl class="simple">
-<dt>__default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid,</dt><dd><p>query_cpu), vector, APIC_DEST_PHYSICAL);</p>
-</dd>
-</dl>
-</div></blockquote>
-<p>}
-local_irq_restore(flags);</p>
-</div></blockquote>
-<p>}</p>
-<dl class="simple">
-<dt>void default_send_IPI_mask_allbutself_phys(const struct cpumask <a href="#id27"><span class="problematic" id="id28">*</span></a>mask,</dt><dd><p>int vector)</p>
-</dd>
-</dl>
-<dl>
-<dt>{</dt><dd><p>unsigned int this_cpu = smp_processor_id();
-unsigned int query_cpu;
-unsigned long flags;</p>
-<p>/* See Hack comment above <a href="#id29"><span class="problematic" id="id30">*</span></a>/</p>
-<p>local_irq_save(flags);
-for_each_cpu(query_cpu, mask) {</p>
-<blockquote>
-<div><dl class="simple">
-<dt>if (query_cpu == this_cpu)</dt><dd><p>continue;</p>
-</dd>
-<dt>__default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid,</dt><dd><p>query_cpu), vector, APIC_DEST_PHYSICAL);</p>
-</dd>
-</dl>
-</div></blockquote>
-<p>}
-local_irq_restore(flags);</p>
-</dd>
-</dl>
-<p>}</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>Helper function for APICs which insist on cpumasks</p></li>
-</ul>
-<p><a href="#id31"><span class="problematic" id="id32">*</span></a>/</p>
-</dd>
-</dl>
-<p>void default_send_IPI_single(int cpu, int vector)
-{</p>
-<blockquote>
-<div><p>apic-&gt;send_IPI_mask(cpumask_of(cpu), vector);</p>
-</div></blockquote>
-<p>}</p>
-<p>void default_send_IPI_allbutself(int vector)
-{</p>
-<blockquote>
-<div><p>__default_send_IPI_shortcut(APIC_DEST_ALLBUT, vector);</p>
-</div></blockquote>
-<p>}</p>
-<p>void default_send_IPI_all(int vector)
-{</p>
-<blockquote>
-<div><p>__default_send_IPI_shortcut(APIC_DEST_ALLINC, vector);</p>
-</div></blockquote>
-<p>}</p>
-<p>void default_send_IPI_self(int vector)
-{</p>
-<blockquote>
-<div><p>__default_send_IPI_shortcut(APIC_DEST_SELF, vector);</p>
-</div></blockquote>
-<p>}</p>
+<iframe src="./x86-64_vec.html" height="345px" width="100%"></iframe><div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">ipi通信实现代码</span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173</pre></div></td><td class="code"><div class="highlight"><pre><span></span>arch/x86/kernel/apic/ipi.c
+*
+ * Send a &#39;reschedule&#39; IPI to another CPU. It goes straight through and
+ * wastes no time serializing anything. Worst case is that we lose a
+ * reschedule ...
+ */
+void native_smp_send_reschedule(int cpu)
+{
+        if (unlikely(cpu_is_offline(cpu))) {
+                WARN(1, &quot;sched: Unexpected reschedule of offline CPU#%d!\n&quot;, cpu);
+                return;
+        }
+        apic-&gt;send_IPI(cpu, RESCHEDULE_VECTOR);
+}
+
+void native_send_call_func_single_ipi(int cpu)
+{
+        apic-&gt;send_IPI(cpu, CALL_FUNCTION_SINGLE_VECTOR);
+}
+
+void native_send_call_func_ipi(const struct cpumask *mask)
+{
+        if (static_branch_likely(&amp;apic_use_ipi_shorthand)) {
+                unsigned int cpu = smp_processor_id();
+
+                if (!cpumask_or_equal(mask, cpumask_of(cpu), cpu_online_mask))
+                        goto sendmask;
+
+                if (cpumask_test_cpu(cpu, mask))
+                        apic-&gt;send_IPI_all(CALL_FUNCTION_VECTOR);
+                else if (num_online_cpus() &gt; 1)
+                        apic-&gt;send_IPI_allbutself(CALL_FUNCTION_VECTOR);
+                return;
+        }
+
+sendmask:
+        apic-&gt;send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
+}
+
+
+void __default_send_IPI_shortcut(unsigned int shortcut, int vector)
+{
+        /*
+         * Subtle. In the case of the &#39;never do double writes&#39; workaround
+         * we have to lock out interrupts to be safe.  As we don&#39;t care
+         * of the value read we use an atomic rmw access to avoid costly
+         * cli/sti.  Otherwise we use an even cheaper single atomic write
+         * to the APIC.
+         */
+        unsigned int cfg;
+
+        /*
+         * Wait for idle.
+         */
+        if (unlikely(vector == NMI_VECTOR))
+                safe_apic_wait_icr_idle();
+        else
+                __xapic_wait_icr_idle();
+
+        /*
+         * No need to touch the target chip field. Also the destination
+         * mode is ignored when a shorthand is used.
+         */
+        cfg = __prepare_ICR(shortcut, vector, 0);
+
+        /*
+         * Send the IPI. The write to APIC_ICR fires this off.
+         */
+        native_apic_mem_write(APIC_ICR, cfg);
+}
+
+/*
+ * This is used to send an IPI with no shorthand notation (the destination is
+ * specified in bits 56 to 63 of the ICR).
+ */
+void __default_send_IPI_dest_field(unsigned int mask, int vector, unsigned int dest)
+{
+        unsigned long cfg;
+
+        /*
+         * Wait for idle.
+         */
+        if (unlikely(vector == NMI_VECTOR))
+                safe_apic_wait_icr_idle();
+        else
+                __xapic_wait_icr_idle();
+
+        /*
+         * prepare target chip field
+         */
+        cfg = __prepare_ICR2(mask);
+        native_apic_mem_write(APIC_ICR2, cfg);
+
+        /*
+         * program the ICR
+         */
+        cfg = __prepare_ICR(0, vector, dest);
+
+        /*
+         * Send the IPI. The write to APIC_ICR fires this off.
+         */
+        native_apic_mem_write(APIC_ICR, cfg);
+}
+
+void default_send_IPI_single_phys(int cpu, int vector)
+{
+        unsigned long flags;
+
+        local_irq_save(flags);
+        __default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid, cpu),
+                                      vector, APIC_DEST_PHYSICAL);
+        local_irq_restore(flags);
+}
+
+void default_send_IPI_mask_sequence_phys(const struct cpumask *mask, int vector)
+{
+        unsigned long query_cpu;
+        unsigned long flags;
+
+        /*
+         * Hack. The clustered APIC addressing mode doesn&#39;t allow us to send
+         * to an arbitrary mask, so I do a unicast to each CPU instead.
+         * - mbligh
+         */
+        local_irq_save(flags);
+        for_each_cpu(query_cpu, mask) {
+                __default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid,
+                                query_cpu), vector, APIC_DEST_PHYSICAL);
+        }
+        local_irq_restore(flags);
+}
+
+void default_send_IPI_mask_allbutself_phys(const struct cpumask *mask,
+                                                 int vector)
+{
+        unsigned int this_cpu = smp_processor_id();
+        unsigned int query_cpu;
+        unsigned long flags;
+
+        /* See Hack comment above */
+
+        local_irq_save(flags);
+        for_each_cpu(query_cpu, mask) {
+                if (query_cpu == this_cpu)
+                        continue;
+                __default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid,
+                                 query_cpu), vector, APIC_DEST_PHYSICAL);
+        }
+        local_irq_restore(flags);
+}
+
+/*
+ * Helper function for APICs which insist on cpumasks
+ */
+void default_send_IPI_single(int cpu, int vector)
+{
+        apic-&gt;send_IPI_mask(cpumask_of(cpu), vector);
+}
+
+void default_send_IPI_allbutself(int vector)
+{
+        __default_send_IPI_shortcut(APIC_DEST_ALLBUT, vector);
+}
+
+void default_send_IPI_all(int vector)
+{
+        __default_send_IPI_shortcut(APIC_DEST_ALLINC, vector);
+}
+
+void default_send_IPI_self(int vector)
+{
+        __default_send_IPI_shortcut(APIC_DEST_SELF, vector);
+}
+</pre></div>
+</td></tr></table></div>
+</div>
 </div>
 <div class="section" id="irq-work">
 <h2>irq work<a class="headerlink" href="#irq-work" title="Permalink to this headline">¶</a></h2>
 <p>提供一个框架，用于从 hardirq 上下文中排队和运行回调.就是一种在硬件中断上下文中运行任务的途径。</p>
-<p>static DEFINE_PER_CPU(struct llist_head, raised_list);
-static DEFINE_PER_CPU(struct llist_head, lazy_list);</p>
-<p>/* Enqueue on current CPU, work must already be claimed and preempt disabled <a href="#id33"><span class="problematic" id="id34">*</span></a>/
-static void __irq_work_queue_local(struct irq_work <a href="#id35"><span class="problematic" id="id36">*</span></a>work)
-{</p>
-<blockquote>
-<div><p>/* If the work is “lazy”, handle it from next tick if any <a href="#id37"><span class="problematic" id="id38">*</span></a>/
-if (atomic_read(&amp;work-&gt;node.a_flags) &amp; IRQ_WORK_LAZY) {</p>
-<blockquote>
-<div><dl class="simple">
-<dt>if (llist_add(&amp;work-&gt;node.llist, this_cpu_ptr(&amp;lazy_list)) &amp;&amp;</dt><dd><dl class="simple">
-<dt>tick_nohz_tick_stopped())</dt><dd><p>arch_irq_work_raise();</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
-<dl class="simple">
-<dt>} else {</dt><dd><dl class="simple">
-<dt>if (llist_add(&amp;work-&gt;node.llist, this_cpu_ptr(&amp;raised_list)))</dt><dd><p>arch_irq_work_raise();</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<p>}</p>
-</div></blockquote>
-<p>}</p>
-<p>/* Enqueue the irq work &#64;work on the current CPU <a href="#id39"><span class="problematic" id="id40">*</span></a>/
-bool irq_work_queue(struct irq_work <a href="#id41"><span class="problematic" id="id42">*</span></a>work)
-{</p>
-<blockquote>
-<div><p>/* Only queue if not already pending <a href="#id43"><span class="problematic" id="id44">*</span></a>/
-if (!irq_work_claim(work))</p>
-<blockquote>
-<div><p>return false;</p>
-</div></blockquote>
-<p>/* Queue the entry and raise the IPI if needed. <a href="#id45"><span class="problematic" id="id46">*</span></a>/
-preempt_disable();
-__irq_work_queue_local(work);
-preempt_enable();</p>
-<p>return true;</p>
-</div></blockquote>
-<p>}
-EXPORT_SYMBOL_GPL(irq_work_queue);</p>
-<p>void irq_work_single(void <a href="#id47"><span class="problematic" id="id48">*</span></a>arg)
-{</p>
-<blockquote>
-<div><p>struct irq_work <a href="#id49"><span class="problematic" id="id50">*</span></a>work = arg;
-int flags;</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>Clear the PENDING bit, after this point the &#64;work can be re-used.</p></li>
-<li><p>The PENDING bit acts as a lock, and we own it, so we can clear it</p></li>
-<li><p>without atomic ops.</p></li>
-</ul>
-<p><a href="#id51"><span class="problematic" id="id52">*</span></a>/</p>
-</dd>
-</dl>
-<p>flags = atomic_read(&amp;work-&gt;node.a_flags);
-flags &amp;= ~IRQ_WORK_PENDING;
-atomic_set(&amp;work-&gt;node.a_flags, flags);</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>See irq_work_claim().</p></li>
-</ul>
-<p><a href="#id53"><span class="problematic" id="id54">*</span></a>/</p>
-</dd>
-</dl>
-<p>smp_mb();</p>
-<p>lockdep_irq_work_enter(flags);
-work-&gt;func(work);
-lockdep_irq_work_exit(flags);</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>Clear the BUSY bit, if set, and return to the free state if no-one</p></li>
-<li><p>else claimed it meanwhile.</p></li>
-</ul>
-<p><a href="#id55"><span class="problematic" id="id56">*</span></a>/</p>
-</dd>
-</dl>
-<p>(void)atomic_cmpxchg(&amp;work-&gt;node.a_flags, flags, flags &amp; ~IRQ_WORK_BUSY);</p>
-</div></blockquote>
-<p>}</p>
-<p>static void irq_work_run_list(struct llist_head <a href="#id57"><span class="problematic" id="id58">*</span></a>list)
-{</p>
-<blockquote>
-<div><p>struct irq_work <a href="#id59"><span class="problematic" id="id60">*</span></a>work, <a href="#id61"><span class="problematic" id="id62">*</span></a>tmp;
-struct llist_node <a href="#id63"><span class="problematic" id="id64">*</span></a>llnode;</p>
-<p>BUG_ON(!irqs_disabled());</p>
-<dl class="simple">
-<dt>if (llist_empty(list))</dt><dd><p>return;</p>
-</dd>
-</dl>
-<p>llnode = llist_del_all(list);
-llist_for_each_entry_safe(work, tmp, llnode, node.llist)</p>
-<blockquote>
-<div><p>irq_work_single(work);</p>
-</div></blockquote>
-</div></blockquote>
-<p>}</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>hotplug calls this through:</p></li>
-<li><p>hotplug_cfd() -&gt; flush_smp_call_function_queue()</p></li>
-</ul>
-<p><a href="#id65"><span class="problematic" id="id66">*</span></a>/</p>
-</dd>
-</dl>
-<p>void irq_work_run(void)
-{</p>
-<blockquote>
-<div><p>irq_work_run_list(this_cpu_ptr(&amp;raised_list));
-irq_work_run_list(this_cpu_ptr(&amp;lazy_list));</p>
-</div></blockquote>
-<p>}
-EXPORT_SYMBOL_GPL(irq_work_run);</p>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text">irq work实现</span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="nf">DEFINE_PER_CPU</span><span class="p">(</span><span class="k">struct</span> <span class="nc">llist_head</span><span class="p">,</span> <span class="n">raised_list</span><span class="p">);</span>
+<span class="k">static</span> <span class="nf">DEFINE_PER_CPU</span><span class="p">(</span><span class="k">struct</span> <span class="nc">llist_head</span><span class="p">,</span> <span class="n">lazy_list</span><span class="p">);</span>
+
+<span class="cm">/* Enqueue on current CPU, work must already be claimed and preempt disabled */</span>
+<span class="k">static</span> <span class="kt">void</span> <span class="n">__irq_work_queue_local</span><span class="p">(</span><span class="k">struct</span> <span class="nc">irq_work</span> <span class="o">*</span><span class="n">work</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="cm">/* If the work is &quot;lazy&quot;, handle it from next tick if any */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">atomic_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="o">-&gt;</span><span class="n">node</span><span class="p">.</span><span class="n">a_flags</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">IRQ_WORK_LAZY</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">llist_add</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="o">-&gt;</span><span class="n">node</span><span class="p">.</span><span class="n">llist</span><span class="p">,</span> <span class="n">this_cpu_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lazy_list</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
+                    <span class="n">tick_nohz_tick_stopped</span><span class="p">())</span>
+                        <span class="n">arch_irq_work_raise</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">llist_add</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="o">-&gt;</span><span class="n">node</span><span class="p">.</span><span class="n">llist</span><span class="p">,</span> <span class="n">this_cpu_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">raised_list</span><span class="p">)))</span>
+                        <span class="n">arch_irq_work_raise</span><span class="p">();</span><span class="cm">/* apic-&gt;send_IPI_self(IRQ_WORK_VECTOR):触发：irq_work中断向量：0xf6  */</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="cm">/* Enqueue the irq work @work on the current CPU */</span>
+<span class="kt">bool</span> <span class="n">irq_work_queue</span><span class="p">(</span><span class="k">struct</span> <span class="nc">irq_work</span> <span class="o">*</span><span class="n">work</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="cm">/* Only queue if not already pending */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">irq_work_claim</span><span class="p">(</span><span class="n">work</span><span class="p">))</span>
+                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+
+        <span class="cm">/* Queue the entry and raise the IPI if needed. */</span>
+        <span class="n">preempt_disable</span><span class="p">();</span>
+        <span class="n">__irq_work_queue_local</span><span class="p">(</span><span class="n">work</span><span class="p">);</span>
+        <span class="n">preempt_enable</span><span class="p">();</span>
+
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">irq_work_queue</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">irq_work_single</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">irq_work</span> <span class="o">*</span><span class="n">work</span> <span class="o">=</span> <span class="n">arg</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">flags</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Clear the PENDING bit, after this point the @work can be re-used.</span>
+<span class="cm">         * The PENDING bit acts as a lock, and we own it, so we can clear it</span>
+<span class="cm">         * without atomic ops.</span>
+<span class="cm">         */</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="n">atomic_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="o">-&gt;</span><span class="n">node</span><span class="p">.</span><span class="n">a_flags</span><span class="p">);</span>
+        <span class="n">flags</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">IRQ_WORK_PENDING</span><span class="p">;</span>
+        <span class="n">atomic_set</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="o">-&gt;</span><span class="n">node</span><span class="p">.</span><span class="n">a_flags</span><span class="p">,</span> <span class="n">flags</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * See irq_work_claim().</span>
+<span class="cm">         */</span>
+        <span class="n">smp_mb</span><span class="p">();</span>
+
+        <span class="n">lockdep_irq_work_enter</span><span class="p">(</span><span class="n">flags</span><span class="p">);</span>
+        <span class="n">work</span><span class="o">-&gt;</span><span class="n">func</span><span class="p">(</span><span class="n">work</span><span class="p">);</span><span class="cm">/* 运行中断函数 */</span>
+        <span class="n">lockdep_irq_work_exit</span><span class="p">(</span><span class="n">flags</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Clear the BUSY bit, if set, and return to the free state if no-one</span>
+<span class="cm">         * else claimed it meanwhile.</span>
+<span class="cm">         */</span>
+        <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">atomic_cmpxchg</span><span class="p">(</span><span class="o">&amp;</span><span class="n">work</span><span class="o">-&gt;</span><span class="n">node</span><span class="p">.</span><span class="n">a_flags</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">IRQ_WORK_BUSY</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="n">irq_work_run_list</span><span class="p">(</span><span class="k">struct</span> <span class="nc">llist_head</span> <span class="o">*</span><span class="n">list</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">irq_work</span> <span class="o">*</span><span class="n">work</span><span class="p">,</span> <span class="o">*</span><span class="n">tmp</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">llist_node</span> <span class="o">*</span><span class="n">llnode</span><span class="p">;</span>
+
+        <span class="n">BUG_ON</span><span class="p">(</span><span class="o">!</span><span class="n">irqs_disabled</span><span class="p">());</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">llist_empty</span><span class="p">(</span><span class="n">list</span><span class="p">))</span>
+                <span class="k">return</span><span class="p">;</span>
+
+        <span class="n">llnode</span> <span class="o">=</span> <span class="n">llist_del_all</span><span class="p">(</span><span class="n">list</span><span class="p">);</span>
+        <span class="n">llist_for_each_entry_safe</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">llnode</span><span class="p">,</span> <span class="n">node</span><span class="p">.</span><span class="n">llist</span><span class="p">)</span>
+                <span class="n">irq_work_single</span><span class="p">(</span><span class="n">work</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * hotplug calls this through:</span>
+<span class="cm"> *  hotplug_cfd() -&gt; flush_smp_call_function_queue()</span>
+<span class="cm"> */</span>
+<span class="kt">void</span> <span class="n">irq_work_run</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="n">irq_work_run_list</span><span class="p">(</span><span class="n">this_cpu_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">raised_list</span><span class="p">));</span>
+        <span class="n">irq_work_run_list</span><span class="p">(</span><span class="n">this_cpu_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lazy_list</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="n">EXPORT_SYMBOL_GPL</span><span class="p">(</span><span class="n">irq_work_run</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
 <ul class="simple">
 <li><p>重要结构：</p></li>
 </ul>
-<dl>
-<dt>enum {</dt><dd><p>CSD_FLAG_LOCK           = 0x01,</p>
-<p>IRQ_WORK_PENDING        = 0x01,
-IRQ_WORK_BUSY           = 0x02,
-IRQ_WORK_LAZY           = 0x04, /* No IPI, wait for tick <em>/
-IRQ_WORK_HARD_IRQ       = 0x08, /</em> IRQ context on PREEMPT_RT <a href="#id67"><span class="problematic" id="id68">*</span></a>/</p>
-<p>IRQ_WORK_CLAIMED        = (IRQ_WORK_PENDING | IRQ_WORK_BUSY),</p>
-<p>CSD_TYPE_ASYNC          = 0x00,
-CSD_TYPE_SYNC           = 0x10,
-CSD_TYPE_IRQ_WORK       = 0x20,
-CSD_TYPE_TTWU           = 0x30,</p>
-<p>CSD_FLAG_TYPE_MASK      = 0xF0,</p>
-</dd>
-</dl>
-<p>};</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>struct __call_single_node is the primary type on</p></li>
-<li><p>smp.c:call_single_queue.</p></li>
-<li></li>
-<li><p>flush_smp_call_function_queue() only reads the type from</p></li>
-<li><p>__call_single_node::u_flags as a regular load, the above</p></li>
-<li><p>(anonymous) enum defines all the bits of this word.</p></li>
-<li></li>
-<li><p>Other bits are not modified until the type is known.</p></li>
-<li></li>
-<li><p>CSD_TYPE_SYNC/ASYNC:</p></li>
-<li><p>struct {</p></li>
-<li><p>struct llist_node node;</p></li>
-<li><p>unsigned int flags;</p></li>
-<li><p>smp_call_func_t func;</p></li>
-<li><p>void <a href="#id69"><span class="problematic" id="id70">*</span></a>info;</p></li>
-<li><p>};</p></li>
-<li></li>
-<li><p>CSD_TYPE_IRQ_WORK:</p></li>
-<li><p>struct {</p></li>
-<li><p>struct llist_node node;</p></li>
-<li><p>atomic_t flags;</p></li>
-<li><p>void (<a href="#id71"><span class="problematic" id="id72">*</span></a>func)(struct irq_work <a href="#id73"><span class="problematic" id="id74">*</span></a>);</p></li>
-<li><p>};</p></li>
-<li></li>
-<li><p>CSD_TYPE_TTWU:</p></li>
-<li><p>struct {</p></li>
-<li><p>struct llist_node node;</p></li>
-<li><p>unsigned int flags;</p></li>
-<li><p>};</p></li>
-<li></li>
-</ul>
-<p><a href="#id75"><span class="problematic" id="id76">*</span></a>/</p>
-</dd>
-<dt>struct __call_single_node {</dt><dd><p>struct llist_node       llist;
-union {</p>
-<blockquote>
-<div><p>unsigned int    u_flags;
-atomic_t        a_flags;</p>
-</div></blockquote>
-<p>};</p>
-</dd>
-<dt>#ifdef CONFIG_64BIT</dt><dd><p>u16 src, dst;</p>
-</dd>
-</dl>
-<p>#endif
-};</p>
-<dl>
-<dt>/*</dt><dd><ul class="simple">
-<li><p>An entry can be in one of four states:</p></li>
-<li></li>
-<li><p>free      NULL, 0 -&gt; {claimed}       : free to be used</p></li>
-<li><p>claimed   NULL, 3 -&gt; {pending}       : claimed to be enqueued</p></li>
-<li><p>pending   next, 3 -&gt; {busy}          : queued, pending callback</p></li>
-<li><p>busy      NULL, 2 -&gt; {free, claimed} : callback in progress, can be claimed</p></li>
-</ul>
-<p><a href="#id77"><span class="problematic" id="id78">*</span></a>/</p>
-</dd>
-<dt>struct irq_work {</dt><dd><p>struct __call_single_node node;
-void (<a href="#id79"><span class="problematic" id="id80">*</span></a>func)(struct irq_work <a href="#id81"><span class="problematic" id="id82">*</span></a>);</p>
-</dd>
-</dl>
-<p>};</p>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text">irq work实现</span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">enum</span> <span class="p">{</span>
+        <span class="n">CSD_FLAG_LOCK</span>           <span class="o">=</span> <span class="mh">0x01</span><span class="p">,</span>
+
+        <span class="n">IRQ_WORK_PENDING</span>        <span class="o">=</span> <span class="mh">0x01</span><span class="p">,</span>
+        <span class="n">IRQ_WORK_BUSY</span>           <span class="o">=</span> <span class="mh">0x02</span><span class="p">,</span>
+        <span class="n">IRQ_WORK_LAZY</span>           <span class="o">=</span> <span class="mh">0x04</span><span class="p">,</span> <span class="cm">/* No IPI, wait for tick */</span>
+        <span class="n">IRQ_WORK_HARD_IRQ</span>       <span class="o">=</span> <span class="mh">0x08</span><span class="p">,</span> <span class="cm">/* IRQ context on PREEMPT_RT */</span>
+
+        <span class="n">IRQ_WORK_CLAIMED</span>        <span class="o">=</span> <span class="p">(</span><span class="n">IRQ_WORK_PENDING</span> <span class="o">|</span> <span class="n">IRQ_WORK_BUSY</span><span class="p">),</span>
+
+        <span class="n">CSD_TYPE_ASYNC</span>          <span class="o">=</span> <span class="mh">0x00</span><span class="p">,</span>
+        <span class="n">CSD_TYPE_SYNC</span>           <span class="o">=</span> <span class="mh">0x10</span><span class="p">,</span>
+        <span class="n">CSD_TYPE_IRQ_WORK</span>       <span class="o">=</span> <span class="mh">0x20</span><span class="p">,</span>
+        <span class="n">CSD_TYPE_TTWU</span>           <span class="o">=</span> <span class="mh">0x30</span><span class="p">,</span>
+
+        <span class="n">CSD_FLAG_TYPE_MASK</span>      <span class="o">=</span> <span class="mh">0xF0</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * struct __call_single_node is the primary type on</span>
+<span class="cm"> * smp.c:call_single_queue.</span>
+<span class="cm"> *</span>
+<span class="cm"> * flush_smp_call_function_queue() only reads the type from</span>
+<span class="cm"> * __call_single_node::u_flags as a regular load, the above</span>
+<span class="cm"> * (anonymous) enum defines all the bits of this word.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Other bits are not modified until the type is known.</span>
+<span class="cm"> *</span>
+<span class="cm"> * CSD_TYPE_SYNC/ASYNC:</span>
+<span class="cm"> *      struct {</span>
+<span class="cm"> *              struct llist_node node;</span>
+<span class="cm"> *              unsigned int flags;</span>
+<span class="cm"> *              smp_call_func_t func;</span>
+<span class="cm"> *              void *info;</span>
+<span class="cm"> *      };</span>
+<span class="cm"> *</span>
+<span class="cm"> * CSD_TYPE_IRQ_WORK:</span>
+<span class="cm"> *      struct {</span>
+<span class="cm"> *              struct llist_node node;</span>
+<span class="cm"> *              atomic_t flags;</span>
+<span class="cm"> *              void (*func)(struct irq_work *);</span>
+<span class="cm"> *      };</span>
+<span class="cm"> *</span>
+<span class="cm"> * CSD_TYPE_TTWU:</span>
+<span class="cm"> *      struct {</span>
+<span class="cm"> *              struct llist_node node;</span>
+<span class="cm"> *              unsigned int flags;</span>
+<span class="cm"> *      };</span>
+<span class="cm"> *</span>
+<span class="cm"> */</span>
+
+<span class="k">struct</span> <span class="nc">__call_single_node</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">llist_node</span>       <span class="n">llist</span><span class="p">;</span>
+        <span class="k">union</span> <span class="p">{</span>
+                <span class="kt">unsigned</span> <span class="kt">int</span>    <span class="n">u_flags</span><span class="p">;</span>
+                <span class="n">atomic_t</span>        <span class="n">a_flags</span><span class="p">;</span>
+        <span class="p">};</span>
+<span class="cp">#ifdef CONFIG_64BIT</span>
+        <span class="n">u16</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">;</span>
+<span class="cp">#endif</span>
+<span class="p">};</span>
+
+
+
+<span class="cm">/*</span>
+<span class="cm"> * An entry can be in one of four states:</span>
+<span class="cm"> *</span>
+<span class="cm"> * free      NULL, 0 -&gt; {claimed}       : free to be used</span>
+<span class="cm"> * claimed   NULL, 3 -&gt; {pending}       : claimed to be enqueued</span>
+<span class="cm"> * pending   next, 3 -&gt; {busy}          : queued, pending callback</span>
+<span class="cm"> * busy      NULL, 2 -&gt; {free, claimed} : callback in progress, can be claimed</span>
+<span class="cm"> */</span>
+
+<span class="k">struct</span> <span class="nc">irq_work</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">__call_single_node</span> <span class="n">node</span><span class="p">;</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">func</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">irq_work</span> <span class="o">*</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
 <ul class="simple">
 <li><p>通常流程：</p></li>
 </ul>
 <dl class="simple">
 <dt>sysvec_irq_work ==&gt; irq_work_run;//irq_work_vetor: 0xf6:</dt><dd><p>arch_irq_work_raise(void): apic-&gt;send_IPI_self(IRQ_WORK_VECTOR);</p>
 </dd>
-<dt>bool irq_work_queue(struct irq_work <a href="#id83"><span class="problematic" id="id84">*</span></a>work) -&gt;__irq_work_queue_local(work); -&gt; arch_irq_work_raise(void)-&gt; apic-&gt;send_IPI_self(IRQ_WORK_VECTOR):</dt><dd><dl class="simple">
+<dt>bool irq_work_queue(struct irq_work <a href="#id1"><span class="problematic" id="id2">*</span></a>work) -&gt;__irq_work_queue_local(work); -&gt; arch_irq_work_raise(void)-&gt; apic-&gt;send_IPI_self(IRQ_WORK_VECTOR):</dt><dd><dl class="simple">
 <dt>-&gt; sysvec_irq_work -&gt; irq_work_run:</dt><dd><ol class="arabic simple">
 <li><p>irq_work_run_list(this_cpu_ptr(&amp;raised_list));</p></li>
 <li><p>irq_work_run_list(this_cpu_ptr(&amp;lazy_list));</p></li>
@@ -564,30 +811,100 @@ void (<a href="#id79"><span class="problematic" id="id80">*</span></a>func)(stru
 </dd>
 </dl>
 <ul class="simple">
+<li><p>irq work 处理：向量IRQ_WORK_VECTOR处理函数</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">irq work异常处理</span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#ifdef CONFIG_X86_LOCAL_APIC</span>
+<span class="n">DEFINE_IDTENTRY_SYSVEC</span><span class="p">(</span><span class="n">sysvec_irq_work</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="n">ack_APIC_irq</span><span class="p">();</span>
+        <span class="n">trace_irq_work_entry</span><span class="p">(</span><span class="n">IRQ_WORK_VECTOR</span><span class="p">);</span>
+        <span class="n">inc_irq_stat</span><span class="p">(</span><span class="n">apic_irq_work_irqs</span><span class="p">);</span>
+        <span class="n">irq_work_run</span><span class="p">();</span><span class="cm">/* 运行列表 */</span>
+        <span class="n">trace_irq_work_exit</span><span class="p">(</span><span class="n">IRQ_WORK_VECTOR</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">arch_irq_work_raise</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="cm">/* 触发irq work */</span>
+<span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">arch_irq_work_has_interrupt</span><span class="p">())</span>
+                <span class="k">return</span><span class="p">;</span>
+
+        <span class="n">apic</span><span class="o">-&gt;</span><span class="n">send_IPI_self</span><span class="p">(</span><span class="n">IRQ_WORK_VECTOR</span><span class="p">);</span>
+        <span class="n">apic_wait_icr_idle</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="cp">#endif</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
 <li><p>特例：mpcfd_dying_cpu –&gt; irq_work_run;</p></li>
 <li><p>编程：</p></li>
 </ul>
-<p>static void late_wakeup_func(struct irq_work <a href="#id85"><span class="problematic" id="id86">*</span></a>work)
-{
-}</p>
-<dl class="simple">
-<dt>static DEFINE_PER_CPU(struct irq_work, late_wakeup_work) =</dt><dd><p>IRQ_WORK_INIT(late_wakeup_func);</p>
-</dd>
-</dl>
-<p>irq_work_queue(this_cpu_ptr(&amp;late_wakeup_work));</p>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text">irq work实现</span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">void</span> <span class="n">late_wakeup_func</span><span class="p">(</span><span class="k">struct</span> <span class="nc">irq_work</span> <span class="o">*</span><span class="n">work</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="n">DEFINE_PER_CPU</span><span class="p">(</span><span class="k">struct</span> <span class="nc">irq_work</span><span class="p">,</span> <span class="n">late_wakeup_work</span><span class="p">)</span> <span class="o">=</span>
+        <span class="n">IRQ_WORK_INIT</span><span class="p">(</span><span class="n">late_wakeup_func</span><span class="p">);</span>
+
+
+<span class="n">irq_work_queue</span><span class="p">(</span><span class="n">this_cpu_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">late_wakeup_work</span><span class="p">));</span>
+</pre></div>
+</td></tr></table></div>
 </div>
-<div class="section" id="id87">
-<h2>等待队列（进程/线程)<a class="headerlink" href="#id87" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id3">
+<h2>等待队列（进程/线程)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <p>include/linux/wait.h
 kernel/sched/wait.c
 进程等待队列:用于同步</p>
+<p>进程A调用wait_event(wq, condition)就是向等待队列头中添加等待队列项wait_queue_t，该该等待队列项中的成员变量private记录当前进程，其成员变量func记录唤醒回调函数，然后调用schedule()使当前进程进入休眠状态。
+进程B调用wake_up(wq)会遍历整个等待列表wq中的每一项wait_queue_t，依次调用每一项的唤醒函数try_to_wake_up()。这个过程会将private记录的进程加入rq运行队列，并设置进程状态为TASK_RUNNING。
+进程A被唤醒后只执行如下检测：
+检查condition是否为true，满足条件则跳出循环，再把wait_queue_t从wq队列中移除；
+检测该进程task的成员thread_info-&gt;flags是否被设置TIF_SIGPENDING，被设置则说明有待处理的信号，则跳出循环，再把wait_queue_t从wq队列中移除；
+否则，继续调用schedule()再次进入休眠等待状态，如果wait_queue_t不在wq队列，则再次加入wq队列。</p>
+<p>等待队列原理上一个进程运行到某个点，发现调价不满足，然后就将自己挂到一个等待队列结构的链表上，根据结构是不可中断或可中断唤醒两种模式进程将当前进程的状态设置为可中断睡眠或不可中断睡眠，然后调用调度函数将自己换出：唤醒时，唤醒主题针对等得队列结构上的进程列表中的进程进行操作，在操作函数中设置相应进程状态。</p>
+<p>TASK_INTERRUPTIBLE是针对某个特定事件和特定资源，设置进程睡眠。当内核发送信号给该进程，告知特定事件发生，该进程会被置为TASK_RUNNING，之后调度器会在合适的时间运行它。
+TASK_UNINTERRUPTIBLE是进程主动睡眠，它们不会被外部信号唤醒，只能有内核亲自唤醒该进程。
+这两个参数的应用场景也有差异，在一些应用中，如与用户有交互的进程，那么它就应该要接收一些特定信号，如ctl+C，举个例子，sysfs中，如果要去获得某个锁，那么就建议使用interrupt版的锁，记得判定返回值。
+而在另一些场景中，如读写硬件寄存器时，就需要uninterrupt类型的信号，因为它只期望两种结果，一个是硬件及时返回后，将其唤醒，另一个就是超时后，进程需要自己唤醒自己。</p>
 <p>进程为了等待某个事件/条件满足将自己加入某个等待队列，进程将自身设置为某个睡眠状态，条件满足时对因为本条件而进入睡眠状态的进程进行唤醒。</p>
 <p>人与进程就这么相似，可以认为世界只有自己，可高度稍微一上升，进程也只是一蝼蚁。</p>
 <ul>
 <li><p>结构：</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id93">
-<div class="code-block-caption"><span class="caption-text">等待队列结构</span><a class="headerlink" href="#id93" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text">等待队列结构</span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -671,13 +988,13 @@ kernel/sched/wait.c
 <li><p>等待队列分类总结</p></li>
 </ul>
 </div>
-<div class="section" id="id88">
-<h2>工作队列<a class="headerlink" href="#id88" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h2>工作队列<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <p>kernel/workqueue.c - 使用共享工作池的通用异步执行</p>
 <p>这部分很有难度，自己的理解也很有限：</p>
 <p>有很多情况需要异步流程执行上下文，而工作队列 (wq) API 是此类情况最常用的机制。当需要这样的异步执行上下文时，将描述要执行哪个函数的工作项放在队列中。一个独立的线程充当异步执行上下文。队列称为workqueue，线程称为worker。当工作队列上有工作项时，工作人员一个接一个地执行与工作项相关的功能。当工作队列上没有工作项时，工作人员将变得空闲。当一个新的工作项进入队列时，worker 再次开始执行。</p>
-<div class="section" id="id89">
-<h3>基础<a class="headerlink" href="#id89" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>基础<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <p>并发管理工作队列 (cmwq) 是 wq 的重新实现，重点关注以下目标。</p>
 <p>保持与原始工作队列 API 的兼容性。</p>
 <p>使用所有 wq 共享的 per-CPU 统一工作池来按需提供灵活的并发级别，而不会浪费大量资源。</p>
@@ -734,8 +1051,8 @@ CPU 密集型 wq 的工作项对并发级别没有贡献。换句话说，可运
 <dt>示例：</dt><dd><p>以下示例执行场景试图说明 cmwq 在不同配置下的行为方式。</p>
 <p>工作项 w0、w1、w2 排队到同一 CPU 上的绑定 wq q0。w0 将 CPU 烧 5 毫秒，然后休眠 10 毫秒，然后在完成之前再次将 CPU 烧 5 毫秒。w1 和 w2 烧 CPU 5ms 然后休眠 10ms。</p>
 <p>忽略所有其他任务、工作和处理开销，并假设简单的 FIFO 调度，以下是原始 wq 的可能事件序列的一个高度简化版本。</p>
-<div class="literal-block-wrapper docutils container" id="id94">
-<div class="code-block-caption"><span class="caption-text">softirq基础结构</span><a class="headerlink" href="#id94" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text">softirq基础结构</span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -809,8 +1126,8 @@ $ cat /sys/kernel/debug/tracing/trace_pipe &gt; out.txt
 <p>换句话说，如果上述条件成立，则保证工作项在任何给定时间最多由系统范围内的一个工作人员执行。</p>
 <p>请注意，在 self 函数中将工作项重新排队（到同一个队列）不会破坏这些条件，因此这样做是安全的。否则，在破坏功函数内部的条件时需要小心。</p>
 </div>
-<div class="section" id="id90">
-<h3>总结(个人理解）<a class="headerlink" href="#id90" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id6">
+<h3>总结(个人理解）<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>应用场景</p></li>
 <li><p>实现原理</p></li>
@@ -820,9 +1137,10 @@ $ cat /sys/kernel/debug/tracing/trace_pipe &gt; out.txt
 </div>
 <div class="section" id="linux-softirq">
 <h2>linux 软中断：softirq<a class="headerlink" href="#linux-softirq" title="Permalink to this headline">¶</a></h2>
+<p>我们看的是线程化的下半部。</p>
 <p>软中断：在硬件中断处理程序结束时调用的的句柄</p>
-<div class="literal-block-wrapper docutils container" id="id95">
-<div class="code-block-caption"><span class="caption-text">softirq基础结构</span><a class="headerlink" href="#id95" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-text">softirq基础结构</span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -896,11 +1214,11 @@ $ cat /sys/kernel/debug/tracing/trace_pipe &gt; out.txt
 <p>初始化流程：start_kernel–&gt;softirq_init() –&gt;early_initcall(spawn_ksoftirqd)</p>
 <p>可以理解为所有软中断通过softirq_action进行组织，数组的每个成员指向处理某类事件的处理函数。函数在不同的CPU上是可重入的。每个CPU上运行的软中断处理线程负责处理本CPU上产生的事件。处理完挂起的事件后内核线程就调度出去。在特定时机唤醒内核线程。内核线程继续检查是否有挂起的事件，周而复始。这个时机在下文中进一步解释。唤醒则参考wakeup_softirqd函数。可考虑比较不同版本内核处理方式上的差异。此时关注内核线程优先级问题。</p>
 <p>static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;</p>
-<p>DEFINE_PER_CPU(struct task_struct <a href="#id91"><span class="problematic" id="id92">*</span></a>, ksoftirqd);</p>
+<p>DEFINE_PER_CPU(struct task_struct <a href="#id7"><span class="problematic" id="id8">*</span></a>, ksoftirqd);</p>
 <p>1.softirq_init()</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id96">
-<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id96" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id17">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id17" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">:</span><span class="nl">linenos</span><span class="p">:</span>
 
 <span class="cm">/* Tasklets --- multithreaded analogue of BHs.</span>
@@ -974,8 +1292,8 @@ $ cat /sys/kernel/debug/tracing/trace_pipe &gt; out.txt
 <ol class="arabic" start="2">
 <li><p>spawn_ksoftirqd()：在内核初始化初期为每一个CPU新建内核线程ksoftirqd</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id97">
-<div class="code-block-caption"><span class="caption-text">处理软终端的内核线程：每个CPU一个</span><a class="headerlink" href="#id97" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id18">
+<div class="code-block-caption"><span class="caption-text">处理软终端的内核线程：每个CPU一个</span><a class="headerlink" href="#id18" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1011,8 +1329,8 @@ $ cat /sys/kernel/debug/tracing/trace_pipe &gt; out.txt
 </td></tr></table></div>
 </div>
 <p>我们看正常运行系统负责处理软中断的内核线程（当前硬件：八核）：</p>
-<div class="literal-block-wrapper docutils container" id="id98">
-<div class="code-block-caption"><span class="caption-text">每个CPU运行一个处理软中断的线程</span><a class="headerlink" href="#id98" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id19">
+<div class="code-block-caption"><span class="caption-text">每个CPU运行一个处理软中断的线程</span><a class="headerlink" href="#id19" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -1040,8 +1358,8 @@ root          48  0.0  0.0      0     0 ?        S     2021   0:02 [ksoftirqd/7]
 <ul>
 <li><p>软中断运行点：</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id99">
-<div class="code-block-caption"><span class="caption-text">ksoftirqd线程唤醒时机</span><a class="headerlink" href="#id99" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id20">
+<div class="code-block-caption"><span class="caption-text">ksoftirqd线程唤醒时机</span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1089,8 +1407,8 @@ root          48  0.0  0.0      0     0 ?        S     2021   0:02 [ksoftirqd/7]
 <blockquote>
 <div><blockquote>
 <div><p>open_softirq(NET_TX_SOFTIRQ, net_tx_action);</p>
-<div class="literal-block-wrapper docutils container" id="id100">
-<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id100" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id21">
+<div class="code-block-caption"><span class="caption-text">struct_task –&gt; mm</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -1104,8 +1422,8 @@ root          48  0.0  0.0      0     0 ?        S     2021   0:02 [ksoftirqd/7]
 <p>每个类型的软中断有一个hook，怎么处理，怎么组织这类事件则在这个hook中处理。</p>
 <p>我们以net_tx_action为例，看下其代码：</p>
 </div></blockquote>
-<div class="literal-block-wrapper docutils container" id="id101">
-<div class="code-block-caption"><span class="caption-text">net_tx_action分析</span><a class="headerlink" href="#id101" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id22">
+<div class="code-block-caption"><span class="caption-text">net_tx_action分析</span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1315,8 +1633,8 @@ root          48  0.0  0.0      0     0 ?        S     2021   0:02 [ksoftirqd/7]
 </li>
 <li><p>结构</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id102">
-<div class="code-block-caption"><span class="caption-text">notifier相关结构</span><a class="headerlink" href="#id102" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id23">
+<div class="code-block-caption"><span class="caption-text">notifier相关结构</span><a class="headerlink" href="#id23" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1383,8 +1701,8 @@ root          48  0.0  0.0      0     0 ?        S     2021   0:02 [ksoftirqd/7]
 </li>
 <li><p>通知链声明：</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id103">
-<div class="code-block-caption"><span class="caption-text">通知链初始化</span><a class="headerlink" href="#id103" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id24">
+<div class="code-block-caption"><span class="caption-text">通知链初始化</span><a class="headerlink" href="#id24" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -1401,8 +1719,8 @@ root          48  0.0  0.0      0     0 ?        S     2021   0:02 [ksoftirqd/7]
 </li>
 <li><p>导出符号</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id104">
-<div class="code-block-caption"><span class="caption-text">导出函数</span><a class="headerlink" href="#id104" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id25">
+<div class="code-block-caption"><span class="caption-text">导出函数</span><a class="headerlink" href="#id25" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3

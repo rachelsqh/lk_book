@@ -11,17 +11,10 @@ Rachel's E-book's
    
    os_base/index
    lk_devel/index
-   x86_kernel_base
    lk_code/index
-   pm
-   cpu
-   driver
-   ps
-   mem
-   fs
-   sec
    yocto_kernel
    uboot
-   dot
-   bpf_helper
+   driver
+   gitlab
+
 

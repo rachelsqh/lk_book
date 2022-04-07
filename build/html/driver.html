@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>设备驱动 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>设备驱动(待修正） &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -15,8 +15,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="进程管理" href="ps.html" />
-    <link rel="prev" title="cpu管理" href="cpu.html" /> 
+    <link rel="next" title="i2c分析(待修正）" href="i2c.html" />
+    <link rel="prev" title="uboot理解" href="uboot.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,11 +37,15 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
-<li class="toctree-l1"><a class="reference internal" href="x86_kernel_base.html">linux X86内核基础</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pm.html">电源管理框架</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cpu.html">cpu管理</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">设备驱动</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">设备驱动(待修正）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="i2c.html">i2c分析(待修正）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="uart.html">串口分析(待修正)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spi.html">spi分析(待修正）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pci_pcie.html">pci/pcie分析(待修正)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="can.html">can通信总结(待修正)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#linux">linux设备架构：</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id2">驱动的绑定</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id3">总线类型</a></li>
@@ -99,16 +103,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#can">网络设备驱动：can</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#api">驱动api</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="ps.html">进程管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mem.html">内存管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fs.html">文件系统</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sec.html">linux 内核安全</a></li>
-<li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
-<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dot.html">dot画图</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bpf_helper.html">BPF-HELPERS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gitlab.html">基于gitlab的项目管理(待修正)</a></li>
 </ul>
 
         </div>
@@ -125,7 +123,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>设备驱动</li>
+      <li>设备驱动(待修正）</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/driver.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -136,7 +134,61 @@
            <div itemprop="articleBody">
              
   <div class="section" id="id1">
-<h1>设备驱动<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<h1>设备驱动(待修正）<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="i2c.html">i2c分析(待修正）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="i2c.html#id1">i2c时序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="i2c.html#gpioi2c">gpio模拟i2c时序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="i2c.html#id34">i2c驱动分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="i2c.html#id35">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="uart.html">串口分析(待修正)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="uart.html#id2">串口信号</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spi.html">spi分析(待修正）</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spi.html#linux-spi">linux spi驱动方式</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spi.html#id1">spi驱动架构</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="spi.html#id2">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pci_pcie.html">pci/pcie分析(待修正)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pci_pcie.html#pci">pci总线协议</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pci_pcie.html#id1">硬件引脚</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pci_pcie.html#pcie">PCIE总线协议</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pci_pcie.html#id2">PCIe配置空间</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pci_pcie.html#int-pci-find-capability">int pci_find_capability();</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pci_pcie.html#pci-capability">pci capability分析</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pci_pcie.html#id3">PCI驱动总结</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pci_pcie.html#id4">pci驱动开发</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pci_pcie.html#pci-e">pci-e端口总线驱动指南</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pci_pcie.html#id5">pci/pcie错误处理</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pci_pcie.html#id6">PCI端点框架</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="can.html">can通信总结(待修正)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="can.html#id1">概述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="can.html#id2">can信号描述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="can.html#id3">can数据包</a></li>
+<li class="toctree-l2"><a class="reference internal" href="can.html#id4">can 应用层协议</a></li>
+<li class="toctree-l2"><a class="reference internal" href="can.html#linux-can-sja1000">linux can驱动架构(sja1000为例）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="can.html#id5">总结</a></li>
+</ul>
+</li>
+</ul>
+</div>
 <div class="section" id="linux">
 <h2>linux设备架构：<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id2">
@@ -1394,14 +1446,18 @@ dev-&gt;dev.parent = parent ? : &amp;platform_bus;</p>
 <h3>网络设备驱动：can<a class="headerlink" href="#can" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
+<div class="section" id="api">
+<h2>驱动api<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://www.kernel.org/doc/html/latest/driver-api/index.html">https://www.kernel.org/doc/html/latest/driver-api/index.html</a></p>
+</div>
 </div>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="cpu.html" class="btn btn-neutral float-left" title="cpu管理" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ps.html" class="btn btn-neutral float-right" title="进程管理" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="uboot.html" class="btn btn-neutral float-left" title="uboot理解" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="i2c.html" class="btn btn-neutral float-right" title="i2c分析(待修正）" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

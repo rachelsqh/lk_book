@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ioremap实现原理 &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动(待修正）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gitlab.html">基于gitlab的项目管理(待修正)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>ioremap实现原理</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ioremap.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="ioremap">
+<h1>ioremap实现原理<a class="headerlink" href="#ioremap" title="Permalink to this headline">¶</a></h1>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>ioremap     -   map bus memory into CPU space</p></li>
+<li><p>&#64;phys_addr:    bus address of the memory</p></li>
+<li><p>&#64;size:      size of the resource to map</p></li>
+<li></li>
+<li><p>ioremap performs a platform specific sequence of operations to</p></li>
+<li><p>make bus memory CPU accessible via the readb/readw/readl/writeb/</p></li>
+<li><p>writew/writel functions and the other mmio helpers. The returned</p></li>
+<li><p>address is not guaranteed to be usable directly as a virtual</p></li>
+<li><p>address.</p></li>
+<li></li>
+<li><p>This version of ioremap ensures that the memory is marked uncachable</p></li>
+<li><p>on the CPU as well as honouring existing caching rules from things like</p></li>
+<li><p>the PCI bus. Note that there are other caches and buffers on many</p></li>
+<li><p>busses. In particular driver authors should read up on PCI writes</p></li>
+<li></li>
+<li><p>It’s useful if some control registers are in such an area and</p></li>
+<li><p>write combining or read caching is not desirable:</p></li>
+<li></li>
+<li><p>Must be freed with iounmap.</p></li>
+</ul>
+<p><a href="#id1"><span class="problematic" id="id2">*</span></a>/</p>
+</dd>
+</dl>
+<p>void __iomem <a href="#id3"><span class="problematic" id="id4">*</span></a>ioremap(resource_size_t phys_addr, unsigned long size)
+{</p>
+<blockquote>
+<div><dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Ideally, this should be:</p></li>
+<li><p>pat_enabled() ? _PAGE_CACHE_MODE_UC : _PAGE_CACHE_MODE_UC_MINUS;</p></li>
+<li></li>
+<li><p>Till we fix all X drivers to use ioremap_wc(), we will use</p></li>
+<li><p>UC MINUS. Drivers that are certain they need or can already</p></li>
+<li><p>be converted over to strong UC can use ioremap_uc().</p></li>
+</ul>
+<p><a href="#id5"><span class="problematic" id="id6">*</span></a>/</p>
+</dd>
+</dl>
+<p>enum page_cache_mode pcm = _PAGE_CACHE_MODE_UC_MINUS;</p>
+<dl class="simple">
+<dt>return __ioremap_caller(phys_addr, size, pcm,</dt><dd><p>__builtin_return_address(0), false);</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>}
+EXPORT_SYMBOL(ioremap);</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Remap an arbitrary physical address space into the kernel virtual</p></li>
+<li><p>address space. It transparently creates kernel huge I/O mapping when</p></li>
+<li><p>the physical address is aligned by a huge page size (1GB or 2MB) and</p></li>
+<li><p>the requested size is at least the huge page size.</p></li>
+<li></li>
+<li><p>NOTE: MTRRs can override PAT memory types with a 4KB granularity.</p></li>
+<li><p>Therefore, the mapping code falls back to use a smaller page toward 4KB</p></li>
+<li><p>when a mapping range is covered by non-WB type of MTRRs.</p></li>
+<li></li>
+<li><p>NOTE! We need to allow non-page-aligned mappings too: we will obviously</p></li>
+<li><p>have to convert them into an offset in a page-aligned mapping, but the</p></li>
+<li><p>caller shouldn’t need to know that small detail.</p></li>
+</ul>
+<p><a href="#id7"><span class="problematic" id="id8">*</span></a>/</p>
+</dd>
+</dl>
+<p>static void __iomem *
+__ioremap_caller(resource_size_t phys_addr, unsigned long size,</p>
+<blockquote>
+<div><p>enum page_cache_mode pcm, void <a href="#id9"><span class="problematic" id="id10">*</span></a>caller, bool encrypted)</p>
+</div></blockquote>
+<dl>
+<dt>{</dt><dd><p>unsigned long offset, vaddr;
+resource_size_t last_addr;
+const resource_size_t unaligned_phys_addr = phys_addr;
+const unsigned long unaligned_size = size;
+struct ioremap_desc io_desc;
+struct vm_struct <a href="#id11"><span class="problematic" id="id12">*</span></a>area;
+enum page_cache_mode new_pcm;
+pgprot_t prot;
+int retval;
+void __iomem <a href="#id13"><span class="problematic" id="id14">*</span></a>ret_addr;</p>
+<p>/* Don’t allow wraparound or zero size <a href="#id15"><span class="problematic" id="id16">*</span></a>/
+last_addr = phys_addr + size - 1;
+if (!size || last_addr &lt; phys_addr)</p>
+<blockquote>
+<div><p>return NULL;</p>
+</div></blockquote>
+<dl>
+<dt>if (!phys_addr_valid(phys_addr)) {</dt><dd><dl class="simple">
+<dt>printk(KERN_WARNING “ioremap: invalid physical address %llxn”,</dt><dd><p>(unsigned long long)phys_addr);</p>
+</dd>
+</dl>
+<p>WARN_ON_ONCE(1);
+return NULL;</p>
+</dd>
+</dl>
+<p>}</p>
+<p>__ioremap_check_mem(phys_addr, size, &amp;io_desc);</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Don’t allow anybody to remap normal RAM that we’re using..</p></li>
+</ul>
+<p><a href="#id17"><span class="problematic" id="id18">*</span></a>/</p>
+</dd>
+<dt>if (io_desc.flags &amp; IORES_MAP_SYSTEM_RAM) {</dt><dd><dl class="simple">
+<dt>WARN_ONCE(1, “ioremap on RAM at %pa - %pan”,</dt><dd><p>&amp;phys_addr, &amp;last_addr);</p>
+</dd>
+</dl>
+<p>return NULL;</p>
+</dd>
+</dl>
+<p>}</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Mappings have to be page-aligned</p></li>
+</ul>
+<p><a href="#id19"><span class="problematic" id="id20">*</span></a>/</p>
+</dd>
+</dl>
+<p>offset = phys_addr &amp; ~PAGE_MASK;
+phys_addr &amp;= PHYSICAL_PAGE_MASK;
+size = PAGE_ALIGN(last_addr+1) - phys_addr;</p>
+<dl class="simple">
+<dt>retval = memtype_reserve(phys_addr, (u64)phys_addr + size,</dt><dd><p>pcm, &amp;new_pcm);</p>
+</dd>
+<dt>if (retval) {</dt><dd><p>printk(KERN_ERR “ioremap memtype_reserve failed %dn”, retval);
+return NULL;</p>
+</dd>
+</dl>
+<p>}</p>
+<dl>
+<dt>if (pcm != new_pcm) {</dt><dd><dl>
+<dt>if (!is_new_memtype_allowed(phys_addr, size, pcm, new_pcm)) {</dt><dd><p>printk(KERN_ERR</p>
+</dd>
+<dt>“ioremap error for 0x%llx-0x%llx, requested 0x%x, got 0x%xn”,</dt><dd><blockquote>
+<div><p>(unsigned long long)phys_addr,
+(unsigned long long)(phys_addr + size),
+pcm, new_pcm);</p>
+</div></blockquote>
+<p>goto err_free_memtype;</p>
+</dd>
+</dl>
+<p>}
+pcm = new_pcm;</p>
+</dd>
+</dl>
+<p>}</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>If the page being mapped is in memory and SEV is active then</p></li>
+<li><p>make sure the memory encryption attribute is enabled in the</p></li>
+<li><p>resulting mapping.</p></li>
+</ul>
+<p><a href="#id21"><span class="problematic" id="id22">*</span></a>/</p>
+</dd>
+</dl>
+<p>prot = PAGE_KERNEL_IO;
+if ((io_desc.flags &amp; IORES_MAP_ENCRYPTED) || encrypted)</p>
+<blockquote>
+<div><p>prot = pgprot_encrypted(prot);</p>
+</div></blockquote>
+<p>switch (pcm) {
+case _PAGE_CACHE_MODE_UC:
+default:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>prot = __pgprot(pgprot_val(prot) |</dt><dd><p>cachemode2protval(_PAGE_CACHE_MODE_UC));</p>
+</dd>
+</dl>
+<p>break;</p>
+</div></blockquote>
+<dl>
+<dt>case _PAGE_CACHE_MODE_UC_MINUS:</dt><dd><dl class="simple">
+<dt>prot = __pgprot(pgprot_val(prot) |</dt><dd><p>cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS));</p>
+</dd>
+</dl>
+<p>break;</p>
+</dd>
+<dt>case _PAGE_CACHE_MODE_WC:</dt><dd><dl class="simple">
+<dt>prot = __pgprot(pgprot_val(prot) |</dt><dd><p>cachemode2protval(_PAGE_CACHE_MODE_WC));</p>
+</dd>
+</dl>
+<p>break;</p>
+</dd>
+<dt>case _PAGE_CACHE_MODE_WT:</dt><dd><dl class="simple">
+<dt>prot = __pgprot(pgprot_val(prot) |</dt><dd><p>cachemode2protval(_PAGE_CACHE_MODE_WT));</p>
+</dd>
+</dl>
+<p>break;</p>
+</dd>
+<dt>case _PAGE_CACHE_MODE_WB:</dt><dd><p>break;</p>
+</dd>
+</dl>
+<p>}</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Ok, go for it..</p></li>
+</ul>
+<p><a href="#id23"><span class="problematic" id="id24">*</span></a>/</p>
+</dd>
+</dl>
+<p>area = get_vm_area_caller(size, VM_IOREMAP, caller);
+if (!area)</p>
+<blockquote>
+<div><p>goto err_free_memtype;</p>
+</div></blockquote>
+<p>area-&gt;phys_addr = phys_addr;
+vaddr = (unsigned long) area-&gt;addr;/* 这是1对1映射 <a href="#id25"><span class="problematic" id="id26">*</span></a>/</p>
+<dl class="simple">
+<dt>if (memtype_kernel_map_sync(phys_addr, size, pcm))</dt><dd><p>goto err_free_area;</p>
+</dd>
+<dt>if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot))</dt><dd><p>goto err_free_area;</p>
+</dd>
+</dl>
+<p>ret_addr = (void __iomem <a href="#id27"><span class="problematic" id="id28">*</span></a>) (vaddr + offset);
+mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);</p>
+<dl>
+<dt>/*</dt><dd><ul class="simple">
+<li><p>Check if the request spans more than any BAR in the iomem resource</p></li>
+<li><p>tree.</p></li>
+</ul>
+<p><a href="#id29"><span class="problematic" id="id30">*</span></a>/</p>
+</dd>
+<dt>if (iomem_map_sanity_check(unaligned_phys_addr, unaligned_size))</dt><dd><p>pr_warn(“caller %pS mapping multiple BARsn”, caller);</p>
+</dd>
+</dl>
+<p>return ret_addr;</p>
+</dd>
+<dt>err_free_area:</dt><dd><p>free_vm_area(area);</p>
+</dd>
+<dt>err_free_memtype:</dt><dd><p>memtype_free(phys_addr, phys_addr + size);
+return NULL;</p>
+</dd>
+</dl>
+<p>}</p>
+<p>这部分与vmalloc的关系</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

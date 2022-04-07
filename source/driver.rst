@@ -1,5 +1,16 @@
-设备驱动
+设备驱动(待修正）
 ^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 5
+   
+   i2c
+   uart
+   spi
+   pci_pcie
+   can
+
+
 linux设备架构：
 """""""""""""
 
@@ -1247,7 +1258,7 @@ spi硬件信号：spi数据包
 ***************
 
 驱动api
-^^^^^^^^^^^
+"""""""""
 https://www.kernel.org/doc/html/latest/driver-api/index.html
 
 

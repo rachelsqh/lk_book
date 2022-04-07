@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spi分析(待修正） &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pci/pcie分析(待修正)" href="pci_pcie.html" />
+    <link rel="prev" title="串口分析(待修正)" href="uart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="driver.html">设备驱动(待修正）</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="i2c.html">i2c分析(待修正）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="uart.html">串口分析(待修正)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">spi分析(待修正）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#linux-spi">linux spi驱动方式</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">spi驱动架构</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pci_pcie.html">pci/pcie分析(待修正)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="can.html">can通信总结(待修正)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#linux">linux设备架构：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#kset-kobject-kref">kset/kobject/kref描述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id59">设备驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#dma">DMA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id64">驱动资源</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id65">开源固件和设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#i2c">i2c驱动架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#spi">spi驱动架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id127">驱动分类</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#api">驱动api</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gitlab.html">基于gitlab的项目管理(待修正)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="driver.html">设备驱动(待修正）</a> &raquo;</li>
+      <li>spi分析(待修正）</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/spi.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="spi">
+<h1>spi分析(待修正）<a class="headerlink" href="#spi" title="Permalink to this headline">¶</a></h1>
+<p>SPI，是一种高速的，全双工，同步的通信总线，并且在芯片的管脚上只占用四根线，
+spi信号时序
+“””””””””””
+采用主-从模式(Master-Slave) 的控制方式,SPI 规定了两个 SPI 设备之间通信必须由主设备 (Master) 来控制次设备 (Slave)。 一个 Master 设备可以通过提供 Clock 以及对 Slave 设备进行片选 (Slave Select) 来控制多个 Slave 设备，SPI 协议还规定 Slave 设备的 Clock 由 Master 设备通过 SCK 管脚提供给 Slave 设备， Slave 设备本身不能产生或控制 Clock，没有 Clock 则 Slave 设备不能正常工作。
+Master 设备会根据将要交换的数据来产生相应的时钟脉冲(Clock Pulse)，时钟脉冲组成了时钟信号(Clock Signal) ，时钟信号通过时钟极性 (CPOL) 和 时钟相位 (CPHA) 控制着两个 SPI 设备间何时数据交换以及何时对接收到的数据进行采样，来保证数据在两个设备之间是同步传输的。即由CPOL和CPHA实现同步。</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>信号：SDI(数据输入)、SDO(数据输出)、SCK(时钟)、CS(片选)</dt><dd><p>(1)、SDO/MOSI – master-&gt;slave；
+(2)、SDI/MISO – master&lt;-slave；
+(3)、SCK – 时钟信号，由主设备产生；
+(4)、CS/SS – 从设备使能信号，由主设备控制。当有多个从设备的时候，因为每个从设备上都有一个片选引脚接入到主设备机中，当我们的主设备和某个从设备通信时将需要将从设备对应的片选引脚电平拉低或者是拉高。编号从0开始，具体信息由硬件工程师提供；</p>
+</dd>
+</dl>
+</li>
+<li><p>SPI总线的极性，会直接影响SPI总线空闲时的时钟信号是高电平还是低电平。
+- CPOL = 1：表示空闲时是高电平；
+- CPOL = 0：表示空闲时是低电平。</p></li>
+</ul>
+<p>由于数据传输往往是从跳变沿开始的，也就表示开始传输数据的时候，是下降沿还是上升沿。如下图：</p>
+<ul class="simple">
+<li><p>SPI总线的相位,一个时钟周期会有2个跳变沿。而相位，直接决定SPI总线从那个跳变沿开始采样数据。
+- CPHA = 0：表示从第一个跳变沿开始采样；
+- CPHA = 1：表示从第二个跳变沿开始采样。
+spi_cpha.jpg</p></li>
+<li><dl class="simple">
+<dt>SPI总线传输的四种模式CPOL 和 CPHA 的不同组合，形成了SPI总线的不同模式。</dt><dd><ul>
+<li><dl class="simple">
+<dt>模式一: CPOL=0，CPHA=0：此时空闲态时，SCLK处于低电平，数据采样是在第1个边沿，也就是</dt><dd><p>SCLK由低电平到高电平的跳变，所以数据采样是在上升沿，数据发送是在下降沿。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>模式二：CPOL=0，CPHA=1：此时空闲态时，SCLK处于低电平，数据发送是在第1个边沿，也就是</dt><dd><p>SCLK由低电平到高电平的跳变，所以数据采样是在下降沿，数据发送是在上升沿。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>模式三：CPOL=1，CPHA=0：此时空闲态时，SCLK处于高电平，数据采集是在第1个边沿，也就是</dt><dd><p>SCLK由高电平到低电平的跳变，所以数据采集是在下降沿，数据发送是在上升沿。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>模式四：CPOL=1，CPHA=1：此时空闲态时，SCLK处于高电平，数据发送是在第1个边沿，也就是</dt><dd><p>SCLK由高电平到低电平的跳变，所以数据采集是在上升沿，数据发送是在下降沿。</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>需要注意的是：我们的主设备能够控制时钟，因为SPI通信并不像UART或者IIC通信那样有专门的通信周期，有专门的通信起始信号，有专门的通信结束信号；所以SPI协议能够通过控制时钟信号线，当没有数据交流的时候我们的时钟线要么是保持高电平要么是保持低电平。</p>
+<ul class="simple">
+<li><p>通信过程：</p></li>
+</ul>
+<p>SPI 是许多不同设备使用的通用通信协议。例如，  SD 读卡器模块、  RFID 读卡器模块和 2.4 GHz 无线发射器/接收器 都使用 SPI 与微控制器通信。</p>
+<p>SPI 的一个独特优势是可以不间断地传输数据。可以在连续流中发送或接收任意数量的比特。使用 I2C 和 UART，数据以数据包的形式发送，限制为特定位数。开始和停止条件定义了每个数据包的开始和结束，因此数据在传输过程中被中断。</p>
+<p>通过 SPI 通信的设备处于主从关系。主机是控制设备（通常是微控制器），而从机（通常是传感器、显示器或存储芯片）从主机接收指令。SPI 最简单的配置是单主单从系统，​​但一个主控可以控制多个从属（下文会详细介绍）。</p>
+<p>主从连线：
+spi_master_slave.png</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>优点:</dt><dd><ul>
+<li><p>没有开始和停止位，因此数据可以连续流式传输而不会中断</p></li>
+<li><p>没有像 I2C 这样复杂的从机寻址系统</p></li>
+<li><p>比 I2C 更高的数据传输率（几乎快两倍）</p></li>
+<li><p>MISO 和 MOSI 线分开，可以同时发送和接收数据</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>缺点：</dt><dd><ul>
+<li><p>使用四根线（I2C 和 UART 使用两根线）</p></li>
+<li><p>没有确认数据已经成功接收（I2C有这个）</p></li>
+<li><p>没有像 UART 中的奇偶校验位那样的错误检查形式</p></li>
+<li><p>只允许一个主控</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>链接方式：</dt><dd><ul>
+<li><p>菊花链方式：</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="section" id="linux-spi">
+<h2>linux spi驱动方式<a class="headerlink" href="#linux-spi" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>spi驱动架构<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>总结<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="uart.html" class="btn btn-neutral float-left" title="串口分析(待修正)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pci_pcie.html" class="btn btn-neutral float-right" title="pci/pcie分析(待修正)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

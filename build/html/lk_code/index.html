@@ -16,7 +16,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="linux 内核代码目录结构" href="base_arch.html" />
-    <link rel="prev" title="linux X86内核基础" href="../x86_kernel_base.html" /> 
+    <link rel="prev" title="曲线图-gnuplot" href="../lk_devel/gnuplot.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,7 +37,6 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统概述</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发基础</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../x86_kernel_base.html">linux X86内核基础</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">linux 内核基础代码分析</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="base_arch.html">linux 内核代码目录结构</a></li>
 <li class="toctree-l2"><a class="reference internal" href="module.html">linux 内核模块原理分析</a></li>
@@ -52,17 +51,10 @@
 <li class="toctree-l2"><a class="reference internal" href="x86.html">x86架构部分</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../pm.html">电源管理框架</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cpu.html">cpu管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../ps.html">进程管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../mem.html">内存管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../fs.html">文件系统</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sec.html">linux 内核安全</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../uboot.html">uboot理解</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dot.html">dot画图</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../bpf_helper.html">BPF-HELPERS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动(待修正）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gitlab.html">基于gitlab的项目管理(待修正)</a></li>
 </ul>
 
         </div>
@@ -118,17 +110,23 @@
 <li class="toctree-l1"><a class="reference internal" href="notifier.html">linux 内核通知/通信机制</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="notifier.html#ipi">核间通信:IPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="notifier.html#irq-work">irq work</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notifier.html#id87">等待队列（进程/线程)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notifier.html#id88">工作队列</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="notifier.html#id89">基础</a></li>
-<li class="toctree-l3"><a class="reference internal" href="notifier.html#id90">总结(个人理解）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notifier.html#id3">等待队列（进程/线程)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notifier.html#id4">工作队列</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notifier.html#id5">基础</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notifier.html#id6">总结(个人理解）</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="notifier.html#linux-softirq">linux 软中断：softirq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="notifier.html#notifier">notifier通知链</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="lock.html">linux 内核竞争处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lock.html">linux 内核竞争处理</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lock.html#id1">睡眠锁</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lock.html#cpu">CPU本地锁</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lock.html#id40">自旋锁</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lock.html#id41">锁类型嵌套</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="hook.html">linux 内核hook</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="hook.html#linux">linux 底层指令替换原理</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hook.html#linux-kprobe-kretprobe">linux kprobe/kretprobe 分析总结</a><ul>
@@ -189,7 +187,17 @@
 <li class="toctree-l3"><a class="reference internal" href="hook.html#id26">总结</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="hook.html#perf">perf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hook.html#perf">perf</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hook.html#id27">perf软件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hook.html#id28">perf硬件基础</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hook.html#perf-event-open">系统调用:perf_event_open</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hook.html#perf-struct-pmu">perf 基础结构一：struct pmu {}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hook.html#perf-struct-perf-event">perf 基础结构二：struct perf_event {}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hook.html#perf-struct-perf-event-context">perf 基础结构三：进程关联结构-struct perf_event_context {}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hook.html#perf-struct-perf-cpu-context">perf 基础结构三：struct perf_cpu_context {}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hook.html#id29">总结</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="hook.html#linux-kernel-trace">linux kernel trace</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="hook.html#trace">静态trace</a></li>
 <li class="toctree-l3"><a class="reference internal" href="hook.html#ftrace">ftrace</a></li>
@@ -254,6 +262,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="syscall.html#id2">linux内核实现方式</a></li>
 <li class="toctree-l3"><a class="reference internal" href="syscall.html#os">系统调用流程图：OS负责处理栈切换</a></li>
+<li class="toctree-l3"><a class="reference internal" href="syscall.html#arm">ARM系统调用实现</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pf.html">缺页中断及处理（X86平台)</a><ul>
@@ -275,7 +284,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../x86_kernel_base.html" class="btn btn-neutral float-left" title="linux X86内核基础" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../lk_devel/gnuplot.html" class="btn btn-neutral float-left" title="曲线图-gnuplot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="base_arch.html" class="btn btn-neutral float-right" title="linux 内核代码目录结构" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

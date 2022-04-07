@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>基于gitlab的项目管理(待修正) &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="can通信总结(待修正)" href="can.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动(待修正）</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">基于gitlab的项目管理(待修正)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>基于gitlab的项目管理(待修正)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/gitlab.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="gitlab">
+<h1>基于gitlab的项目管理(待修正)<a class="headerlink" href="#gitlab" title="Permalink to this headline">¶</a></h1>
+<p>背景：这部分总结嵌入式软件的项目/代码库管理，2013左右尝试过redmine + gitlab的方式，当初gitlab没有多少项目管理的东西，但是redmine有太过冗余，对嵌入式基础软件开发来说有些拖沓，并且很多组件是收费的，后来尝试过openproject,这个商业化更严重。大约2015年左右发现gitlab加入了项目管理功能，对于对非大型项目来说，其项目管理功能非常合适，最终选择gitlab来实现软件代码库管理（git),并实现比较合适的项目管理。</p>
+<p>其项目管理功能包括：
+- 里程碑管理 + 任务列表；
+- 进度跟中；
+- 项目审核等。</p>
+<p>同时针对知识总结阶段提供wiki等模块。提供邮件通知功能。人员项目管理等。</p>
+<p>代码资源部分：
+- 代码托管,代码版本管理（git);
+- 代码审查（审查–&gt;合并）
+- 部署 webhook.</p>
+<hr class="docutils" />
+<p>最后采用bitnami提供的gitlab集成软件包进行安装</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="can.html" class="btn btn-neutral float-left" title="can通信总结(待修正)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

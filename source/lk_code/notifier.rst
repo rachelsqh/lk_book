@@ -10,358 +10,367 @@ x86-64中断向量总结为：
 	<iframe src="./x86-64_vec.html" height="345px" width="100%"></iframe>
 
 
-
-arch/x86/kernel/apic/ipi.c
-*
- * Send a 'reschedule' IPI to another CPU. It goes straight through and
- * wastes no time serializing anything. Worst case is that we lose a
- * reschedule ...
- */
-void native_smp_send_reschedule(int cpu)
-{
-	if (unlikely(cpu_is_offline(cpu))) {
-		WARN(1, "sched: Unexpected reschedule of offline CPU#%d!\n", cpu);
-		return;
-	}
-	apic->send_IPI(cpu, RESCHEDULE_VECTOR);
-}
-
-void native_send_call_func_single_ipi(int cpu)
-{
-	apic->send_IPI(cpu, CALL_FUNCTION_SINGLE_VECTOR);
-}
-
-void native_send_call_func_ipi(const struct cpumask *mask)
-{
-	if (static_branch_likely(&apic_use_ipi_shorthand)) {
-		unsigned int cpu = smp_processor_id();
-
-		if (!cpumask_or_equal(mask, cpumask_of(cpu), cpu_online_mask))
-			goto sendmask;
-
-		if (cpumask_test_cpu(cpu, mask))
-			apic->send_IPI_all(CALL_FUNCTION_VECTOR);
-		else if (num_online_cpus() > 1)
-			apic->send_IPI_allbutself(CALL_FUNCTION_VECTOR);
-		return;
+.. code-block:: c
+	:caption: ipi通信实现代码
+	:linenos:
+	
+	arch/x86/kernel/apic/ipi.c
+	*
+	 * Send a 'reschedule' IPI to another CPU. It goes straight through and
+	 * wastes no time serializing anything. Worst case is that we lose a
+	 * reschedule ...
+	 */
+	void native_smp_send_reschedule(int cpu)
+	{
+		if (unlikely(cpu_is_offline(cpu))) {
+			WARN(1, "sched: Unexpected reschedule of offline CPU#%d!\n", cpu);
+			return;
+		}
+		apic->send_IPI(cpu, RESCHEDULE_VECTOR);
 	}
 
-sendmask:
-	apic->send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
-}
-
-
-void __default_send_IPI_shortcut(unsigned int shortcut, int vector)
-{
-	/*
-	 * Subtle. In the case of the 'never do double writes' workaround
-	 * we have to lock out interrupts to be safe.  As we don't care
-	 * of the value read we use an atomic rmw access to avoid costly
-	 * cli/sti.  Otherwise we use an even cheaper single atomic write
-	 * to the APIC.
-	 */
-	unsigned int cfg;
-
-	/*
-	 * Wait for idle.
-	 */
-	if (unlikely(vector == NMI_VECTOR))
-		safe_apic_wait_icr_idle();
-	else
-		__xapic_wait_icr_idle();
-
-	/*
-	 * No need to touch the target chip field. Also the destination
-	 * mode is ignored when a shorthand is used.
-	 */
-	cfg = __prepare_ICR(shortcut, vector, 0);
-
-	/*
-	 * Send the IPI. The write to APIC_ICR fires this off.
-	 */
-	native_apic_mem_write(APIC_ICR, cfg);
-}
-
-/*
- * This is used to send an IPI with no shorthand notation (the destination is
- * specified in bits 56 to 63 of the ICR).
- */
-void __default_send_IPI_dest_field(unsigned int mask, int vector, unsigned int dest)
-{
-	unsigned long cfg;
-
-	/*
-	 * Wait for idle.
-	 */
-	if (unlikely(vector == NMI_VECTOR))
-		safe_apic_wait_icr_idle();
-	else
-		__xapic_wait_icr_idle();
-
-	/*
-	 * prepare target chip field
-	 */
-	cfg = __prepare_ICR2(mask);
-	native_apic_mem_write(APIC_ICR2, cfg);
-
-	/*
-	 * program the ICR
-	 */
-	cfg = __prepare_ICR(0, vector, dest);
-
-	/*
-	 * Send the IPI. The write to APIC_ICR fires this off.
-	 */
-	native_apic_mem_write(APIC_ICR, cfg);
-}
-
-void default_send_IPI_single_phys(int cpu, int vector)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	__default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid, cpu),
-				      vector, APIC_DEST_PHYSICAL);
-	local_irq_restore(flags);
-}
-
-void default_send_IPI_mask_sequence_phys(const struct cpumask *mask, int vector)
-{
-	unsigned long query_cpu;
-	unsigned long flags;
-
-	/*
-	 * Hack. The clustered APIC addressing mode doesn't allow us to send
-	 * to an arbitrary mask, so I do a unicast to each CPU instead.
-	 * - mbligh
-	 */
-	local_irq_save(flags);
-	for_each_cpu(query_cpu, mask) {
-		__default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid,
-				query_cpu), vector, APIC_DEST_PHYSICAL);
+	void native_send_call_func_single_ipi(int cpu)
+	{
+		apic->send_IPI(cpu, CALL_FUNCTION_SINGLE_VECTOR);
 	}
-	local_irq_restore(flags);
-}
 
-void default_send_IPI_mask_allbutself_phys(const struct cpumask *mask,
-						 int vector)
-{
-	unsigned int this_cpu = smp_processor_id();
-	unsigned int query_cpu;
-	unsigned long flags;
+	void native_send_call_func_ipi(const struct cpumask *mask)
+	{
+		if (static_branch_likely(&apic_use_ipi_shorthand)) {
+			unsigned int cpu = smp_processor_id();
 
-	/* See Hack comment above */
+			if (!cpumask_or_equal(mask, cpumask_of(cpu), cpu_online_mask))
+				goto sendmask;
 
-	local_irq_save(flags);
-	for_each_cpu(query_cpu, mask) {
-		if (query_cpu == this_cpu)
-			continue;
-		__default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid,
-				 query_cpu), vector, APIC_DEST_PHYSICAL);
+			if (cpumask_test_cpu(cpu, mask))
+				apic->send_IPI_all(CALL_FUNCTION_VECTOR);
+			else if (num_online_cpus() > 1)
+				apic->send_IPI_allbutself(CALL_FUNCTION_VECTOR);
+			return;
+		}
+
+	sendmask:
+		apic->send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
 	}
-	local_irq_restore(flags);
-}
 
-/*
- * Helper function for APICs which insist on cpumasks
- */
-void default_send_IPI_single(int cpu, int vector)
-{
-	apic->send_IPI_mask(cpumask_of(cpu), vector);
-}
 
-void default_send_IPI_allbutself(int vector)
-{
-	__default_send_IPI_shortcut(APIC_DEST_ALLBUT, vector);
-}
+	void __default_send_IPI_shortcut(unsigned int shortcut, int vector)
+	{
+		/*
+		 * Subtle. In the case of the 'never do double writes' workaround
+		 * we have to lock out interrupts to be safe.  As we don't care
+		 * of the value read we use an atomic rmw access to avoid costly
+		 * cli/sti.  Otherwise we use an even cheaper single atomic write
+		 * to the APIC.
+		 */
+		unsigned int cfg;
 
-void default_send_IPI_all(int vector)
-{
-	__default_send_IPI_shortcut(APIC_DEST_ALLINC, vector);
-}
+		/*
+		 * Wait for idle.
+		 */
+		if (unlikely(vector == NMI_VECTOR))
+			safe_apic_wait_icr_idle();
+		else
+			__xapic_wait_icr_idle();
 
-void default_send_IPI_self(int vector)
-{
-	__default_send_IPI_shortcut(APIC_DEST_SELF, vector);
-}
+		/*
+		 * No need to touch the target chip field. Also the destination
+		 * mode is ignored when a shorthand is used.
+		 */
+		cfg = __prepare_ICR(shortcut, vector, 0);
+
+		/*
+		 * Send the IPI. The write to APIC_ICR fires this off.
+		 */
+		native_apic_mem_write(APIC_ICR, cfg);
+	}
+
+	/*
+	 * This is used to send an IPI with no shorthand notation (the destination is
+	 * specified in bits 56 to 63 of the ICR).
+	 */
+	void __default_send_IPI_dest_field(unsigned int mask, int vector, unsigned int dest)
+	{
+		unsigned long cfg;
+
+		/*
+		 * Wait for idle.
+		 */
+		if (unlikely(vector == NMI_VECTOR))
+			safe_apic_wait_icr_idle();
+		else
+			__xapic_wait_icr_idle();
+
+		/*
+		 * prepare target chip field
+		 */
+		cfg = __prepare_ICR2(mask);
+		native_apic_mem_write(APIC_ICR2, cfg);
+
+		/*
+		 * program the ICR
+		 */
+		cfg = __prepare_ICR(0, vector, dest);
+
+		/*
+		 * Send the IPI. The write to APIC_ICR fires this off.
+		 */
+		native_apic_mem_write(APIC_ICR, cfg);
+	}
+
+	void default_send_IPI_single_phys(int cpu, int vector)
+	{
+		unsigned long flags;
+
+		local_irq_save(flags);
+		__default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid, cpu),
+					      vector, APIC_DEST_PHYSICAL);
+		local_irq_restore(flags);
+	}
+
+	void default_send_IPI_mask_sequence_phys(const struct cpumask *mask, int vector)
+	{
+		unsigned long query_cpu;
+		unsigned long flags;
+
+		/*
+		 * Hack. The clustered APIC addressing mode doesn't allow us to send
+		 * to an arbitrary mask, so I do a unicast to each CPU instead.
+		 * - mbligh
+		 */
+		local_irq_save(flags);
+		for_each_cpu(query_cpu, mask) {
+			__default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid,
+					query_cpu), vector, APIC_DEST_PHYSICAL);
+		}
+		local_irq_restore(flags);
+	}
+
+	void default_send_IPI_mask_allbutself_phys(const struct cpumask *mask,
+							 int vector)
+	{
+		unsigned int this_cpu = smp_processor_id();
+		unsigned int query_cpu;
+		unsigned long flags;
+
+		/* See Hack comment above */
+
+		local_irq_save(flags);
+		for_each_cpu(query_cpu, mask) {
+			if (query_cpu == this_cpu)
+				continue;
+			__default_send_IPI_dest_field(per_cpu(x86_cpu_to_apicid,
+					 query_cpu), vector, APIC_DEST_PHYSICAL);
+		}
+		local_irq_restore(flags);
+	}
+
+	/*
+	 * Helper function for APICs which insist on cpumasks
+	 */
+	void default_send_IPI_single(int cpu, int vector)
+	{
+		apic->send_IPI_mask(cpumask_of(cpu), vector);
+	}
+
+	void default_send_IPI_allbutself(int vector)
+	{
+		__default_send_IPI_shortcut(APIC_DEST_ALLBUT, vector);
+	}
+
+	void default_send_IPI_all(int vector)
+	{
+		__default_send_IPI_shortcut(APIC_DEST_ALLINC, vector);
+	}
+
+	void default_send_IPI_self(int vector)
+	{
+		__default_send_IPI_shortcut(APIC_DEST_SELF, vector);
+	}
 
 irq work
 """"""""""
 提供一个框架，用于从 hardirq 上下文中排队和运行回调.就是一种在硬件中断上下文中运行任务的途径。
 
-static DEFINE_PER_CPU(struct llist_head, raised_list);
-static DEFINE_PER_CPU(struct llist_head, lazy_list);
 
-/* Enqueue on current CPU, work must already be claimed and preempt disabled */
-static void __irq_work_queue_local(struct irq_work *work)
-{
-	/* If the work is "lazy", handle it from next tick if any */
-	if (atomic_read(&work->node.a_flags) & IRQ_WORK_LAZY) {
-		if (llist_add(&work->node.llist, this_cpu_ptr(&lazy_list)) &&
-		    tick_nohz_tick_stopped())
-			arch_irq_work_raise();
-	} else {
-		if (llist_add(&work->node.llist, this_cpu_ptr(&raised_list)))
-			arch_irq_work_raise();
+.. code-block:: c
+	:caption: irq work实现
+	:linenos:
+	
+	static DEFINE_PER_CPU(struct llist_head, raised_list);
+	static DEFINE_PER_CPU(struct llist_head, lazy_list);
+
+	/* Enqueue on current CPU, work must already be claimed and preempt disabled */
+	static void __irq_work_queue_local(struct irq_work *work)
+	{
+		/* If the work is "lazy", handle it from next tick if any */
+		if (atomic_read(&work->node.a_flags) & IRQ_WORK_LAZY) {
+			if (llist_add(&work->node.llist, this_cpu_ptr(&lazy_list)) &&
+			    tick_nohz_tick_stopped())
+				arch_irq_work_raise();
+		} else {
+			if (llist_add(&work->node.llist, this_cpu_ptr(&raised_list)))
+				arch_irq_work_raise();/* apic->send_IPI_self(IRQ_WORK_VECTOR):触发：irq_work中断向量：0xf6  */
+		}
 	}
-}
 
-/* Enqueue the irq work @work on the current CPU */
-bool irq_work_queue(struct irq_work *work)
-{
-	/* Only queue if not already pending */
-	if (!irq_work_claim(work))
-		return false;
+	/* Enqueue the irq work @work on the current CPU */
+	bool irq_work_queue(struct irq_work *work)
+	{
+		/* Only queue if not already pending */
+		if (!irq_work_claim(work))
+			return false;
 
-	/* Queue the entry and raise the IPI if needed. */
-	preempt_disable();
-	__irq_work_queue_local(work);
-	preempt_enable();
+		/* Queue the entry and raise the IPI if needed. */
+		preempt_disable();
+		__irq_work_queue_local(work);
+		preempt_enable();
 
-	return true;
-}
-EXPORT_SYMBOL_GPL(irq_work_queue);
+		return true;
+	}
+	EXPORT_SYMBOL_GPL(irq_work_queue);
 
+	void irq_work_single(void *arg)
+	{
+		struct irq_work *work = arg;
+		int flags;
 
+		/*
+		 * Clear the PENDING bit, after this point the @work can be re-used.
+		 * The PENDING bit acts as a lock, and we own it, so we can clear it
+		 * without atomic ops.
+		 */
+		flags = atomic_read(&work->node.a_flags);
+		flags &= ~IRQ_WORK_PENDING;
+		atomic_set(&work->node.a_flags, flags);
 
+		/*
+		 * See irq_work_claim().
+		 */
+		smp_mb();
 
+		lockdep_irq_work_enter(flags);
+		work->func(work);/* 运行中断函数 */
+		lockdep_irq_work_exit(flags);
 
-void irq_work_single(void *arg)
-{
-	struct irq_work *work = arg;
-	int flags;
+		/*
+		 * Clear the BUSY bit, if set, and return to the free state if no-one
+		 * else claimed it meanwhile.
+		 */
+		(void)atomic_cmpxchg(&work->node.a_flags, flags, flags & ~IRQ_WORK_BUSY);
+	}
+
+	static void irq_work_run_list(struct llist_head *list)
+	{
+		struct irq_work *work, *tmp;
+		struct llist_node *llnode;
+
+		BUG_ON(!irqs_disabled());
+
+		if (llist_empty(list))
+			return;
+
+		llnode = llist_del_all(list);
+		llist_for_each_entry_safe(work, tmp, llnode, node.llist)
+			irq_work_single(work);
+	}
 
 	/*
-	 * Clear the PENDING bit, after this point the @work can be re-used.
-	 * The PENDING bit acts as a lock, and we own it, so we can clear it
-	 * without atomic ops.
+	 * hotplug calls this through:
+	 *  hotplug_cfd() -> flush_smp_call_function_queue()
 	 */
-	flags = atomic_read(&work->node.a_flags);
-	flags &= ~IRQ_WORK_PENDING;
-	atomic_set(&work->node.a_flags, flags);
-
-	/*
-	 * See irq_work_claim().
-	 */
-	smp_mb();
-
-	lockdep_irq_work_enter(flags);
-	work->func(work);
-	lockdep_irq_work_exit(flags);
-
-	/*
-	 * Clear the BUSY bit, if set, and return to the free state if no-one
-	 * else claimed it meanwhile.
-	 */
-	(void)atomic_cmpxchg(&work->node.a_flags, flags, flags & ~IRQ_WORK_BUSY);
-}
-
-static void irq_work_run_list(struct llist_head *list)
-{
-	struct irq_work *work, *tmp;
-	struct llist_node *llnode;
-
-	BUG_ON(!irqs_disabled());
-
-	if (llist_empty(list))
-		return;
-
-	llnode = llist_del_all(list);
-	llist_for_each_entry_safe(work, tmp, llnode, node.llist)
-		irq_work_single(work);
-}
-
-/*
- * hotplug calls this through:
- *  hotplug_cfd() -> flush_smp_call_function_queue()
- */
-void irq_work_run(void)
-{
-	irq_work_run_list(this_cpu_ptr(&raised_list));
-	irq_work_run_list(this_cpu_ptr(&lazy_list));
-}
-EXPORT_SYMBOL_GPL(irq_work_run);
+	void irq_work_run(void)
+	{
+		irq_work_run_list(this_cpu_ptr(&raised_list));
+		irq_work_run_list(this_cpu_ptr(&lazy_list));
+	}
+	EXPORT_SYMBOL_GPL(irq_work_run);
 
 
 
 - 重要结构：
-enum {
-	CSD_FLAG_LOCK		= 0x01,
 
-	IRQ_WORK_PENDING	= 0x01,
-	IRQ_WORK_BUSY		= 0x02,
-	IRQ_WORK_LAZY		= 0x04, /* No IPI, wait for tick */
-	IRQ_WORK_HARD_IRQ	= 0x08, /* IRQ context on PREEMPT_RT */
+.. code-block:: c
+	:caption: irq work实现
+	:linenos:
 
-	IRQ_WORK_CLAIMED	= (IRQ_WORK_PENDING | IRQ_WORK_BUSY),
+	enum {
+		CSD_FLAG_LOCK		= 0x01,
 
-	CSD_TYPE_ASYNC		= 0x00,
-	CSD_TYPE_SYNC		= 0x10,
-	CSD_TYPE_IRQ_WORK	= 0x20,
-	CSD_TYPE_TTWU		= 0x30,
+		IRQ_WORK_PENDING	= 0x01,
+		IRQ_WORK_BUSY		= 0x02,
+		IRQ_WORK_LAZY		= 0x04, /* No IPI, wait for tick */
+		IRQ_WORK_HARD_IRQ	= 0x08, /* IRQ context on PREEMPT_RT */
 
-	CSD_FLAG_TYPE_MASK	= 0xF0,
-};
+		IRQ_WORK_CLAIMED	= (IRQ_WORK_PENDING | IRQ_WORK_BUSY),
 
-/*
- * struct __call_single_node is the primary type on
- * smp.c:call_single_queue.
- *
- * flush_smp_call_function_queue() only reads the type from
- * __call_single_node::u_flags as a regular load, the above
- * (anonymous) enum defines all the bits of this word.
- *
- * Other bits are not modified until the type is known.
- *
- * CSD_TYPE_SYNC/ASYNC:
- *	struct {
- *		struct llist_node node;
- *		unsigned int flags;
- *		smp_call_func_t func;
- *		void *info;
- *	};
- *
- * CSD_TYPE_IRQ_WORK:
- *	struct {
- *		struct llist_node node;
- *		atomic_t flags;
- *		void (*func)(struct irq_work *);
- *	};
- *
- * CSD_TYPE_TTWU:
- *	struct {
- *		struct llist_node node;
- *		unsigned int flags;
- *	};
- *
- */
+		CSD_TYPE_ASYNC		= 0x00,
+		CSD_TYPE_SYNC		= 0x10,
+		CSD_TYPE_IRQ_WORK	= 0x20,
+		CSD_TYPE_TTWU		= 0x30,
 
-struct __call_single_node {
-	struct llist_node	llist;
-	union {
-		unsigned int	u_flags;
-		atomic_t	a_flags;
+		CSD_FLAG_TYPE_MASK	= 0xF0,
 	};
-#ifdef CONFIG_64BIT
-	u16 src, dst;
-#endif
-};
+
+	/*
+	 * struct __call_single_node is the primary type on
+	 * smp.c:call_single_queue.
+	 *
+	 * flush_smp_call_function_queue() only reads the type from
+	 * __call_single_node::u_flags as a regular load, the above
+	 * (anonymous) enum defines all the bits of this word.
+	 *
+	 * Other bits are not modified until the type is known.
+	 *
+	 * CSD_TYPE_SYNC/ASYNC:
+	 *	struct {
+	 *		struct llist_node node;
+	 *		unsigned int flags;
+	 *		smp_call_func_t func;
+	 *		void *info;
+	 *	};
+	 *
+	 * CSD_TYPE_IRQ_WORK:
+	 *	struct {
+	 *		struct llist_node node;
+	 *		atomic_t flags;
+	 *		void (*func)(struct irq_work *);
+	 *	};
+	 *
+	 * CSD_TYPE_TTWU:
+	 *	struct {
+	 *		struct llist_node node;
+	 *		unsigned int flags;
+	 *	};
+	 *
+	 */
+
+	struct __call_single_node {
+		struct llist_node	llist;
+		union {
+			unsigned int	u_flags;
+			atomic_t	a_flags;
+		};
+	#ifdef CONFIG_64BIT
+		u16 src, dst;
+	#endif
+	};
 
 
 
-/*
- * An entry can be in one of four states:
- *
- * free	     NULL, 0 -> {claimed}       : free to be used
- * claimed   NULL, 3 -> {pending}       : claimed to be enqueued
- * pending   next, 3 -> {busy}          : queued, pending callback
- * busy      NULL, 2 -> {free, claimed} : callback in progress, can be claimed
- */
+	/*
+	 * An entry can be in one of four states:
+	 *
+	 * free	     NULL, 0 -> {claimed}       : free to be used
+	 * claimed   NULL, 3 -> {pending}       : claimed to be enqueued
+	 * pending   next, 3 -> {busy}          : queued, pending callback
+	 * busy      NULL, 2 -> {free, claimed} : callback in progress, can be claimed
+	 */
 
-struct irq_work {
-	struct __call_single_node node;
-	void (*func)(struct irq_work *);
-};
+	struct irq_work {
+		struct __call_single_node node;
+		void (*func)(struct irq_work *);
+	};
 
 
 - 通常流程：
@@ -376,22 +385,52 @@ bool irq_work_queue(struct irq_work *work) ->__irq_work_queue_local(work); -> ar
 	2. irq_work_run_list(this_cpu_ptr(&lazy_list));       
 
 
+- irq work 处理：向量IRQ_WORK_VECTOR处理函数
+
+.. code-block:: c
+	:caption: irq work异常处理
+	:linenos:
+
+	#ifdef CONFIG_X86_LOCAL_APIC
+	DEFINE_IDTENTRY_SYSVEC(sysvec_irq_work)
+	{
+		ack_APIC_irq();
+		trace_irq_work_entry(IRQ_WORK_VECTOR);
+		inc_irq_stat(apic_irq_work_irqs);
+		irq_work_run();/* 运行列表 */
+		trace_irq_work_exit(IRQ_WORK_VECTOR);
+	}
+
+	void arch_irq_work_raise(void)/* 触发irq work */
+	{
+		if (!arch_irq_work_has_interrupt())
+			return;
+
+		apic->send_IPI_self(IRQ_WORK_VECTOR);
+		apic_wait_icr_idle();
+	}
+	#endif
+
 
 - 特例：mpcfd_dying_cpu --> irq_work_run;
 
 
 - 编程：
+
+.. code-block:: c
+	:caption: irq work实现
+	:linenos:
    
-static void late_wakeup_func(struct irq_work *work)
-{
-}
+	static void late_wakeup_func(struct irq_work *work)
+	{
+	}
 
-static DEFINE_PER_CPU(struct irq_work, late_wakeup_work) =
-	IRQ_WORK_INIT(late_wakeup_func);
-	
+	static DEFINE_PER_CPU(struct irq_work, late_wakeup_work) =
+		IRQ_WORK_INIT(late_wakeup_func);
+		
 
-irq_work_queue(this_cpu_ptr(&late_wakeup_work));
-	
+	irq_work_queue(this_cpu_ptr(&late_wakeup_work));
+		
 
 
 

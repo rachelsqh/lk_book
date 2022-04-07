@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>i2c分析(待修正） &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="串口分析(待修正)" href="uart.html" />
+    <link rel="prev" title="设备驱动(待修正）" href="driver.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="driver.html">设备驱动(待修正）</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">i2c分析(待修正）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">i2c时序</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gpioi2c">gpio模拟i2c时序</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id34">i2c驱动分析</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id35">总结</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="uart.html">串口分析(待修正)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spi.html">spi分析(待修正）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pci_pcie.html">pci/pcie分析(待修正)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="can.html">can通信总结(待修正)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#linux">linux设备架构：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#kset-kobject-kref">kset/kobject/kref描述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id59">设备驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#dma">DMA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id64">驱动资源</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id65">开源固件和设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#i2c">i2c驱动架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#spi">spi驱动架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id127">驱动分类</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#api">驱动api</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gitlab.html">基于gitlab的项目管理(待修正)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="driver.html">设备驱动(待修正）</a> &raquo;</li>
+      <li>i2c分析(待修正）</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/i2c.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="i2c">
+<h1>i2c分析(待修正）<a class="headerlink" href="#i2c" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>i2c时序<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>时序图：</p></li>
+</ul>
+<p>img:i2c_time.png</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>时序描述：I2C是一个能够支持多个设备的总线，包含一条双向串行数据线SDA，一条串行时钟线SCL。每个连接到总线的设备都有一个独立的地址，主机可以通过该地址来访问不同设备。主机通过SDA线发送设备地址（SLAVE_ADDRESS）查找从机，SLAVE_ADDRESS可以是7位或10位，紧跟着SLAVE_ADDRESS的一个数据位用来表示数据传输方向，即第8位或11位。为0时表示写数据，为1时表示读数据。SDA 线上的数据必须在时钟的高电平周期保持稳定，数据线的高或低电平状态只有在 SCL 线的时钟信号是低电平时才能改变。换言之，SCL为高电平时表示有效数据，SDA为高电平表示“1”，低电平表示“0”；SCL为低电平时表示无效数据，此时SDA会进行电平切换。</p></li>
+<li><p>起始条件S：当SCL高电平时，SDA由高电平向低电平转换；</p></li>
+<li><p>停止条件P：当SCL高电平时，SDA由低电平向高电平转换。</p></li>
+</ul>
+</div></blockquote>
+<p>起始和停止条件一般由主机产生。总线在起始条件后处于busy的状态，在停止条件的某段时间后，总线才再次处于空闲状态。</p>
+<blockquote>
+<div><ul>
+<li><p>数据格式：传输的每个字节必须为8位，而总字节数不受限制。每个字节后必须跟一个响应位。首先开始传输的是数据最高位，即MSB位。如果此时从机正忙于其他功能，如正在中断服务程序，则需要使SCL线保持低电平迫使主机进入等待状态，直到从机准备完成。</p></li>
+<li><dl>
+<dt>响应ACK时序图：</dt><dd><p>i2c_ack.png
+描述：1个字节后，从设备如果正确接收，则在下一个时钟周期拉低SDA电平，表示ACK信号，如果从设备没反映，表示NOACK，每个字节后都要求ACK信号。</p>
+<blockquote>
+<div><p>每个字节后会跟随一个ACK信号。ACK bit使得接收者通知发送者已经成功接收数据并准备接收下一个数据。所有的时钟脉冲包括ACK信号对应的时钟脉冲都是由master产生的。</p>
+<p>ACK信号：发送者在ACK时钟脉冲期间释放SDA线，接收者可以将SDA拉低并在时钟信号为高时保持低电平。</p>
+<p>NACK信号：当在第9个时钟脉冲的时候SDA线保持高电平，就被定义为NACK信号。Master要么产生STOP条件来放弃这次传输，或者重复START条件来发起一个新的开始。</p>
+<p>所以，谁读谁回ACK/NACK。</p>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="gpioi2c">
+<h2>gpio模拟i2c时序<a class="headerlink" href="#gpioi2c" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>start:先是把SDA和SCL电平都拉高，延时后将SDA电平拉低，使其出现下降沿，再延时后SCL电平也置低。</p></li>
+</ul>
+<p>#define I2C_SDA_1()  GPIOB-&gt;BSRR = GPIO_Pin_7       // SDA线置高电平
+#define I2C_SDA_0()  GPIOB-&gt;BRR = GPIO_Pin_7        // SDA线置低电平</p>
+<p>#define I2C_SCL_1()  GPIOB-&gt;BSRR = GPIO_Pin_6       // SCL线置高电平
+#define I2C_SCL_0()  GPIOB-&gt;BRR = GPIO_Pin_6        // SCL线置低电平</p>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>&#64;brief   产生起始条件</p></li>
+<li><p>&#64;param   无</p></li>
+<li><p>&#64;retval  无</p></li>
+</ul>
+<p><a href="#id2"><span class="problematic" id="id3">*</span></a>/</p>
+</dd>
+</dl>
+<p>void i2c_Start(void)
+{</p>
+<blockquote>
+<div><p>I2C_SDA_1();
+I2C_SCL_1();
+Delay();
+I2C_SDA_0();
+Delay();
+I2C_SCL_0();
+Delay();</p>
+</div></blockquote>
+<p>}</p>
+<ul class="simple">
+<li><p>stop:在SCL高电平时，SDA出现一个上升沿，即产生停止信号。</p></li>
+</ul>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>&#64;brief   产生停止条件</p></li>
+<li><p>&#64;param   无</p></li>
+<li><p>&#64;retval  无</p></li>
+</ul>
+<p><a href="#id4"><span class="problematic" id="id5">*</span></a>/</p>
+</dd>
+</dl>
+<p>void i2c_Stop(void)
+{</p>
+<blockquote>
+<div><p>I2C_SDA_0();
+I2C_SCL_1();
+Delay();
+I2C_SDA_1();</p>
+</div></blockquote>
+<p>}</p>
+<ul class="simple">
+<li><p>ACK/NACK:</p></li>
+</ul>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>&#64;brief   产生应答信号ACK</p></li>
+<li><p>&#64;param   无</p></li>
+<li><p>&#64;retval  无</p></li>
+</ul>
+<p><a href="#id6"><span class="problematic" id="id7">*</span></a>/</p>
+</dd>
+</dl>
+<p>void i2c_Ack(void)
+{</p>
+<blockquote>
+<div><p>I2C_SDA_0();
+Delay();
+I2C_SCL_1();
+Delay();
+I2C_SCL_0();
+Delay();
+I2C_SDA_1();        // CPU释放SDA</p>
+</div></blockquote>
+<p>}</p>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>&#64;brief   产生非应答信号NACK</p></li>
+<li><p>&#64;param   无</p></li>
+<li><p>&#64;retval  无</p></li>
+</ul>
+<p><a href="#id8"><span class="problematic" id="id9">*</span></a>/</p>
+</dd>
+</dl>
+<p>void i2c_NAck(void)
+{</p>
+<blockquote>
+<div><p>I2C_SDA_1();
+Delay();
+I2C_SCL_1();
+Delay();
+I2C_SCL_0();
+Delay();</p>
+</div></blockquote>
+<p>}</p>
+<p>读取应答信号：
+define I2C_SDA_READ()  (GPIOB-&gt;IDR &amp; GPIO_Pin_7)     // 读取SDA电平状态</p>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>&#64;brief   CPU产生一个时钟，读取应答信号ACK</p></li>
+<li><p>&#64;param   无</p></li>
+<li><p>&#64;retval  返回0表示应答信号，返回1表示非应答信号</p></li>
+</ul>
+<p><a href="#id10"><span class="problematic" id="id11">*</span></a>/</p>
+</dd>
+</dl>
+<p>uint8_t i2c_WaitAck(void)
+{</p>
+<blockquote>
+<div><p>uint8_t re;</p>
+<p>I2C_SDA_1();        // CPU释放SDA总线
+Delay();
+I2C_SCL_1();        // CPU拉高SCL电平，发送一个时钟, 此时会返回ACK应答
+Delay();
+if (I2C_SDA_READ() != 0)    // 判断读取的SDA电平状态
+{</p>
+<blockquote>
+<div><p>re = 1;</p>
+</div></blockquote>
+<p>}
+else
+{</p>
+<blockquote>
+<div><p>re = 0;</p>
+</div></blockquote>
+<p>}
+I2C_SCL_0();
+Delay();</p>
+<p>return re;</p>
+</div></blockquote>
+<p>}</p>
+<ul class="simple">
+<li><p>发送数据：I2C协议中指出，发送的每个字节必须为8位，并且从最高位开始传输。我们只要通过SDA将该字节一位一位发送出去即可。</p></li>
+</ul>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>&#64;brief   发送一个字节的数据</p></li>
+<li><p>&#64;param</p></li>
+<li><p>&#64;arg   byte：等待发送的字节</p></li>
+<li><p>&#64;retval  无</p></li>
+</ul>
+<p><a href="#id12"><span class="problematic" id="id13">*</span></a>/</p>
+</dd>
+</dl>
+<p>void i2c_SendByte(uint8_t byte)
+{</p>
+<blockquote>
+<div><p>uint8_t i;</p>
+<p>/* 先发送字节的最高位 <a href="#id14"><span class="problematic" id="id15">*</span></a>/
+for (i=0; i&lt;8; i++)
+{</p>
+<blockquote>
+<div><p>if (byte &amp; 0x80)    // 判断最高位为1或0
+{</p>
+<blockquote>
+<div><p>I2C_SDA_1();</p>
+</div></blockquote>
+<p>}
+else
+{</p>
+<blockquote>
+<div><p>I2C_SDA_0();</p>
+</div></blockquote>
+<p>}</p>
+<p>Delay();
+I2C_SCL_1();
+Delay();
+I2C_SCL_0();
+if(i == 7)
+{</p>
+<blockquote>
+<div><p>I2C_SDA_1();    // 释放总线</p>
+</div></blockquote>
+<p>}
+byte &lt;&lt;= 1;         // 左移1位，准备发送下一位
+Delay();</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>}</p>
+<p>数据发送：
+/**</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>&#64;brief   在一定的延时时间内等待应答</p></li>
+<li><p>&#64;param</p></li>
+<li><p>&#64;arg delay：延时时间</p></li>
+<li><p>&#64;retval  无</p></li>
+</ul>
+<p><a href="#id16"><span class="problematic" id="id17">*</span></a>/</p>
+</div></blockquote>
+<p>void i2c_WaitAck_Delay(delay)
+{</p>
+<blockquote>
+<div><p>uint8_t ack_status;</p>
+<p>while(delay–)
+{</p>
+<blockquote>
+<div><p>ack_status = i2c_WaitAck();
+if(ack_status)         // 如果是非应答，主机需要产生停止信号终止传输
+{</p>
+<blockquote>
+<div><p>i2c_Stop();
+return 0;</p>
+</div></blockquote>
+<p>}
+else
+{</p>
+<blockquote>
+<div><p>break;</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>}</p>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>&#64;brief   写一个字节到EEPROM</p></li>
+<li><p>&#64;param</p></li>
+<li><p>&#64;arg WriteAddr：要写入的内存地址</p></li>
+<li><p>&#64;arg pBuffer：缓冲区指针</p></li>
+<li><p>&#64;retval  无</p></li>
+</ul>
+<p><a href="#id18"><span class="problematic" id="id19">*</span></a>/</p>
+</dd>
+</dl>
+<p>uint32_t I2C_ByteWrite(u8 WriteAddr, u8 pBuffer)
+{</p>
+<blockquote>
+<div><p>i2c_Start();</p>
+<p>i2c_SendByte(0xA0);        // 发送设备地址
+i2c_WaitAck_Delay(1000);</p>
+<p>i2c_SendByte(WriteAddr);   // 发送要写入的内存地址
+i2c_WaitAck_Delay(1000);</p>
+<p>i2c_SendByte(pBuffer);     // 开始写入数据
+i2c_WaitAck_Delay(1000);</p>
+<p>i2c_Stop();
+return 1;</p>
+</div></blockquote>
+<p>}</p>
+<ul class="simple">
+<li><p>接收数据：读取字节数据也是逐位完成的，读到的第一位是最高位。</p></li>
+</ul>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>&#64;brief   接收一个字节的数据</p></li>
+<li><p>&#64;param   无</p></li>
+<li><p>&#64;retval  接收到的数据</p></li>
+</ul>
+<p><a href="#id20"><span class="problematic" id="id21">*</span></a>/</p>
+</dd>
+</dl>
+<p>uint8_t i2c_ReadByte(void)
+{</p>
+<blockquote>
+<div><p>uint8_t i;
+uint8_t value = 0;</p>
+<p>for (i=0; i&lt;8; i++)
+{</p>
+<blockquote>
+<div><p>value &lt;&lt;= 1;
+I2C_SCL_1();
+Delay();
+if(I2C_SDA_READ())
+{</p>
+<blockquote>
+<div><p>value++;</p>
+</div></blockquote>
+<p>}
+I2C_SCL_0();
+Delay();</p>
+</div></blockquote>
+<p>}</p>
+<p>return value;</p>
+</div></blockquote>
+<p>}
+从EEPROM读取数据，只是多了个起始条件，需要先将设备地址和数据内存地址写入，然后才开始读取。</p>
+<dl>
+<dt>/**</dt><dd><ul class="simple">
+<li><p>&#64;brief   读取字节数据到EEPROM</p></li>
+<li><p>&#64;param</p></li>
+<li><p>&#64;arg WriteAddr：要写入的内存地址</p></li>
+<li><p>&#64;arg pBuffer：缓冲区指针</p></li>
+<li><p>&#64;arg numByteToRead：读取的字节数</p></li>
+<li><p>&#64;retval  无</p></li>
+</ul>
+<p><a href="#id22"><span class="problematic" id="id23">*</span></a>/</p>
+</dd>
+</dl>
+<p>uint32_t I2C_Read(u8 WriteAddr, u8* pBuffer, u8 numByteToRead)
+{</p>
+<blockquote>
+<div><p>/* 第一次起始条件 <a href="#id24"><span class="problematic" id="id25">*</span></a>/
+i2c_Start();</p>
+<p>i2c_SendByte(0xA0);        // 此处是写指令
+i2c_WaitAck_Delay(1000);</p>
+<p>i2c_SendByte(WriteAddr);
+i2c_WaitAck_Delay(1000);</p>
+<p>/* 第二次起始条件 <a href="#id26"><span class="problematic" id="id27">*</span></a>/
+i2c_Start();</p>
+<p>i2c_SendByte(0xA1);        // 此处是读指令
+i2c_WaitAck_Delay(1000);</p>
+<p>while(numByteToRead)
+{</p>
+<blockquote>
+<div><p><a href="#id28"><span class="problematic" id="id29">*</span></a>pBuffer = i2c_ReadByte();</p>
+<p>/* 每读完1个字节后，需要发送Ack，最后一个字节发Nack <a href="#id30"><span class="problematic" id="id31">*</span></a>/
+if (numByteToRead != 1)
+{</p>
+<blockquote>
+<div><p>i2c_Ack();</p>
+</div></blockquote>
+<p>}
+else
+{</p>
+<blockquote>
+<div><p>i2c_NAck();/* 需要精确的解析 <a href="#id32"><span class="problematic" id="id33">*</span></a>/</p>
+</div></blockquote>
+<p>}</p>
+<p>pBuffer++;
+numByteToRead–;</p>
+</div></blockquote>
+<p>}</p>
+<p>i2c_Stop();
+return 0;</p>
+</div></blockquote>
+<p>}</p>
+</div>
+<div class="section" id="id34">
+<h2>i2c驱动分析<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h2>
+<p>我们以触摸屏驱动为例进行说明。</p>
+<ul class="simple">
+<li><p>i2c控制器驱动：eg20t:</p></li>
+<li><p>tsc2007 注册</p></li>
+<li><p>故障总结：</p></li>
+</ul>
+</div>
+<div class="section" id="id35">
+<h2>总结<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>i2c信号：注意ACK/NACK信号；</p></li>
+<li><p>i2c匹配依据：i2c 从设备地址；</p></li>
+<li><p>i2c速率总结：半双工</p></li>
+<li><p>驱动架构总结：
+- 主设备驱动注册：
+- 从设备注册：
+- 匹配结构：</p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="driver.html" class="btn btn-neutral float-left" title="设备驱动(待修正）" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="uart.html" class="btn btn-neutral float-right" title="串口分析(待修正)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -37,7 +37,6 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统概述</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发基础</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../x86_kernel_base.html">linux X86内核基础</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">linux 内核基础代码分析</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="base_arch.html">linux 内核代码目录结构</a></li>
 <li class="toctree-l2"><a class="reference internal" href="module.html">linux 内核模块原理分析</a></li>
@@ -103,7 +102,17 @@
 <li class="toctree-l4"><a class="reference internal" href="#id26">总结</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#perf">perf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#perf">perf</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id27">perf软件</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id28">perf硬件基础</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#perf-event-open">系统调用:perf_event_open</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#perf-struct-pmu">perf 基础结构一：struct pmu {}</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#perf-struct-perf-event">perf 基础结构二：struct perf_event {}</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#perf-struct-perf-event-context">perf 基础结构三：进程关联结构-struct perf_event_context {}</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#perf-struct-perf-cpu-context">perf 基础结构三：struct perf_cpu_context {}</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id29">总结</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#linux-kernel-trace">linux kernel trace</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#trace">静态trace</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ftrace">ftrace</a></li>
@@ -119,17 +128,10 @@
 <li class="toctree-l2"><a class="reference internal" href="x86.html">x86架构部分</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../pm.html">电源管理框架</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cpu.html">cpu管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../ps.html">进程管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../mem.html">内存管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../fs.html">文件系统</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../sec.html">linux 内核安全</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../uboot.html">uboot理解</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dot.html">dot画图</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../bpf_helper.html">BPF-HELPERS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动(待修正）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gitlab.html">基于gitlab的项目管理(待修正)</a></li>
 </ul>
 
         </div>
@@ -172,8 +174,8 @@
 <div class="section" id="id1">
 <h3>示例分析<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>k_m1.c</p>
-<div class="literal-block-wrapper docutils container" id="id27">
-<div class="code-block-caption"><span class="caption-text">打印t_fun执行内核函数start_thread时的信息</span><a class="headerlink" href="#id27" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id30">
+<div class="code-block-caption"><span class="caption-text">打印t_fun执行内核函数start_thread时的信息</span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -293,8 +295,8 @@
 </div>
 <div class="section" id="register-kprobe">
 <h3>我们分析register_kprobe<a class="headerlink" href="#register-kprobe" title="Permalink to this headline">¶</a></h3>
-<div class="literal-block-wrapper docutils container" id="id28">
-<div class="code-block-caption"><span class="caption-text">struct kprobe</span><a class="headerlink" href="#id28" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id31">
+<div class="code-block-caption"><span class="caption-text">struct kprobe</span><a class="headerlink" href="#id31" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -385,7 +387,7 @@
 <li><p>Kprobes能够动态地中断任何内核例程并无中断地收集调试和性能信息,可以在几乎任何内核代码地址处中断并转向注册的特定处理程序进行执行;</p></li>
 <li><p>可以探测除自身之外的大部分内核,这意味着有些函数 kprobes 无法探测。探测（捕获）此类函数可能会导致递归陷阱（例如双重错误），或者可能永远不会调用嵌套的探测处理程序。Kprobes 管理有诸如黑名单之类的功能，如果要将函数添加到黑名单中，linux/kprobes.h 并使用 NOKPROBE_SYMBOL() 宏来指定列入黑名单的函数，Kprobes 根据黑名单检查给定的探测地址，如果给定的地址在黑名单中，则拒绝注册它。</p></li>
 <li><p>目前有两种类型的探针：kprobes 和 kretprobes（也称为返回探针）。kprobe 可以插入到内核中的几乎任何指令上。当指定函数返回时，会触发kretprobes hook。</p></li>
-<li><p>以内核模块进行kprobes进行处理时，模块的 init 函数安装（“注册”）一个或多个探测器，而 exit 函数取消注册它们。诸如 register_kprobe() 之类的注册函数指定要插入探针的位置以及命中探针时要调用的处理程序。<a href="#id61"><span class="problematic" id="id62">还有register_</span></a>/unregister_*probes()批量注册/注销一组*probes. 当需要一次注销大量探针时，这些功能可以加快注销过程。</p></li>
+<li><p>以内核模块进行kprobes进行处理时，模块的 init 函数安装（“注册”）一个或多个探测器，而 exit 函数取消注册它们。诸如 register_kprobe() 之类的注册函数指定要插入探针的位置以及命中探针时要调用的处理程序。<a href="#id74"><span class="problematic" id="id75">还有register_</span></a>/unregister_*probes()批量注册/注销一组*probes. 当需要一次注销大量探针时，这些功能可以加快注销过程。</p></li>
 </ul>
 </div>
 <div class="section" id="id2">
@@ -424,8 +426,8 @@
 </div>
 <div class="section" id="id5">
 <h3>register_kprobe<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
-<div class="literal-block-wrapper docutils container" id="id29">
-<div class="code-block-caption"><span class="caption-text">kprobe_register</span><a class="headerlink" href="#id29" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id32">
+<div class="code-block-caption"><span class="caption-text">kprobe_register</span><a class="headerlink" href="#id32" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;linux/kprobes.h&gt;</span><span class="cp"></span>
 <span class="kt">int</span> <span class="nf">register_kprobe</span><span class="p">(</span><span class="k">struct</span> <span class="nc">kprobe</span> <span class="o">*</span><span class="n">kp</span><span class="p">);</span>
@@ -436,8 +438,8 @@
 <ol class="arabic simple">
 <li><p>通过在 struct kprobe 中引入“symbol_name”字段，探测点地址解析现在将由内核负责。现在可以执行以下操作：</p></li>
 </ol>
-<div class="literal-block-wrapper docutils container" id="id30">
-<div class="code-block-caption"><span class="caption-text">kprobe_register</span><a class="headerlink" href="#id30" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id33">
+<div class="code-block-caption"><span class="caption-text">kprobe_register</span><a class="headerlink" href="#id33" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">kp</span><span class="p">.</span><span class="n">symbol_name</span> <span class="o">=</span> <span class="s">&quot;symbol_name&quot;</span><span class="p">;</span>
 </pre></div>
 </td></tr></table></div>
@@ -450,8 +452,8 @@
 <li><p>register_kprobe() 成功返回 0，否则返回负 errno。</p></li>
 </ol>
 <p>kp-&gt;pre_handler句柄：</p>
-<div class="literal-block-wrapper docutils container" id="id31">
-<div class="code-block-caption"><span class="caption-text">pre_handler定义</span><a class="headerlink" href="#id31" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id34">
+<div class="code-block-caption"><span class="caption-text">pre_handler定义</span><a class="headerlink" href="#id34" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -467,8 +469,8 @@ int pre_handler(struct kprobe *p, struct pt_regs *regs);
 <ul class="simple">
 <li><p>kp-&gt;post_handler句柄：</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id32">
-<div class="code-block-caption"><span class="caption-text">post_handler</span><a class="headerlink" href="#id32" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id35">
+<div class="code-block-caption"><span class="caption-text">post_handler</span><a class="headerlink" href="#id35" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -486,8 +488,8 @@ void post_handler(struct kprobe *p, struct pt_regs *regs,
 </div>
 <div class="section" id="register-kretprobe">
 <h3>register_kretprobe<a class="headerlink" href="#register-kretprobe" title="Permalink to this headline">¶</a></h3>
-<div class="literal-block-wrapper docutils container" id="id33">
-<div class="code-block-caption"><span class="caption-text">register_kretprobe</span><a class="headerlink" href="#id33" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id36">
+<div class="code-block-caption"><span class="caption-text">register_kretprobe</span><a class="headerlink" href="#id36" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -541,8 +543,8 @@ regs_return_value(regs) 宏提供了一个简单的抽象，用于从架构的 A
 </div>
 <div class="section" id="id6">
 <h3>注销函数<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
-<div class="literal-block-wrapper docutils container" id="id34">
-<div class="code-block-caption"><span class="caption-text">unregister_*probe</span><a class="headerlink" href="#id34" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id37">
+<div class="code-block-caption"><span class="caption-text">unregister_*probe</span><a class="headerlink" href="#id37" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -581,8 +583,8 @@ void unregister_kretprobe(struct kretprobe *rp);
 <h3>调试接口<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <p>已注册的 kprobes 列表在 /sys/kernel/debug/kprobes/ 目录下可见（假设 debugfs 安装在 //sys/kernel/debug ）。</p>
 <p>/sys/kernel/debug/kprobes/list：列出系统上所有已注册的探针：</p>
-<div class="literal-block-wrapper docutils container" id="id35">
-<div class="code-block-caption"><span class="caption-text">/sys/kernel/debug/kprobes/list</span><a class="headerlink" href="#id35" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id38">
+<div class="code-block-caption"><span class="caption-text">/sys/kernel/debug/kprobes/list</span><a class="headerlink" href="#id38" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">c015d71a</span>  <span class="n">k</span>  <span class="n">vfs_read</span><span class="o">+</span><span class="mh">0x0</span>
 <span class="n">c03dedc5</span>  <span class="n">r</span>  <span class="n">tcp_v4_rcv</span><span class="o">+</span><span class="mh">0x0</span>
@@ -621,8 +623,8 @@ void unregister_kretprobe(struct kretprobe *rp);
 <p>更多的是在应用部分（程序部分）</p>
 <p>必然针对一个应用进程。</p>
 <p>uprobe_register() –&gt; __uprobe_register –&gt;</p>
-<div class="literal-block-wrapper docutils container" id="id36">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id36" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id39">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id39" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -778,8 +780,8 @@ void unregister_kretprobe(struct kretprobe *rp);
 <div class="section" id="uprobe-tracer">
 <h3>uprobe_tracer<a class="headerlink" href="#uprobe-tracer" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="https://www.kernel.org/doc/html/latest/trace/uprobetracer.html">https://www.kernel.org/doc/html/latest/trace/uprobetracer.html</a></p>
-<div class="literal-block-wrapper docutils container" id="id37">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id37" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id40">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id40" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -854,8 +856,8 @@ FETCHARGS     : Arguments. Each probe can have up to 128 args.
 <ul class="simple">
 <li><p>添加一个探针作为新的 uprobe 事件，将新定义写入 uprobe_events，如下所示（在可执行文件 /bin/bash 中的偏移量 0x4245c0 处设置一个 uprobe）：</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id38">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id38" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id41">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id41" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>echo &#39;p /bin/bash:0x4245c0&#39; &gt; /sys/kernel/debug/tracing/uprobe_events
 </pre></div>
 </td></tr></table></div>
@@ -863,8 +865,8 @@ FETCHARGS     : Arguments. Each probe can have up to 128 args.
 <ul class="simple">
 <li><p>添加一个探针作为新的 uretprobe 事件：</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id39">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id39" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id42">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id42" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>echo &#39;r /bin/bash:0x4245c0&#39; &gt; /sys/kernel/debug/tracing/uprobe_events
 </pre></div>
 </td></tr></table></div>
@@ -872,8 +874,8 @@ FETCHARGS     : Arguments. Each probe can have up to 128 args.
 <ul class="simple">
 <li><p>取消注册事件：</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id40">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id40" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id43">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id43" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span>echo &#39;-:p_bash_0x4245c0&#39; &gt;&gt; /sys/kernel/debug/tracing/uprobe_events
 </pre></div>
 </td></tr></table></div>
@@ -881,8 +883,8 @@ FETCHARGS     : Arguments. Each probe can have up to 128 args.
 <ul class="simple">
 <li><p>打印出注册的事件：</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id41">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id41" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id44">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id44" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">kernel</span><span class="o">/</span><span class="n">debug</span><span class="o">/</span><span class="n">tracing</span><span class="o">/</span><span class="n">uprobe_events</span>
 </pre></div>
 </td></tr></table></div>
@@ -890,15 +892,15 @@ FETCHARGS     : Arguments. Each probe can have up to 128 args.
 <ul class="simple">
 <li><p>清除所有事件：</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id42">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id42" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id45">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id45" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">kernel</span><span class="o">/</span><span class="n">debug</span><span class="o">/</span><span class="n">tracing</span><span class="o">/</span><span class="n">uprobe_events</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>以下示例显示了如何将指令指针和 %ax 寄存器转储到探测的文本地址。探测 /bin/zsh 中的 zfree 函数：</p>
-<div class="literal-block-wrapper docutils container" id="id43">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id43" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id46">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id46" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -912,23 +914,23 @@ FETCHARGS     : Arguments. Each probe can have up to 128 args.
 </td></tr></table></div>
 </div>
 <p>0x46420 是在 0x00400000 加载的对象 /bin/zsh 中 zfree 的偏移量。因此，uprobe 的命令是：</p>
-<div class="literal-block-wrapper docutils container" id="id44">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id44" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id47">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id47" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># echo &#39;p:zfree_entry /bin/zsh:0x46420 %ip %ax&#39; &gt; uprobe_events</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>与 uretprobe 相同的是：</p>
-<div class="literal-block-wrapper docutils container" id="id45">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id45" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id48">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id48" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># echo &#39;r:zfree_exit /bin/zsh:0x46420 %ip %ax&#39; &gt;&gt; uprobe_events</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <p>用户必须明确计算对象中探测点的偏移量。</p>
 <p>我们可以通过查看 uprobe_events 文件来查看注册的事件。</p>
-<div class="literal-block-wrapper docutils container" id="id46">
-<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id46" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id49">
+<div class="code-block-caption"><span class="caption-text">struct kset_uevent_ops</span><a class="headerlink" href="#id49" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp"># cat uprobe_events</span>
@@ -1145,8 +1147,8 @@ linux内核代码流程，加载原理，冲突总结等。</p>
 <p>Livepatch模块必须具有“ livepatch” modinfo属性。 有关如何完成的操作，请参阅samples / livepatch /中的示例livepatch模块。</p>
 <p>用户可以通过使用“ modinfo”命令并查找“ livepatch”字段的存在来标识Livepatch模块。 内核模块加载程序还使用此字段来标识实时补丁模块。</p>
 <p>例子：Modinfo输出：</p>
-<div class="literal-block-wrapper docutils container" id="id47">
-<div class="code-block-caption"><span class="caption-text">modinfo livepatch-meminfo.ko</span><a class="headerlink" href="#id47" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id50">
+<div class="code-block-caption"><span class="caption-text">modinfo livepatch-meminfo.ko</span><a class="headerlink" href="#id50" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -1169,8 +1171,8 @@ linux内核代码流程，加载原理，冲突总结等。</p>
 <p>3.1Livepatch重定位部分格式</p>
 <p>Livepatch重定位部分必须标记为SHF_RELA_LIVEPATCH部分标志。 有关定义，请参见include / uapi / linux / elf.h。 模块加载器会识别此标志，并将避免在补丁模块加载时应用那些重定位部分。 这些部分还必须标有SHF_ALLOC，以便模块加载程序不会在模块加载时将其丢弃（即，它们将与其他SHF_ALLOC部分一起复制到内存中）。</p>
 <p>livepatch重定位部分的名称必须符合以下格式：</p>
-<div class="literal-block-wrapper docutils container" id="id48">
-<div class="code-block-caption"><span class="caption-text">klp节</span><a class="headerlink" href="#id48" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id51">
+<div class="code-block-caption"><span class="caption-text">klp节</span><a class="headerlink" href="#id51" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -1197,8 +1199,8 @@ linux内核代码流程，加载原理，冲突总结等。</p>
 <h3>livepatch内核模块-从编译到加载原理分析<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
 <p>首先我们已经分析过linux内核模块原理及加载方式，这一节我们补充livepatch在内核模块基础上的差异部分。
 我们以系统提供的livepatch sample程序为例进行分析：livepatch-sample.c</p>
-<div class="literal-block-wrapper docutils container" id="id49">
-<div class="code-block-caption"><span class="caption-text">livepatch-sample.c</span><a class="headerlink" href="#id49" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id52">
+<div class="code-block-caption"><span class="caption-text">livepatch-sample.c</span><a class="headerlink" href="#id52" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
   2
   3
@@ -1423,8 +1425,8 @@ linux内核代码流程，加载原理，冲突总结等。</p>
 </div>
 <p>发现livepatch内核模块与普通内核模块相比多了：MODULE_INFO(livepatch, “Y”);</p>
 <p>看内核模块加载部分对livepatch的处理</p>
-<div class="literal-block-wrapper docutils container" id="id50">
-<div class="code-block-caption"><span class="caption-text">内核模块特定于livepatch的定义</span><a class="headerlink" href="#id50" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id53">
+<div class="code-block-caption"><span class="caption-text">内核模块特定于livepatch的定义</span><a class="headerlink" href="#id53" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1502,8 +1504,8 @@ linux内核代码流程，加载原理，冲突总结等。</p>
 <ul class="simple">
 <li><p>关注copy_module_elf():</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id51">
-<div class="code-block-caption"><span class="caption-text">copy_module_elf</span><a class="headerlink" href="#id51" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id54">
+<div class="code-block-caption"><span class="caption-text">copy_module_elf</span><a class="headerlink" href="#id54" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1716,8 +1718,8 @@ linux内核代码流程，加载原理，冲突总结等。</p>
 </div>
 <div class="section" id="bpf-demo">
 <h3>BPF demo<a class="headerlink" href="#bpf-demo" title="Permalink to this headline">¶</a></h3>
-<div class="literal-block-wrapper docutils container" id="id52">
-<div class="code-block-caption"><span class="caption-text">load.c</span><a class="headerlink" href="#id52" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id55">
+<div class="code-block-caption"><span class="caption-text">load.c</span><a class="headerlink" href="#id55" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1746,8 +1748,8 @@ linux内核代码流程，加载原理，冲突总结等。</p>
 </pre></div>
 </td></tr></table></div>
 </div>
-<div class="literal-block-wrapper docutils container" id="id53">
-<div class="code-block-caption"><span class="caption-text">bpf:trace_kprobe_kern.c</span><a class="headerlink" href="#id53" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id56">
+<div class="code-block-caption"><span class="caption-text">bpf:trace_kprobe_kern.c</span><a class="headerlink" href="#id56" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1822,8 +1824,8 @@ linux内核代码流程，加载原理，冲突总结等。</p>
 </pre></div>
 </td></tr></table></div>
 </div>
-<div class="literal-block-wrapper docutils container" id="id54">
-<div class="code-block-caption"><span class="caption-text">Makefile</span><a class="headerlink" href="#id54" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id57">
+<div class="code-block-caption"><span class="caption-text">Makefile</span><a class="headerlink" href="#id57" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
@@ -1843,8 +1845,8 @@ linux内核代码流程，加载原理，冲突总结等。</p>
 <ul class="simple">
 <li><p>二进制分析：readelf -S trace_kprobe_kern.o</p></li>
 </ul>
-<div class="literal-block-wrapper docutils container" id="id55">
-<div class="code-block-caption"><span class="caption-text">trace_kprobe_kern.o二进制信息</span><a class="headerlink" href="#id55" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id58">
+<div class="code-block-caption"><span class="caption-text">trace_kprobe_kern.o二进制信息</span><a class="headerlink" href="#id58" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -1960,6 +1962,1627 @@ There are no section groups in this file.
 </div>
 <div class="section" id="perf">
 <h2>perf<a class="headerlink" href="#perf" title="Permalink to this headline">¶</a></h2>
+<p>perf的原理为每隔一个固定的时间，就在CPU上（每个核上都有）产生一个中断（PMI），在中断上处理程序中记录pid，及运行函数，然后给对应的pid和函数加一个统计值，这样，我们就知道CPU有百分几的时间在某个pid，或者某个函数上。</p>
+<ul class="simple">
+<li><p>硬件上perf中断时产生NMI类型的中断：perf_events_lapic_init(void);</p></li>
+<li><p>处理句柄：register_nmi_handler(NMI_LOCAL,perf_event_nmi_handler);</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id59">
+<div class="code-block-caption"><span class="caption-text">perf_event_nmi_handler:perf中断处理</span><a class="headerlink" href="#id59" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">int</span> <span class="n">perf_event_nmi_handler</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">cmd</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="n">u64</span> <span class="n">start_clock</span><span class="p">;</span>
+        <span class="n">u64</span> <span class="n">finish_clock</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * All PMUs/events that share this PMI handler should make sure to</span>
+<span class="cm">         * increment active_events for their events.</span>
+<span class="cm">         */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">atomic_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">active_events</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">NMI_DONE</span><span class="p">;</span>
+
+        <span class="n">start_clock</span> <span class="o">=</span> <span class="n">sched_clock</span><span class="p">();</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">static_call</span><span class="p">(</span><span class="n">x86_pmu_handle_irq</span><span class="p">)(</span><span class="n">regs</span><span class="p">);</span>
+        <span class="n">finish_clock</span> <span class="o">=</span> <span class="n">sched_clock</span><span class="p">();</span>
+
+        <span class="n">perf_sample_event_took</span><span class="p">(</span><span class="n">finish_clock</span> <span class="o">-</span> <span class="n">start_clock</span><span class="p">);</span><span class="cm">/*采样花费时间 */</span>
+
+        <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">NOKPROBE_SYMBOL</span><span class="p">(</span><span class="n">perf_event_nmi_handler</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">x86_pmu_handle_irq</span><span class="p">(</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">perf_sample_data</span> <span class="n">data</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">cpu_hw_events</span> <span class="o">*</span><span class="n">cpuc</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">idx</span><span class="p">,</span> <span class="n">handled</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">u64</span> <span class="n">val</span><span class="p">;</span>
+
+        <span class="n">cpuc</span> <span class="o">=</span> <span class="n">this_cpu_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu_hw_events</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Some chipsets need to unmask the LVTPC in a particular spot</span>
+<span class="cm">         * inside the nmi handler.  As a result, the unmasking was pushed</span>
+<span class="cm">         * into all the nmi handlers.</span>
+<span class="cm">         *</span>
+<span class="cm">         * This generic handler doesn&#39;t seem to have any issues where the</span>
+<span class="cm">         * unmasking occurs so it was left at the top.</span>
+<span class="cm">         */</span>
+        <span class="n">apic_write</span><span class="p">(</span><span class="n">APIC_LVTPC</span><span class="p">,</span> <span class="n">APIC_DM_NMI</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="n">x86_pmu</span><span class="p">.</span><span class="n">num_counters</span><span class="p">;</span> <span class="n">idx</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">test_bit</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">cpuc</span><span class="o">-&gt;</span><span class="n">active_mask</span><span class="p">))</span>
+                        <span class="k">continue</span><span class="p">;</span>
+
+                <span class="n">event</span> <span class="o">=</span> <span class="n">cpuc</span><span class="o">-&gt;</span><span class="n">events</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span>
+
+                <span class="n">val</span> <span class="o">=</span> <span class="n">x86_perf_event_update</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">val</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1ULL</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">x86_pmu</span><span class="p">.</span><span class="n">cntval_bits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
+                        <span class="k">continue</span><span class="p">;</span>
+
+                <span class="cm">/*</span>
+<span class="cm">                 * event overflow</span>
+<span class="cm">                 */</span>
+                <span class="n">handled</span><span class="o">++</span><span class="p">;</span>
+                <span class="n">perf_sample_data_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">event</span><span class="o">-&gt;</span><span class="n">hw</span><span class="p">.</span><span class="n">last_period</span><span class="p">);</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">x86_perf_event_set_period</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+                        <span class="k">continue</span><span class="p">;</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">perf_event_overflow</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">data</span><span class="p">,</span> <span class="n">regs</span><span class="p">))</span>
+                        <span class="n">x86_pmu_stop</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">handled</span><span class="p">)</span>
+                <span class="n">inc_irq_stat</span><span class="p">(</span><span class="n">apic_perf_irqs</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="n">handled</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>perf比起ftrace来说，最大的好处是它可以直接跟踪到整个系统的所有程序（而不仅仅是内核），所以perf通常是我们分析的第一步，我们先看到整个系统的outline，然后才会进去看具体的调度，时延等问题。而且perf本身也告诉你调度是否正常了，比如内核调度子系统的函数占用率特别高，我们可能就知道我们需要分析一下调度过程了。</p>
+<div class="section" id="id27">
+<h3>perf软件<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id60">
+<div class="code-block-caption"><span class="caption-text">perf_event_init()初始化</span><a class="headerlink" href="#id60" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * Run the perf reboot notifier at the very last possible moment so that</span>
+<span class="cm"> * the generic watchdog code runs as long as possible.</span>
+<span class="cm"> */</span>
+<span class="k">static</span> <span class="k">struct</span> <span class="nc">notifier_block</span> <span class="n">perf_reboot_notifier</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">.</span><span class="n">notifier_call</span> <span class="o">=</span> <span class="n">perf_reboot</span><span class="p">,</span>
+        <span class="p">.</span><span class="n">priority</span> <span class="o">=</span> <span class="n">INT_MIN</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="n">__init</span> <span class="n">perf_event_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+
+        <span class="n">idr_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pmu_idr</span><span class="p">);</span>
+
+        <span class="n">perf_event_init_all_cpus</span><span class="p">();</span>
+        <span class="n">init_srcu_struct</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pmus_srcu</span><span class="p">);</span>
+        <span class="n">perf_pmu_register</span><span class="p">(</span><span class="o">&amp;</span><span class="n">perf_swevent</span><span class="p">,</span> <span class="s">&quot;software&quot;</span><span class="p">,</span> <span class="n">PERF_TYPE_SOFTWARE</span><span class="p">);</span>
+        <span class="n">perf_pmu_register</span><span class="p">(</span><span class="o">&amp;</span><span class="n">perf_cpu_clock</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">-1</span><span class="p">);</span>
+        <span class="n">perf_pmu_register</span><span class="p">(</span><span class="o">&amp;</span><span class="n">perf_task_clock</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">-1</span><span class="p">);</span>
+        <span class="n">perf_tp_register</span><span class="p">();</span>
+        <span class="n">perf_event_init_cpu</span><span class="p">(</span><span class="n">smp_processor_id</span><span class="p">());</span>
+        <span class="n">register_reboot_notifier</span><span class="p">(</span><span class="o">&amp;</span><span class="n">perf_reboot_notifier</span><span class="p">);</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">init_hw_breakpoint</span><span class="p">();</span>
+        <span class="n">WARN</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="s">&quot;hw_breakpoint initialization failed with: %d&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="p">);</span>
+
+        <span class="n">perf_event_cache</span> <span class="o">=</span> <span class="n">KMEM_CACHE</span><span class="p">(</span><span class="n">perf_event</span><span class="p">,</span> <span class="n">SLAB_PANIC</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Build time assertion that we keep the data_head at the intended</span>
+<span class="cm">         * location.  IOW, validation we got the __reserved[] size right.</span>
+<span class="cm">         */</span>
+        <span class="n">BUILD_BUG_ON</span><span class="p">((</span><span class="n">offsetof</span><span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event_mmap_page</span><span class="p">,</span> <span class="n">data_head</span><span class="p">))</span>
+                     <span class="o">!=</span> <span class="mi">1024</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul>
+<li><p>总线初始化</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id61">
+<div class="code-block-caption"><span class="caption-text">pmu_bus初始化</span><a class="headerlink" href="#id61" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">int</span> <span class="n">pmu_bus_running</span><span class="p">;</span>
+<span class="k">static</span> <span class="k">struct</span> <span class="nc">bus_type</span> <span class="n">pmu_bus</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">.</span><span class="n">name</span>           <span class="o">=</span> <span class="s">&quot;event_source&quot;</span><span class="p">,</span>
+        <span class="p">.</span><span class="n">dev_groups</span>     <span class="o">=</span> <span class="n">pmu_dev_groups</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">__init</span> <span class="n">perf_event_sysfs_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">pmu</span> <span class="o">*</span><span class="n">pmu</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+
+        <span class="n">mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pmus_lock</span><span class="p">);</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">bus_register</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pmu_bus</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+                <span class="k">goto</span> <span class="n">unlock</span><span class="p">;</span>
+
+        <span class="n">list_for_each_entry</span><span class="p">(</span><span class="n">pmu</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pmus</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">pmu</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">||</span> <span class="n">pmu</span><span class="o">-&gt;</span><span class="n">type</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="k">continue</span><span class="p">;</span>
+
+                <span class="n">ret</span> <span class="o">=</span> <span class="n">pmu_dev_alloc</span><span class="p">(</span><span class="n">pmu</span><span class="p">);</span>
+                <span class="n">WARN</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="s">&quot;Failed to register pmu: %s, reason %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">pmu</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span> <span class="n">ret</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">pmu_bus_running</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="nl">unlock</span><span class="p">:</span>
+        <span class="n">mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pmus_lock</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">device_initcall</span><span class="p">(</span><span class="n">perf_event_sysfs_init</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<p>对应总线名为”event_source”。</p>
+</div>
+<div class="section" id="id28">
+<h3>perf硬件基础<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>arch:x86</p></li>
+</ul>
+<p>intel 64 和IA-32架构提供通过PMU（性能监控单元）实现的性能监控特性。从Pentium 处理器开始引入性能监控，这个单元由一组特定模式性能监控寄存器（MSRs)组成.这些计数器允许选择要监视和测量的处理器性能参数。 从这些计数器获得的信息可用于调整系统和编译器性能。在 Intel P6 系列处理器中，性能监控机制得到了增强，允许监控更广泛的事件选择，并允许监控更多的控制事件。 接下来，基于英特尔 NetBurst 微架构的英特尔处理器引入了分布式风格的性能监控机制和性能事件。为基于 Intel NetBurst 微体系结构的 Pentium、P6 系列和 Intel 处理器定义的性能监控机制和性能事件不是体系结构。 它们都是特定于模型的（处理器系列之间不兼容）。 Intel Core Solo 和 Intel Core Duo 处理器支持一组架构性能事件和一组非架构性能事件。 较新的英特尔处理器支持增强的架构性能事件和非架构性能事件。</p>
+<p>从 Intel Core Solo 和 Intel Core Duo 处理器开始，有两类性能监控功能。 第一类支持使用计数或基于中断的事件采样来监控性能的事件。 这些事件是非体系结构的，并且因处理器型号而异。 它们类似于 Pentium M 处理器中可用的那些。 这些非架构性能监控事件是特定于微架构的，并且可能随着增强而改变。
+第二类性能监视功能称为架构性能监视。此类支持相同的计数和基于中断的事件采样用法，但可用事件集较少。 架构性能事件的可见行为在处理器实现中是一致的。架构性能监控功能的可用性使用 CPUID.0AH 进行枚举。</p>
+</div>
+<div class="section" id="perf-event-open">
+<h3>系统调用:perf_event_open<a class="headerlink" href="#perf-event-open" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id62">
+<div class="code-block-caption"><span class="caption-text">perf_event_open系统调用</span><a class="headerlink" href="#id62" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * sys_perf_event_open - open a performance event, associate it to a task/cpu</span>
+<span class="cm"> *</span>
+<span class="cm"> * @attr_uptr:  event_id type attributes for monitoring/sampling</span>
+<span class="cm"> * @pid:                target pid</span>
+<span class="cm"> * @cpu:                target cpu</span>
+<span class="cm"> * @group_fd:           group leader event fd</span>
+<span class="cm"> * @flags:              perf event open flags</span>
+<span class="cm"> */</span>
+<span class="n">SYSCALL_DEFINE5</span><span class="p">(</span><span class="n">perf_event_open</span><span class="p">,</span>
+                <span class="k">struct</span> <span class="nc">perf_event_attr</span> <span class="n">__user</span> <span class="o">*</span><span class="p">,</span> <span class="n">attr_uptr</span><span class="p">,</span>
+                <span class="kt">pid_t</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">cpu</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">group_fd</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul class="simple">
+<li><p>系统调用概述:设置性能监控,对 perf_event_open() 的调用会创建一个允许测量性能信息的文件描述符。 每个文件描述符对应一个被测量的事件； 这些可以组合在一起以同时测量多个事件。可以通过两种方式启用和禁用事件：通过 ioctl(2) 和通过 prctl(2)。 当一个事件被禁用时，它不会计数或产生溢出，但会继续存在并保持其计数值。事件有两种形式：计数和采样。 计数事件是用于对发生的事件总数进行计数的事件。 通常，计数事件结果是通过调用 read(2) 收集的。 采样事件定期将测量值写入缓冲区，然后可以通过 mmap(2) 访问该缓冲区。</p></li>
+<li><p>具体参考：<a class="reference external" href="https://www.man7.org/linux/man-pages/man2/perf_event_open.2.html">https://www.man7.org/linux/man-pages/man2/perf_event_open.2.html</a></p></li>
+</ul>
+</div>
+<div class="section" id="perf-struct-pmu">
+<h3>perf 基础结构一：struct pmu {}<a class="headerlink" href="#perf-struct-pmu" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id63">
+<div class="code-block-caption"><span class="caption-text">struct pmu</span><a class="headerlink" href="#id63" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * struct pmu - generic performance monitoring unit</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="nc">pmu</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">entry</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">module</span>                   <span class="o">*</span><span class="n">module</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">device</span>                   <span class="o">*</span><span class="n">dev</span><span class="p">;</span>
+        <span class="k">const</span> <span class="k">struct</span> <span class="nc">attribute_group</span>    <span class="o">**</span><span class="n">attr_groups</span><span class="p">;</span>
+        <span class="k">const</span> <span class="k">struct</span> <span class="nc">attribute_group</span>    <span class="o">**</span><span class="n">attr_update</span><span class="p">;</span>
+        <span class="k">const</span> <span class="kt">char</span>                      <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">type</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * various common per-pmu feature flags</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span>                             <span class="n">capabilities</span><span class="p">;</span>
+
+        <span class="kt">int</span> <span class="n">__percpu</span>                    <span class="o">*</span><span class="n">pmu_disable_count</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">perf_cpu_context</span> <span class="n">__percpu</span> <span class="o">*</span><span class="n">pmu_cpu_context</span><span class="p">;</span>
+        <span class="n">atomic_t</span>                        <span class="n">exclusive_cnt</span><span class="p">;</span> <span class="cm">/* &lt; 0: cpu; &gt; 0: tsk */</span>
+        <span class="kt">int</span>                             <span class="n">task_ctx_nr</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">hrtimer_interval_ms</span><span class="p">;</span>
+
+        <span class="cm">/* number of address filters this PMU can do */</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span>                    <span class="n">nr_addr_filters</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Fully disable/enable this PMU, can be used to protect from the PMI</span>
+<span class="cm">         * as well as for lazy/batch writing of the MSRs.</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">pmu_enable</span><span class="p">)</span>              <span class="p">(</span><span class="k">struct</span> <span class="nc">pmu</span> <span class="o">*</span><span class="n">pmu</span><span class="p">);</span> <span class="cm">/* optional */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">pmu_disable</span><span class="p">)</span>             <span class="p">(</span><span class="k">struct</span> <span class="nc">pmu</span> <span class="o">*</span><span class="n">pmu</span><span class="p">);</span> <span class="cm">/* optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Try and initialize the event for this PMU.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Returns:</span>
+<span class="cm">         *  -ENOENT     -- @event is not for this PMU</span>
+<span class="cm">         *</span>
+<span class="cm">         *  -ENODEV     -- @event is for this PMU but PMU not present</span>
+<span class="cm">         *  -EBUSY      -- @event is for this PMU but PMU temporarily unavailable</span>
+<span class="cm">         *  -EINVAL     -- @event is for this PMU but @event is not valid</span>
+<span class="cm">         *  -EOPNOTSUPP -- @event is for this PMU, @event is valid, but not supported</span>
+<span class="cm">         *  -EACCES     -- @event is for this PMU, @event is valid, but no privileges</span>
+<span class="cm">         *</span>
+<span class="cm">         *  0           -- @event is for this PMU and valid</span>
+<span class="cm">         *</span>
+<span class="cm">         * Other error return values are allowed.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">event_init</span><span class="p">)</span>               <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Notification that the event was mapped or unmapped.  Called</span>
+<span class="cm">         * in the context of the mapping task.</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">event_mapped</span><span class="p">)</span>            <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">mm_struct</span> <span class="o">*</span><span class="n">mm</span><span class="p">);</span> <span class="cm">/* optional */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">event_unmapped</span><span class="p">)</span>          <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">mm_struct</span> <span class="o">*</span><span class="n">mm</span><span class="p">);</span> <span class="cm">/* optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Flags for -&gt;add()/-&gt;del()/ -&gt;start()/-&gt;stop(). There are</span>
+<span class="cm">         * matching hw_perf_event::state flags.</span>
+<span class="cm">         */</span>
+<span class="cp">#define PERF_EF_START   0x01            </span><span class="cm">/* start the counter when adding    */</span><span class="cp"></span>
+<span class="cp">#define PERF_EF_RELOAD  0x02            </span><span class="cm">/* reload the counter when starting */</span><span class="cp"></span>
+<span class="cp">#define PERF_EF_UPDATE  0x04            </span><span class="cm">/* update the counter when stopping */</span><span class="cp"></span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Adds/Removes a counter to/from the PMU, can be done inside a</span>
+<span class="cm">         * transaction, see the -&gt;*_txn() methods.</span>
+<span class="cm">         *</span>
+<span class="cm">         * The add/del callbacks will reserve all hardware resources required</span>
+<span class="cm">         * to service the event, this includes any counter constraint</span>
+<span class="cm">         * scheduling etc.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Called with IRQs disabled and the PMU disabled on the CPU the event</span>
+<span class="cm">         * is on.</span>
+<span class="cm">         *</span>
+<span class="cm">         * -&gt;add() called without PERF_EF_START should result in the same state</span>
+<span class="cm">         *  as -&gt;add() followed by -&gt;stop().</span>
+<span class="cm">         *</span>
+<span class="cm">         * -&gt;del() must always PERF_EF_UPDATE stop an event. If it calls</span>
+<span class="cm">         *  -&gt;stop() that must deal with already being stopped without</span>
+<span class="cm">         *  PERF_EF_UPDATE.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span>  <span class="p">(</span><span class="o">*</span><span class="n">add</span><span class="p">)</span>                     <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flags</span><span class="p">);</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">del</span><span class="p">)</span>                     <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flags</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Starts/Stops a counter present on the PMU.</span>
+<span class="cm">         *</span>
+<span class="cm">         * The PMI handler should stop the counter when perf_event_overflow()</span>
+<span class="cm">         * returns !0. -&gt;start() will be used to continue.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Also used to change the sample period.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Called with IRQs disabled and the PMU disabled on the CPU the event</span>
+<span class="cm">         * is on -- will be called from NMI context with the PMU generates</span>
+<span class="cm">         * NMIs.</span>
+<span class="cm">         *</span>
+<span class="cm">         * -&gt;stop() with PERF_EF_UPDATE will read the counter and update</span>
+<span class="cm">         *  period/count values like -&gt;read() would.</span>
+<span class="cm">         *</span>
+<span class="cm">         * -&gt;start() with PERF_EF_RELOAD will reprogram the counter</span>
+<span class="cm">         *  value, must be preceded by a -&gt;stop() with PERF_EF_UPDATE.</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">start</span><span class="p">)</span>                   <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flags</span><span class="p">);</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">stop</span><span class="p">)</span>                    <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flags</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Updates the counter value of the event.</span>
+<span class="cm">         *</span>
+<span class="cm">         * For sampling capable PMUs this will also update the software period</span>
+<span class="cm">         * hw_perf_event::period_left field.</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">read</span><span class="p">)</span>                    <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Group events scheduling is treated as a transaction, add</span>
+<span class="cm">         * group events as a whole and perform one schedulability test.</span>
+<span class="cm">         * If the test fails, roll back the whole group</span>
+<span class="cm">         *</span>
+<span class="cm">         * Start the transaction, after this -&gt;add() doesn&#39;t need to</span>
+<span class="cm">         * do schedulability tests.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Optional.</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">start_txn</span><span class="p">)</span>               <span class="p">(</span><span class="k">struct</span> <span class="nc">pmu</span> <span class="o">*</span><span class="n">pmu</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">txn_flags</span><span class="p">);</span>
+        <span class="cm">/*</span>
+<span class="cm">         * If -&gt;start_txn() disabled the -&gt;add() schedulability test</span>
+<span class="cm">         * then -&gt;commit_txn() is required to perform one. On success</span>
+<span class="cm">         * the transaction is closed. On error the transaction is kept</span>
+<span class="cm">         * open until -&gt;cancel_txn() is called.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Optional.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span>  <span class="p">(</span><span class="o">*</span><span class="n">commit_txn</span><span class="p">)</span>              <span class="p">(</span><span class="k">struct</span> <span class="nc">pmu</span> <span class="o">*</span><span class="n">pmu</span><span class="p">);</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Will cancel the transaction, assumes -&gt;del() is called</span>
+<span class="cm">         * for each successful -&gt;add() during the transaction.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Optional.</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">cancel_txn</span><span class="p">)</span>              <span class="p">(</span><span class="k">struct</span> <span class="nc">pmu</span> <span class="o">*</span><span class="n">pmu</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Will return the value for perf_event_mmap_page::index for this event,</span>
+<span class="cm">         * if no implementation is provided it will default to: event-&gt;hw.idx + 1.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">event_idx</span><span class="p">)</span>                <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">);</span> <span class="cm">/*optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * context-switches callback</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">sched_task</span><span class="p">)</span>              <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event_context</span> <span class="o">*</span><span class="n">ctx</span><span class="p">,</span>
+                                        <span class="kt">bool</span> <span class="n">sched_in</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Kmem cache of PMU specific data</span>
+<span class="cm">         */</span>
+        <span class="k">struct</span> <span class="nc">kmem_cache</span>               <span class="o">*</span><span class="n">task_ctx_cache</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * PMU specific parts of task perf event context (i.e. ctx-&gt;task_ctx_data)</span>
+<span class="cm">         * can be synchronized using this function. See Intel LBR callstack support</span>
+<span class="cm">         * implementation and Perf core context switch handling callbacks for usage</span>
+<span class="cm">         * examples.</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">swap_task_ctx</span><span class="p">)</span>           <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event_context</span> <span class="o">*</span><span class="n">prev</span><span class="p">,</span>
+                                         <span class="k">struct</span> <span class="nc">perf_event_context</span> <span class="o">*</span><span class="n">next</span><span class="p">);</span>
+                                        <span class="cm">/* optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Set up pmu-private data structures for an AUX area</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">setup_aux</span><span class="p">)</span>              <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">,</span> <span class="kt">void</span> <span class="o">**</span><span class="n">pages</span><span class="p">,</span>
+                                         <span class="kt">int</span> <span class="n">nr_pages</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">overwrite</span><span class="p">);</span>
+                                        <span class="cm">/* optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Free pmu-private AUX data structures</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">free_aux</span><span class="p">)</span>                <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">aux</span><span class="p">);</span> <span class="cm">/* optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Take a snapshot of the AUX buffer without touching the event</span>
+<span class="cm">         * state, so that preempting -&gt;start()/-&gt;stop() callbacks does</span>
+<span class="cm">         * not interfere with their logic. Called in PMI context.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Returns the size of AUX data copied to the output handle.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Optional.</span>
+<span class="cm">         */</span>
+        <span class="kt">long</span> <span class="p">(</span><span class="o">*</span><span class="n">snapshot_aux</span><span class="p">)</span>            <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">,</span>
+                                         <span class="k">struct</span> <span class="nc">perf_output_handle</span> <span class="o">*</span><span class="n">handle</span><span class="p">,</span>
+                                         <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">size</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Validate address range filters: make sure the HW supports the</span>
+<span class="cm">         * requested configuration and number of filters; return 0 if the</span>
+<span class="cm">         * supplied filters are valid, -errno otherwise.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Runs in the context of the ioctl()ing process and is not serialized</span>
+<span class="cm">         * with the rest of the PMU callbacks.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">addr_filters_validate</span><span class="p">)</span>    <span class="p">(</span><span class="k">struct</span> <span class="nc">list_head</span> <span class="o">*</span><span class="n">filters</span><span class="p">);</span>
+                                        <span class="cm">/* optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Synchronize address range filter configuration:</span>
+<span class="cm">         * translate hw-agnostic filters into hardware configuration in</span>
+<span class="cm">         * event::hw::addr_filters.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Runs as a part of filter sync sequence that is done in -&gt;start()</span>
+<span class="cm">         * callback by calling perf_event_addr_filters_sync().</span>
+<span class="cm">         *</span>
+<span class="cm">         * May (and should) traverse event::addr_filters::list, for which its</span>
+<span class="cm">         * caller provides necessary serialization.</span>
+<span class="cm">         */</span>
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">addr_filters_sync</span><span class="p">)</span>       <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">);</span>
+                                        <span class="cm">/* optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Check if event can be used for aux_output purposes for</span>
+<span class="cm">         * events of this PMU.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Runs from perf_event_open(). Should return 0 for &quot;no match&quot;</span>
+<span class="cm">         * or non-zero for &quot;match&quot;.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">aux_output_match</span><span class="p">)</span>         <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">);</span>
+                                        <span class="cm">/* optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Filter events for PMU-specific reasons.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">filter_match</span><span class="p">)</span>             <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">);</span> <span class="cm">/* optional */</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Check period value for PERF_EVENT_IOC_PERIOD ioctl.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">check_period</span><span class="p">)</span>             <span class="p">(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="n">event</span><span class="p">,</span> <span class="n">u64</span> <span class="n">value</span><span class="p">);</span> <span class="cm">/* optional */</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="perf-struct-perf-event">
+<h3>perf 基础结构二：struct perf_event {}<a class="headerlink" href="#perf-struct-perf-event" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>perf_event结构：核心结构。</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id64">
+<div class="code-block-caption"><span class="caption-text">struct perf_event {}</span><a class="headerlink" href="#id64" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * struct perf_event - performance event kernel representation:</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="nc">perf_event</span> <span class="p">{</span>
+<span class="cp">#ifdef CONFIG_PERF_EVENTS</span>
+        <span class="cm">/*</span>
+<span class="cm">         * entry onto perf_event_context::event_list;</span>
+<span class="cm">         *   modifications require ctx-&gt;lock</span>
+<span class="cm">         *   RCU safe iterations.</span>
+<span class="cm">         */</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">event_entry</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Locked for modification by both ctx-&gt;mutex and ctx-&gt;lock; holding</span>
+<span class="cm">         * either sufficies for read.</span>
+<span class="cm">         */</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">sibling_list</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">active_list</span><span class="p">;</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Node on the pinned or flexible tree located at the event context;</span>
+<span class="cm">         */</span>
+        <span class="k">struct</span> <span class="nc">rb_node</span>                  <span class="n">group_node</span><span class="p">;</span>
+        <span class="n">u64</span>                             <span class="n">group_index</span><span class="p">;</span>
+        <span class="cm">/*</span>
+<span class="cm">         * We need storage to track the entries in perf_pmu_migrate_context; we</span>
+<span class="cm">         * cannot use the event_entry because of RCU and we want to keep the</span>
+<span class="cm">         * group in tact which avoids us using the other two entries.</span>
+<span class="cm">         */</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">migrate_entry</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">hlist_node</span>               <span class="n">hlist_entry</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">active_entry</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">nr_siblings</span><span class="p">;</span>
+
+        <span class="cm">/* Not serialized. Only written during event initialization. */</span>
+        <span class="kt">int</span>                             <span class="n">event_caps</span><span class="p">;</span>
+        <span class="cm">/* The cumulative AND of all event_caps for events in this group. */</span>
+        <span class="kt">int</span>                             <span class="n">group_caps</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">perf_event</span>               <span class="o">*</span><span class="n">group_leader</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">pmu</span>                      <span class="o">*</span><span class="n">pmu</span><span class="p">;</span>
+        <span class="kt">void</span>                            <span class="o">*</span><span class="n">pmu_private</span><span class="p">;</span>
+
+        <span class="k">enum</span> <span class="n">perf_event_state</span>           <span class="n">state</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span>                    <span class="n">attach_state</span><span class="p">;</span>
+        <span class="n">local64_t</span>                       <span class="n">count</span><span class="p">;</span>
+        <span class="n">atomic64_t</span>                      <span class="n">child_count</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * These are the total time in nanoseconds that the event</span>
+<span class="cm">         * has been enabled (i.e. eligible to run, and the task has</span>
+<span class="cm">         * been scheduled in, if this is a per-task event)</span>
+<span class="cm">         * and running (scheduled onto the CPU), respectively.</span>
+<span class="cm">         */</span>
+        <span class="n">u64</span>                             <span class="n">total_time_enabled</span><span class="p">;</span>
+        <span class="n">u64</span>                             <span class="n">total_time_running</span><span class="p">;</span>
+        <span class="n">u64</span>                             <span class="n">tstamp</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * timestamp shadows the actual context timing but it can</span>
+<span class="cm">         * be safely used in NMI interrupt context. It reflects the</span>
+<span class="cm">         * context time as it was when the event was last scheduled in,</span>
+<span class="cm">         * or when ctx_sched_in failed to schedule the event because we</span>
+<span class="cm">         * run out of PMC.</span>
+<span class="cm">         *</span>
+<span class="cm">         * ctx_time already accounts for ctx-&gt;timestamp. Therefore to</span>
+<span class="cm">         * compute ctx_time for a sample, simply add perf_clock().</span>
+<span class="cm">         */</span>
+        <span class="n">u64</span>                             <span class="n">shadow_ctx_time</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">perf_event_attr</span>          <span class="n">attr</span><span class="p">;</span>
+        <span class="n">u16</span>                             <span class="n">header_size</span><span class="p">;</span>
+        <span class="n">u16</span>                             <span class="n">id_header_size</span><span class="p">;</span>
+        <span class="n">u16</span>                             <span class="n">read_size</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">hw_perf_event</span>            <span class="n">hw</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">perf_event_context</span>       <span class="o">*</span><span class="n">ctx</span><span class="p">;</span>
+        <span class="n">atomic_long_t</span>                   <span class="n">refcount</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * These accumulate total time (in nanoseconds) that children</span>
+<span class="cm">         * events have been enabled and running, respectively.</span>
+<span class="cm">         */</span>
+        <span class="n">atomic64_t</span>                      <span class="n">child_total_time_enabled</span><span class="p">;</span>
+        <span class="n">atomic64_t</span>                      <span class="n">child_total_time_running</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Protect attach/detach and child_list:</span>
+<span class="cm">         */</span>
+        <span class="k">struct</span> <span class="nc">mutex</span>                    <span class="n">child_mutex</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">child_list</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">perf_event</span>               <span class="o">*</span><span class="n">parent</span><span class="p">;</span>
+
+        <span class="kt">int</span>                             <span class="n">oncpu</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">cpu</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">owner_entry</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">task_struct</span>              <span class="o">*</span><span class="n">owner</span><span class="p">;</span>
+
+        <span class="cm">/* mmap bits */</span>
+        <span class="k">struct</span> <span class="nc">mutex</span>                    <span class="n">mmap_mutex</span><span class="p">;</span>
+        <span class="n">atomic_t</span>                        <span class="n">mmap_count</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">perf_buffer</span>              <span class="o">*</span><span class="n">rb</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">rb_entry</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span>                   <span class="n">rcu_batches</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">rcu_pending</span><span class="p">;</span>
+
+        <span class="cm">/* poll related */</span>
+        <span class="n">wait_queue_head_t</span>               <span class="n">waitq</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">fasync_struct</span>            <span class="o">*</span><span class="n">fasync</span><span class="p">;</span>
+
+        <span class="cm">/* delayed work for NMIs and such */</span>
+        <span class="kt">int</span>                             <span class="n">pending_wakeup</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">pending_kill</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">pending_disable</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span>                   <span class="n">pending_addr</span><span class="p">;</span>   <span class="cm">/* SIGTRAP */</span>
+        <span class="k">struct</span> <span class="nc">irq_work</span>                 <span class="n">pending</span><span class="p">;</span>
+
+        <span class="n">atomic_t</span>                        <span class="n">event_limit</span><span class="p">;</span>
+
+        <span class="cm">/* address range filters */</span>
+        <span class="k">struct</span> <span class="nc">perf_addr_filters_head</span>   <span class="n">addr_filters</span><span class="p">;</span>
+        <span class="cm">/* vma address array for file-based filders */</span>
+        <span class="k">struct</span> <span class="nc">perf_addr_filter_range</span>   <span class="o">*</span><span class="n">addr_filter_ranges</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">long</span>                   <span class="n">addr_filters_gen</span><span class="p">;</span>
+
+        <span class="cm">/* for aux_output events */</span>
+        <span class="k">struct</span> <span class="nc">perf_event</span>               <span class="o">*</span><span class="n">aux_event</span><span class="p">;</span>
+
+        <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">destroy</span><span class="p">)(</span><span class="k">struct</span> <span class="nc">perf_event</span> <span class="o">*</span><span class="p">);</span>
+        <span class="k">struct</span> <span class="nc">rcu_head</span>                 <span class="n">rcu_head</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">pid_namespace</span>            <span class="o">*</span><span class="n">ns</span><span class="p">;</span>
+        <span class="n">u64</span>                             <span class="n">id</span><span class="p">;</span>
+
+        <span class="n">u64</span>                             <span class="p">(</span><span class="o">*</span><span class="n">clock</span><span class="p">)(</span><span class="kt">void</span><span class="p">);</span>
+        <span class="n">perf_overflow_handler_t</span>         <span class="n">overflow_handler</span><span class="p">;</span>
+        <span class="kt">void</span>                            <span class="o">*</span><span class="n">overflow_handler_context</span><span class="p">;</span>
+<span class="cp">#ifdef CONFIG_BPF_SYSCALL</span>
+        <span class="n">perf_overflow_handler_t</span>         <span class="n">orig_overflow_handler</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">bpf_prog</span>                 <span class="o">*</span><span class="n">prog</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef CONFIG_EVENT_TRACING</span>
+        <span class="k">struct</span> <span class="nc">trace_event_call</span>         <span class="o">*</span><span class="n">tp_event</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">event_filter</span>             <span class="o">*</span><span class="n">filter</span><span class="p">;</span>
+<span class="cp">#ifdef CONFIG_FUNCTION_TRACER</span>
+        <span class="k">struct</span> <span class="nc">ftrace_ops</span>               <span class="n">ftrace_ops</span><span class="p">;</span>
+<span class="cp">#endif</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef CONFIG_CGROUP_PERF</span>
+        <span class="k">struct</span> <span class="nc">perf_cgroup</span>              <span class="o">*</span><span class="n">cgrp</span><span class="p">;</span> <span class="cm">/* cgroup event is attach to */</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef CONFIG_SECURITY</span>
+        <span class="kt">void</span> <span class="o">*</span><span class="n">security</span><span class="p">;</span>
+<span class="cp">#endif</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">sb_list</span><span class="p">;</span>
+<span class="cp">#endif </span><span class="cm">/* CONFIG_PERF_EVENTS */</span><span class="cp"></span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>perf event函数总结：</p>
+<p>perf_event_xxxx();</p>
+</li>
+</ul>
+</div>
+<div class="section" id="perf-struct-perf-event-context">
+<h3>perf 基础结构三：进程关联结构-struct perf_event_context {}<a class="headerlink" href="#perf-struct-perf-event-context" title="Permalink to this headline">¶</a></h3>
+<p>而对于task维度的perf_event来说只有在task得到调度运行的时候event才能运行。</p>
+<ul>
+<li><p>与进程关联结构：</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id65">
+<div class="code-block-caption"><span class="caption-text">struct perf_event_context</span><a class="headerlink" href="#id65" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">task_task</span> <span class="p">{</span>
+        <span class="p">......</span>
+        <span class="cp">#ifdef CONFIG_PERF_EVENTS</span>
+                <span class="k">struct</span> <span class="nc">perf_event_context</span>       <span class="o">*</span><span class="n">perf_event_ctxp</span><span class="p">[</span><span class="n">perf_nr_task_contexts</span><span class="p">];</span>
+                <span class="k">struct</span> <span class="nc">mutex</span>                    <span class="n">perf_event_mutex</span><span class="p">;</span>
+                <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">perf_event_list</span><span class="p">;</span>
+        <span class="cp">#endif</span>
+        <span class="p">......</span>
+<span class="p">}</span>
+
+
+
+<span class="cm">/**</span>
+<span class="cm"> * struct perf_event_context - event context structure</span>
+<span class="cm"> *</span>
+<span class="cm"> * Used as a container for task events and CPU events as well:</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="nc">perf_event_context</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">pmu</span>                      <span class="o">*</span><span class="n">pmu</span><span class="p">;</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Protect the states of the events in the list,</span>
+<span class="cm">         * nr_active, and the list:</span>
+<span class="cm">         */</span>
+        <span class="n">raw_spinlock_t</span>                  <span class="n">lock</span><span class="p">;</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Protect the list of events.  Locking either mutex or lock</span>
+<span class="cm">         * is sufficient to ensure the list doesn&#39;t change; to change</span>
+<span class="cm">         * the list you need to lock both the mutex and the spinlock.</span>
+<span class="cm">         */</span>
+        <span class="k">struct</span> <span class="nc">mutex</span>                    <span class="n">mutex</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">active_ctx_list</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">perf_event_groups</span>        <span class="n">pinned_groups</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">perf_event_groups</span>        <span class="n">flexible_groups</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">event_list</span><span class="p">;</span>
+
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">pinned_active</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">flexible_active</span><span class="p">;</span>
+
+        <span class="kt">int</span>                             <span class="n">nr_events</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">nr_active</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">is_active</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">nr_stat</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">nr_freq</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">rotate_disable</span><span class="p">;</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Set when nr_events != nr_active, except tolerant to events not</span>
+<span class="cm">         * necessary to be active due to scheduling constraints, such as cgroups.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span>                             <span class="n">rotate_necessary</span><span class="p">;</span>
+        <span class="n">refcount_t</span>                      <span class="n">refcount</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">task_struct</span>              <span class="o">*</span><span class="n">task</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Context clock, runs when context enabled.</span>
+<span class="cm">         */</span>
+        <span class="n">u64</span>                             <span class="n">time</span><span class="p">;</span>
+        <span class="n">u64</span>                             <span class="n">timestamp</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * These fields let us detect when two contexts have both</span>
+<span class="cm">         * been cloned (inherited) from a common ancestor.</span>
+<span class="cm">         */</span>
+        <span class="k">struct</span> <span class="nc">perf_event_context</span>       <span class="o">*</span><span class="n">parent_ctx</span><span class="p">;</span>
+        <span class="n">u64</span>                             <span class="n">parent_gen</span><span class="p">;</span>
+        <span class="n">u64</span>                             <span class="n">generation</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">pin_count</span><span class="p">;</span>
+<span class="cp">#ifdef CONFIG_CGROUP_PERF</span>
+        <span class="kt">int</span>                             <span class="n">nr_cgroups</span><span class="p">;</span>      <span class="cm">/* cgroup evts */</span>
+<span class="cp">#endif</span>
+        <span class="kt">void</span>                            <span class="o">*</span><span class="n">task_ctx_data</span><span class="p">;</span> <span class="cm">/* pmu specific data */</span>
+        <span class="k">struct</span> <span class="nc">rcu_head</span>                 <span class="n">rcu_head</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>进程相关部分函数：__perf_event_task_sched_out/in(prev,next):</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id66">
+<div class="code-block-caption"><span class="caption-text">针对进程的调用</span><a class="headerlink" href="#id66" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">_schedule</span><span class="p">()</span><span class="o">:</span>
+        <span class="n">context_switch</span><span class="p">(</span><span class="n">rq</span><span class="p">,</span><span class="n">prev</span><span class="p">,</span><span class="n">next</span><span class="p">,</span><span class="o">&amp;</span><span class="n">rf</span><span class="p">);</span>
+                <span class="n">prepare_task_switch</span><span class="p">(</span><span class="n">rq</span><span class="p">,</span><span class="n">prev</span><span class="p">,</span><span class="n">next</span><span class="p">);</span>
+                        <span class="n">perf_event_task_sched_out</span><span class="p">(</span><span class="n">prev</span><span class="p">,</span><span class="n">next</span><span class="p">);</span>
+                <span class="p">......</span>
+
+                <span class="n">finish_task_switch</span><span class="p">(</span><span class="n">prev</span><span class="p">);</span>
+                        <span class="n">perf_event_task_sched_in</span><span class="p">(</span><span class="n">prev</span><span class="p">,</span><span class="n">current</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>我们看perf_event_task_sched_out/in(prev,next) –&gt; __perf_event_task_sched_out/in(prev,next):</p>
+<div class="literal-block-wrapper docutils container" id="id67">
+<div class="code-block-caption"><span class="caption-text">__perf_event_task_sched_out/in(prev,next)</span><a class="headerlink" href="#id67" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * Called from scheduler to remove the events of the current task,</span>
+<span class="cm"> * with interrupts disabled.</span>
+<span class="cm"> *</span>
+<span class="cm"> * We stop each event and update the event value in event-&gt;count.</span>
+<span class="cm"> *</span>
+<span class="cm"> * This does not protect us against NMI, but disable()</span>
+<span class="cm"> * sets the disabled bit in the control field of event _before_</span>
+<span class="cm"> * accessing the event control register. If a NMI hits, then it will</span>
+<span class="cm"> * not restart the event.</span>
+<span class="cm"> */</span>
+<span class="kt">void</span> <span class="nf">__perf_event_task_sched_out</span><span class="p">(</span><span class="k">struct</span> <span class="nc">task_struct</span> <span class="o">*</span><span class="n">task</span><span class="p">,</span>
+                                 <span class="k">struct</span> <span class="nc">task_struct</span> <span class="o">*</span><span class="n">next</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="kt">int</span> <span class="n">ctxn</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">__this_cpu_read</span><span class="p">(</span><span class="n">perf_sched_cb_usages</span><span class="p">))</span>
+                <span class="n">perf_pmu_sched_task</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">next</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">atomic_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">nr_switch_events</span><span class="p">))</span>
+                <span class="n">perf_event_switch</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">next</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+
+        <span class="n">for_each_task_context_nr</span><span class="p">(</span><span class="n">ctxn</span><span class="p">)</span>
+                <span class="n">perf_event_context_sched_out</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">ctxn</span><span class="p">,</span> <span class="n">next</span><span class="p">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * if cgroup events exist on this CPU, then we need</span>
+<span class="cm">         * to check if we have to switch out PMU state.</span>
+<span class="cm">         * cgroup event are system-wide mode only</span>
+<span class="cm">         */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">atomic_read</span><span class="p">(</span><span class="n">this_cpu_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">perf_cgroup_events</span><span class="p">)))</span>
+                <span class="n">perf_cgroup_sched_out</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">next</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * Called from scheduler to add the events of the current task</span>
+<span class="cm"> * with interrupts disabled.</span>
+<span class="cm"> *</span>
+<span class="cm"> * We restore the event value and then enable it.</span>
+<span class="cm"> *</span>
+<span class="cm"> * This does not protect us against NMI, but enable()</span>
+<span class="cm"> * sets the enabled bit in the control field of event _before_</span>
+<span class="cm"> * accessing the event control register. If a NMI hits, then it will</span>
+<span class="cm"> * keep the event running.</span>
+<span class="cm"> */</span>
+<span class="kt">void</span> <span class="nf">__perf_event_task_sched_in</span><span class="p">(</span><span class="k">struct</span> <span class="nc">task_struct</span> <span class="o">*</span><span class="n">prev</span><span class="p">,</span>
+                                <span class="k">struct</span> <span class="nc">task_struct</span> <span class="o">*</span><span class="n">task</span><span class="p">)</span>
+<span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">perf_event_context</span> <span class="o">*</span><span class="n">ctx</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">ctxn</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * If cgroup events exist on this CPU, then we need to check if we have</span>
+<span class="cm">         * to switch in PMU state; cgroup event are system-wide mode only.</span>
+<span class="cm">         *</span>
+<span class="cm">         * Since cgroup events are CPU events, we must schedule these in before</span>
+<span class="cm">         * we schedule in the task events.</span>
+<span class="cm">         */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">atomic_read</span><span class="p">(</span><span class="n">this_cpu_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">perf_cgroup_events</span><span class="p">)))</span>
+                <span class="n">perf_cgroup_sched_in</span><span class="p">(</span><span class="n">prev</span><span class="p">,</span> <span class="n">task</span><span class="p">);</span>
+
+        <span class="n">for_each_task_context_nr</span><span class="p">(</span><span class="n">ctxn</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">ctx</span> <span class="o">=</span> <span class="n">task</span><span class="o">-&gt;</span><span class="n">perf_event_ctxp</span><span class="p">[</span><span class="n">ctxn</span><span class="p">];</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">likely</span><span class="p">(</span><span class="o">!</span><span class="n">ctx</span><span class="p">))</span>
+                        <span class="k">continue</span><span class="p">;</span>
+
+                <span class="n">perf_event_context_sched_in</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">task</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">atomic_read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">nr_switch_events</span><span class="p">))</span>
+                <span class="n">perf_event_switch</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">prev</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">__this_cpu_read</span><span class="p">(</span><span class="n">perf_sched_cb_usages</span><span class="p">))</span>
+                <span class="n">perf_pmu_sched_task</span><span class="p">(</span><span class="n">prev</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>进程相关部分函数： perf_event_task_migrate(p);</p></li>
+<li><p>进程相关部分函数 perf_event_task_tick();</p></li>
+</ul>
+</div>
+<div class="section" id="perf-struct-perf-cpu-context">
+<h3>perf 基础结构三：struct perf_cpu_context {}<a class="headerlink" href="#perf-struct-perf-cpu-context" title="Permalink to this headline">¶</a></h3>
+<p>对于cpu维度的perf_event来说只要cpu online会一直运行,每个cpu上同时只能有一个task维度的perf_evnt得到执行，cpu维度的context使用了pmu-&gt;pmu_cpu_context-&gt;task_ctx指针来保存当前运行的task context。</p>
+<ul class="simple">
+<li><p>与CPU关联结构</p></li>
+</ul>
+<div class="literal-block-wrapper docutils container" id="id68">
+<div class="code-block-caption"><span class="caption-text">struct perf_cpu_context</span><a class="headerlink" href="#id68" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">pmu</span> <span class="p">{</span>
+        <span class="p">......</span>
+        <span class="k">struct</span> <span class="nc">perf_cpu_context</span> <span class="n">__percpu</span> <span class="o">*</span><span class="n">pmu_cpu_context</span><span class="p">;</span>
+        <span class="p">......</span>
+<span class="p">}</span>
+<span class="cm">/**</span>
+<span class="cm"> * struct perf_event_cpu_context - per cpu event context structure</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="nc">perf_cpu_context</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="nc">perf_event_context</span>       <span class="n">ctx</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">perf_event_context</span>       <span class="o">*</span><span class="n">task_ctx</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">active_oncpu</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">exclusive</span><span class="p">;</span>
+
+        <span class="n">raw_spinlock_t</span>                  <span class="n">hrtimer_lock</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">hrtimer</span>                  <span class="n">hrtimer</span><span class="p">;</span>
+        <span class="n">ktime_t</span>                         <span class="n">hrtimer_interval</span><span class="p">;</span>
+        <span class="kt">unsigned</span> <span class="kt">int</span>                    <span class="n">hrtimer_active</span><span class="p">;</span>
+
+<span class="cp">#ifdef CONFIG_CGROUP_PERF</span>
+        <span class="k">struct</span> <span class="nc">perf_cgroup</span>              <span class="o">*</span><span class="n">cgrp</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">cgrp_cpuctx_entry</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+        <span class="k">struct</span> <span class="nc">list_head</span>                <span class="n">sched_cb_entry</span><span class="p">;</span>
+        <span class="kt">int</span>                             <span class="n">sched_cb_usage</span><span class="p">;</span>
+
+        <span class="kt">int</span>                             <span class="n">online</span><span class="p">;</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Per-CPU storage for iterators used in visit_groups_merge. The default</span>
+<span class="cm">         * storage is of size 2 to hold the CPU and any CPU event iterators.</span>
+<span class="cm">         */</span>
+        <span class="kt">int</span>                             <span class="n">heap_size</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">perf_event</span>               <span class="o">**</span><span class="n">heap</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="nc">perf_event</span>               <span class="o">*</span><span class="n">heap_default</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nc">pmu</span> <span class="n">pmu</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+<div class="section" id="id29">
+<h3>总结<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>理解：根据要测量的事件设置PMU寄存器，最后统计各种事件发生的概率；</p></li>
+<li><p>下一步从细节上整理。</p></li>
+</ul>
+</div>
 </div>
 <div class="section" id="linux-kernel-trace">
 <h2>linux kernel trace<a class="headerlink" href="#linux-kernel-trace" title="Permalink to this headline">¶</a></h2>
@@ -1976,8 +3599,8 @@ ftrace（函数跟踪）是内核跟踪的“瑞士军刀”。它是内建在Li
 1. 首先ftrace.c 文件注释为：infrastructure for profiling code inserted by ‘gcc -pg’
 2. mcount ==&gt; nop</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id56">
-<div class="code-block-caption"><span class="caption-text">ftrace基本结构</span><a class="headerlink" href="#id56" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id69">
+<div class="code-block-caption"><span class="caption-text">ftrace基本结构</span><a class="headerlink" href="#id69" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -2055,8 +3678,8 @@ ftrace（函数跟踪）是内核跟踪的“瑞士军刀”。它是内建在Li
 </td></tr></table></div>
 </div>
 <p>将内核的__start_mcount_loc/__stop_mcount_loc节初始化为struct ftrace_page结构，并将mcount初始化为struct dyn_ftrace列表。将ip指向的地址内容初始化为nop</p>
-<div class="literal-block-wrapper docutils container" id="id57">
-<div class="code-block-caption"><span class="caption-text">内核__start_mcount_loc/__stop_mcount_loc节初始化</span><a class="headerlink" href="#id57" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id70">
+<div class="code-block-caption"><span class="caption-text">内核__start_mcount_loc/__stop_mcount_loc节初始化</span><a class="headerlink" href="#id70" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -2149,8 +3772,8 @@ ftrace（函数跟踪）是内核跟踪的“瑞士军刀”。它是内建在Li
 </div>
 <p>此时把所有mcount指向的地址中的指令替换为nop指令。</p>
 <p>我们看内核模块中的ftrace处理：</p>
-<div class="literal-block-wrapper docutils container" id="id58">
-<div class="code-block-caption"><span class="caption-text">内核模块__mcount_loc节初始化</span><a class="headerlink" href="#id58" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id71">
+<div class="code-block-caption"><span class="caption-text">内核模块__mcount_loc节初始化</span><a class="headerlink" href="#id71" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -2280,8 +3903,8 @@ load_module(struct load_info *info,const char __user *uarge,int flags)
 <ol class="arabic" start="3">
 <li><p>nop ==&gt; ftrace_call</p>
 <blockquote>
-<div><div class="literal-block-wrapper docutils container" id="id59">
-<div class="code-block-caption"><span class="caption-text">ftrace_call替换</span><a class="headerlink" href="#id59" title="Permalink to this code">¶</a></div>
+<div><div class="literal-block-wrapper docutils container" id="id72">
+<div class="code-block-caption"><span class="caption-text">ftrace_call替换</span><a class="headerlink" href="#id72" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -2368,8 +3991,8 @@ load_module(struct load_info *info,const char __user *uarge,int flags)
 </pre></div>
 </td></tr></table></div>
 </div>
-<div class="literal-block-wrapper docutils container" id="id60">
-<div class="code-block-caption"><span class="caption-text">具体指令替换</span><a class="headerlink" href="#id60" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id73">
+<div class="code-block-caption"><span class="caption-text">具体指令替换</span><a class="headerlink" href="#id73" title="Permalink to this code">¶</a></div>
 <div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
   2
   3
@@ -2911,19 +4534,22 @@ load_module(struct load_info *info,const char __user *uarge,int flags)
 </div></blockquote>
 </li>
 </ol>
-<dl class="simple">
+<dl>
 <dt>3.总结</dt><dd><dl class="simple">
 <dt>a.ftrace 原理总结。</dt><dd><p>1.CFLAGS +=-pg ==&gt; mcount
 2.ftrace_init():kernel:__mcount_loc + 模块加载：load_module:__mcount_loc  处理 __mcount_loc节信息，并替换地址中指令为nop;
 3.trace_init()及具体使用时将IP地址中的指令进行进一步替换。</p>
 </dd>
-<dt>b.下一步需要完善：</dt><dd><ul class="simple">
+</dl>
+<p>b.ftrace的跟踪方法是一种总体跟踪法，换句话说，你统计了一个事件到下一个事件所有的时间长度，然后把它们放到时间轴上，你可以知道整个系统运行在时间轴上的分布。这种方法很准确，但跟踪成本很高。下一步分析实现细节。
+b.下一步需要完善：</p>
+<blockquote>
+<div><ul class="simple">
 <li><p>细化当前引用代码注释；</p></li>
 <li><p>增加内核模块部分第二步的替换部分；</p></li>
 <li><p>对指令替换部分进行更深入总结；</p></li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </dd>
 </dl>
 </div>

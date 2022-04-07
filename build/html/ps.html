@@ -14,9 +14,7 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="内存管理" href="mem.html" />
-    <link rel="prev" title="设备驱动" href="driver.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -34,37 +32,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
-<li class="toctree-l1"><a class="reference internal" href="x86_kernel_base.html">linux X86内核基础</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pm.html">电源管理框架</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cpu.html">cpu管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">进程管理</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id2">概述</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#x86">x86进程管理</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">进程表示</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id4">进程调度</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id5">调度管理</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id6">调度性能评价</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#id7">进程间通信</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id8">信号</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id9">进程生命周期</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id10">进程统计信息</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#perf">进程调度性能测试：perf</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="mem.html">内存管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fs.html">文件系统</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sec.html">linux 内核安全</a></li>
 <li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
 <li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dot.html">dot画图</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bpf_helper.html">BPF-HELPERS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="driver.html">设备驱动(待修正）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gitlab.html">基于gitlab的项目管理(待修正)</a></li>
 </ul>
 
         </div>
@@ -119,6 +94,22 @@
 </div>
 <div class="section" id="id9">
 <h2>进程生命周期<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<p>TASK_RUNNING:就绪；
+TASK_INTERRUPTIBLE：可中断等待状态，由于进程未获得它所申请的资源而处在等待状态。一旦资源有效或者有唤醒信号，进程会立即结束等待而进入就绪状态。可由内核或其他进程唤醒；
+TASK_UNINTERRUPTIBLE:此时，进程也处于等待资源状态。一旦资源有效，进程会立即进入就绪状态。这个等待状态与可中断等待状态的区别在于：处于TASK_UNINTERRUPTIBL状态的进程不能被信号量或者中断所唤醒(不能被其他进程唤醒)，只有当它申请的资源有效时才能被唤醒。这个状态被应用在内核中某些场景中，比如当进程需要对磁盘进行读写，而此刻正在DMA中进行着数据到内存的拷贝，如果这时进程休眠被打断（比如强制退出信号）那么很可能会出现问题，所以这时进程就会处于不可被打断的状态下。</p>
+<p>TASK_STOPPED(T/t):当进程收到一个SIGSTOP信号后，就由运行状态进入停止状态，当受到一个SIGCONT信号时，又会恢复运行状态。这种状态主要用于程序的调试，又被叫做“暂停状态”、“挂起状态”。
+TASK_DEAD:进程因某种原因而中止运行，进程占有的所有资源将被回收，除了task_struct结构（以及少数资源）以外，并且系统对它不再予以理睬，所以这种状态也叫做“僵死状态”，进程成为僵尸进程。</p>
+<p>Z (TASK_DEAD - EXIT_ZOMBIE)，退出状态，进程成为僵尸进程
+进程在退出的过程中，处于TASK_DEAD状态。在这个退出过程中，进程占有的所有资源将被回收，除了task_struct结构（以及少数资源）以外。于是进程就只剩下task_struct这么个空壳，故称为僵尸。</p>
+<p>之所以保留task_struct，是因为task_struct里面保存了进程的退出码、以及一些统计信息。而其父进程很可能会关心这些信息。父进程可以通过wait系列的系统调用（如wait4、waitid）来等待某个或某些子进程的退出，并获取它的退出信息（保存在task_struct里）。然后wait系列的系统调用会顺便将子进程的尸体（task_struct）也释放掉。</p>
+<blockquote>
+<div><p>当父/子进程在不同时间点退出时，就可能会出现Z的细分状态：</p>
+</div></blockquote>
+<p>6、X (TASK_DEAD - EXIT_DEAD)，退出状态，进程即将被销毁
+进程在退出过程中也可能不会保留它的task_struct。比如这个进程是多线程程序中被detach过的进程。或者父进程通过设置SIGCHLD信号的handler为SIG_IGN，显式的忽略了SIGCHLD信号。（这是posix的规定，尽管子进程的退出信号可以被设置为SIGCHLD以外的其他信号。）</p>
+<blockquote>
+<div><p>此时，进程将被置于EXIT_DEAD退出状态，这意味着接下来的代码立即就会将该进程彻底释放。所以EXIT_DEAD状态是非常短暂的，几乎不可能通过ps命令捕捉到。</p>
+</div></blockquote>
 </div>
 <div class="section" id="id10">
 <h2>进程统计信息<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
@@ -131,10 +122,7 @@
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="driver.html" class="btn btn-neutral float-left" title="设备驱动" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="mem.html" class="btn btn-neutral float-right" title="内存管理" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

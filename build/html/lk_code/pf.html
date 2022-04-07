@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>缺页中断及处理（X86平台) &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="yocto uboot与内核模块、内核开发总结" href="../yocto_kernel.html" />
+    <link rel="prev" title="linux 系统调用原理" href="syscall.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">linux 内核基础代码分析</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="base_arch.html">linux 内核代码目录结构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module.html">linux 内核模块原理分析</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notifier.html">linux 内核通知/通信机制</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lock.html">linux 内核竞争处理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hook.html">linux 内核hook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kexec.html">linux 加载ELF 内核文件：kexec</a></li>
+<li class="toctree-l2"><a class="reference internal" href="struct.html">linux 内核基础算法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="umh.html">第一个应用进程及umh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extable.html">异常表:extable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jump_label.html">jump_label</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="x86.html">x86架构部分</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="x86-64_vec.html">x86-64中断向量定义</a></li>
+<li class="toctree-l3"><a class="reference internal" href="syscall.html">linux 系统调用原理</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">缺页中断及处理（X86平台)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">硬件原理（X86架构）</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#linux">linux 内核代码分析</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../uboot.html">uboot理解</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../driver.html">设备驱动(待修正）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gitlab.html">基于gitlab的项目管理(待修正)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">linux 内核基础代码分析</a> &raquo;</li>
+          <li><a href="x86.html">x86架构部分</a> &raquo;</li>
+      <li>缺页中断及处理（X86平台)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/lk_code/pf.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="x86">
+<h1>缺页中断及处理（X86平台)<a class="headerlink" href="#x86" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>硬件原理（X86架构）<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>异常类型：Fault</p></li>
+<li><dl>
+<dt>缺页中断时描述：</dt><dd><p>CR0寄存器设置PG标志，处理器通过页转化机制将一个线性地址转换为一个物理地址时探测到以下条件之一：</p>
+<ol class="arabic simple">
+<li><p>地址转换需要的页目录或页表入口项的P(present)标志为空，表示包含内容的页表或页不在物理内存中。</p></li>
+<li><p>程序没有足够的特权访问指定的页面（也就是说，运行在应用模式的程序试图访问超级模式的页）。如果设置了CR4的SMAP标志，运行在超级模式的程序试图访问用户模式地址的数据也可以触发缺页中断。如果设置了CR4中的PKE或PKS标志，访问包含保护密钥的线性地址时，保护密钥权限寄存器可能产生缺页中断。（理解上需要进一步确认）</p></li>
+<li><p>运行在用户模式的代码试图向一个只读页面里写数据。如果使能了CR0的WP标志，运行在超级用户模式的程序试图向一个只读页面写数据时也会触发缺页中断。</p></li>
+<li><p>从禁止了可执行位的页面中取指令。如果设置了CR4的SMEP位，运行在超级模式下的代码试图从用户地址空家获取指令时也会触发页错误。</p></li>
+<li><p>页结构入口的保留位设置为1时。（就是写了保留位）</p></li>
+<li><p>对不是shadow-stack页的页进行shadow-stack访问。</p></li>
+<li><p>enclave访问，违反访问控制要求时，此时异常称为SGX-induced page fault.处理器使用后面描述的错误码来从传统的页错误中区分SGX产生的页错误。</p></li>
+</ol>
+<p>异常处理程序可以通过重启程序或任务从页不在内存中恢复回来，保持程序的连续性。它还可以在权限冲突后重新启动程序或任务，但是造成特权侵犯的问题可能是无法纠正的。</p>
+</dd>
+</dl>
+</li>
+<li><p>缺页异常现场信息</p></li>
+</ul>
+<p>处理器向page-fault处理程序提供两项信息来诊断异常并从中恢复：</p>
+<blockquote>
+<div><p>1.堆栈上的错误代码</p>
+<blockquote>
+<div><p>page-fault的错误码的格式与其他异常的错误码格式不同。处理器按照如下规则设置错误码：</p>
+<ol class="arabic simple">
+<li><p>bit 0: P flag:如果用于地址转换的页结构项的P标志为0则线性地址不进行转换，</p></li>
+<li><p>bit 1: W/R:如果导致页面错误异常的访问是写入，则此标志为1；否则为0。此标志描述访问导致page-fault 异常的访问不是分页指定的访问权限。</p></li>
+<li><p>bit 2:U/S:  如果用户模式访问导致了page-fault异常，则此标志为1；如果是超级模式访问导致，则此标志为0。此标志描述导致page-fault异常的访问不是分页指定的访问权限。</p></li>
+<li><p>bit 3:RSVD:  如果因为因为在用于转换该地址的分页结构项中设置了保留位导致线性地址没有转换，则此标志为1。</p></li>
+<li><p>bit 4:I/D:如果导致页面错误异常的访问是指令获取，则此标志为1。此标志描述导致页面错误异常的访问不是分页指定的访问权限。</p></li>
+<li><p>bit 5:PK:对具有保护密钥数据的线性地址的数据访问导致的错误，保护密钥权限寄存器不允许访问该地址，则此标志为1。</p></li>
+<li><p>bit 1:SS:因为对shadow-stck访问（包括enclave模式中的shadow-stack访问）导致的page-fault异常设置次标志为1。此标志描述由于访问权限冲突导致page-fault异常。</p></li>
+<li><p>bit 15:SGX:如果异常与分页无关，而是由违反SGX特定的访问控制要求而导致的，则此标志为1。因为只有在没有普通page-fault的情况下才可能发生这种冲突，所以仅当P标志（位0）为1并且RSVD标志（位3）和PK标志（位5）都为0时才设置该标志。</p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic" start="2">
+<li><p>CR2寄存器的内容</p>
+<p>处理器将生成异常的32位线性地址加载到CR2寄存器。page-fault处理程序可以使用此地址定位相应的页目录和页表条目。在执行页page-fault处理程序期间，可能会发生另一个page-fault错误；处理程序应在发生第二个page-fault之前保存CR2寄存器的内容。如果page-fault是由页面级别保护冲突引起的，则在发生错误时设置页面目录项中的访问标志。IA-32处理器关于相应页表条目中的访问标志的行为是特定于model的，而不是体系结构定义的。</p>
+</li>
+</ol>
+<p>3.保存的指令指针</p>
+<p>CS和EIP寄存器保存的内容通常指向生成异常的指令。如果在任务切换期间发生page-fault异常，CS和EIP寄存器可能会指向新任务的第一条指令（如“程序状态更改”部分所述）。</p>
+<p>4.程序状态更改</p>
+<p>page-fault异常通常不会导致程序状态更改，因为导致生成异常的指令不会被执行。在page-fault异常处理程序纠正了冲突（例如，将页面加载到内存中）之后，程序或任务能恢复执行。</p>
+</div></blockquote>
+<ul>
+<li><p>缺页异常发生条件：当在任务切换期间产生page-fault异常时，程序状态可能会更改，如下所示。在任务切换期间，在以下任何操作期间都可能发生page-fault异常：</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>当将任务的状态写入该任务的TSS时。</p></li>
+<li><p>在读取GDT以定位新任务的TSS描述符时。</p></li>
+<li><p>读取新任务的TSS。</p></li>
+<li><p>从新任务中读取与段选择器关联的段描述符时。</p></li>
+<li><p>在读取新任务的LDT时，验证存储在新TSS中的段寄存器。</p></li>
+</ol>
+<p>在最后两种情况下，异常发生在新任务的上下文中。指令指针指向新任务的第一条指令，而不是导致任务切换的指令（或在中断的情况下执行的最后一条指令）。如果操作系统的设计允许在任务切换期间发生page-fault异常，则应通过任务门调用page-fault处理程序。(注意任务门间是否互斥？很重要的问题)</p>
+<p>如果在任务切换期间发生page-fautl，则处理器将在生成异常之前从新的TSS（不执行任何其他限制，是否存在或类型检查）中加载所有状态信息。因此，page-fault处理程序不应假定使用CS，SS，DS，ES，FS和GS寄存器中的段选择子时不会引起其他异常。（可结合Interrupt 10进行理解）</p>
+<p>其他异常处理信息</p>
+<p>应格外小心，以确保在显式堆栈切换期间发生的异常不会导致处理器使用无效的堆栈指针（SS：ESP）。 为16位IA-32处理器编写的软件通常使用一对指令更改新堆栈，例如：</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">更新堆栈</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">MOV</span> <span class="n">SS</span><span class="p">,</span> <span class="n">AX</span>
+<span class="n">MOV</span> <span class="n">SP</span><span class="p">,</span> <span class="n">StackTop</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>在32位IA-32处理器上执行此代码时，在SS寄存器加载了段选择子之后，ESP寄存器加载段选择子之前可能会出现page-fault，通用保护错误（#GP）或对齐检查错误（#AC）。  此时，堆栈指针的两个部分（SS和ESP）是不一致。 新的堆栈段正在与旧的堆栈指针一起使用。</p>
+<p>如果异常处理程序切换到定义良好的堆栈（即该处理程序是任务或特权更高的处理过程），则处理器不会使用不一致的堆栈指针。 但是，如果在相同的特权级别并从同一任务调用异常处理程序，则处理器将尝试使用不一致的堆栈指针。</p>
+<p>在faulting任务中处理页面错误，常规保护或对齐检查异常的系统（带有陷阱门或中断门）中，以与异常处理程序相同的特权级别执行的软件应使用LSS指令而不是一对MOV指令初始化新堆栈。 当异常处理程序以特权级别0（正常情况）运行时，问题仅限于以特权级别0运行的过程或任务，通常是特权级别0的过程或任务。通常是操作系统内核。（待确认，这一段，脑袋不太清楚）</p>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="linux">
+<h2>linux 内核代码分析<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>hw: x86</p></li>
+<li><p>kernel:v5.10.13</p></li>
+</ul>
+<div class="section" id="id2">
+<h3>异常程序基本代码架构<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     arch/x86/include/asm/trapnr.h:
+     #define X86_TRAP_PF     14  /*  Page Fault */
+
+     arch/x86/kernel/idt.c
+
+     /* Interrupt gate ：中断门*/
+     struct idt_bits {
+         u16 ist     : 3,
+             zero:5,
+             type:5,
+             dpl:2,
+             p:1;
+         } __attribute__((packed));
+
+     struct idt_data { /* 中断门格式 */
+         unsigned int vector; /* 向量号：#PF --&gt; 14*/
+         unsigned int segment; /* 代码段 */
+         struct idt_bits bits; /* 权限相关设置 */
+         const void *addr; /* 处理程序地址 */
+     };
+
+     #define  G(\_vector,\_addr,\_ist,\_type,\_dpl,\_segment) \ /* 初始化struct idt_data结构 */
+
+             {       \
+                     .vector = \_vector, \
+                     .bits.ist = \_ist, \
+                     .bits.type = \_type, \
+                     .bits.dpl = \_dpl, \
+                     .bits.p = 1,    \
+                     .addr = \_addr, \
+                     .segment = \_segment,   \
+     }
+     #define DEFAULT_STACK 0
+     enum {
+             GATE_INTERRUPT =0xE,
+             GATE_TRAP = 0xF,
+             GATE_CALL = 0xC,
+             GATE_TASK = 0x5,
+     };
+     #define DPL0    0x0  /* 注意: linux 只使用了这两种优先级 */
+     #define DPL3    0x3
+
+     #define GDT_ENTRY_KERNEL_CS     12
+     #define GDT_ENTRY_KERNEL_DS     13
+
+     #define __KERNEL_CS     (GDT_ENTRY_KERNEL_CS * 8)
+     #define __KERNEL_DS     (GDT_ENTRY_KERNEL_DS * 8)
+     #define __USER_DS       (GDT_ENTRY_DEFAULT_USER_DS * 8 + 3)
+     #define __USER_CS       (GDT_ENTRY_DEFAULT_USER_CS * 8 + 3)
+     #define __ESPFIX_SS     (GDT_ENTRY_ESPFIX_SS * 8)
+
+     #define INTG(_vector,_addr)
+             G(_vector,_addr,DEFAULT_STACK,GATE_INTERRUPT,DPL0,__KERNEL_CS)
+     INTG(X86_TRAP_PF,asm_exc_page_fault);/* 中断异常表入口 */
+</pre></div>
+</td></tr></table></div>
+</div>
+<ul>
+<li><p>定义 asm_exc_page_fault</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     arch/x86/include/asm/idtentry.h /* 定义如下 */
+
+     #define DECLARE_IDTENTRY_ERRORCODE(vector,func) \
+             idtentry vector asm_##func func has_error_code=1
+
+     #define DECLARE_IDTENTRY_RAW_ERRORCODE(vector,func)     \
+                     DECLARE_IDTENTRY_ERRORCODE(vector,func)
+
+     DECLARE_IDTENTRY_RAW_ERRORCODE(X86_TRAP_PF,exc_page_fault)
+     展开后定义为:
+     idtentry X86_TRAP_PF asm_exc_page_fault  exc_page_fault has_error_code=1
+
+     arch/x86/entry/entry_64.S
+     /* 函数定义
+      * idtentry - Macro to generate entry stubs for simple IDT entries
+          @vector: Vector number
+          @asmsym: ASM symbol for the entry point
+          @cfunc:  C function to be called
+          @has_error_code: Hardware pushed error code on stack
+          The macro emits code to set up the kernel context for straight forward and simple IDT entries.No IST stack,no paranoid entry checks.
+     */
+
+     .macro idtentry vector asmsym cfunc has_error_code:req
+     SYM_CODE_START(\asmsym)
+             UNWIND_HINT_IRET_REGS offset=\has_error_code * 8
+             ASM_CLAC
+             .if \has_error_code == 0 /* 针对没有错误码的中断\/异常 */
+                     pushq $-1
+             .endif
+             .if \vector == X86_TRAP_BP /* 断点:用于调试 */
+                     testb $3,CS-ORIG_RAX(%rsp)
+                     jnz .Lfrom_usermode_no_gap_\@ /* 用户空间 */
+                     .rept 6
+                     pushq 5 * 8(%rsp)
+                     .endr
+                     UNWIND_HINT_IRET_REGS offset=8
+     .Lfrom_usermode_no_gap_\@:
+             .endif
+             idtentry_body \cfunc \has_error_code /* 主题 */
+     _ASM_NOKPROBE(\asmsym)
+     SYM_CODE_END(\asmsym)
+     .endm
+
+     /* 函数主体定义
+     idtentry_body: Macro to emit code calling the C function
+              @cfunc:C function to the called
+              @has_error_code:       Hardware pushed error code on stack
+     */
+     .macro idtentry_body cfunc has_error_code:req
+             call error_entry /* Save all registers in pt_regs,and switch GS if needed */
+             UNWIND_HINT_REGS
+             movq %rsp,%rdi
+             .if \has_error_code == 1
+                     movq ORIG_RAX(%rsp),%rsi
+                     movq $-1,ORIG_RAX(%rsp)
+           .endif
+             call \cfunc /* exc_page_fault */
+             jmp error_return
+     .endm
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>调用exc_page_fault</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">inclue</span><span class="o">/</span><span class="k">asm</span><span class="o">/</span><span class="n">idtentry</span><span class="p">.</span><span class="n">h</span>
+
+     <span class="cm">/*</span>
+<span class="cm">         DEFINE_IDTENTRY_RAW_ERRORCODE - Emit code for raw IDT entry points</span>
+<span class="cm">             @func:  Function name of the entry point</span>
+<span class="cm">             @func is called from ASM entry code with interrupts disabled</span>
+
+<span class="cm">             The macro is written so it acts as function definition,Append the body with a pair of curly brackets.</span>
+
+<span class="cm">             Contrary to DEFINE_IDTENTRY_ERRORCODE() this does not invoke the irqentry_enter/exit() helpers before and after the body invocation.This needs to be done in the body itself if applicable.Use if extra work is required before the enter\/exit() helpers are invoked.</span>
+<span class="cm">     */</span>
+
+     <span class="cp">#define DEFINE_IDTENTRY_RAW_ERRORCODE(func)</span>
+             <span class="n">__visible</span> <span class="n">noinstr</span> <span class="kt">void</span> <span class="n">func</span><span class="p">(</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">error_code</span><span class="p">)</span>
+
+
+     <span class="n">arch</span><span class="o">/</span><span class="n">x86</span><span class="o">/</span><span class="n">mm</span><span class="o">/</span><span class="n">fault</span><span class="p">.</span><span class="n">c</span>
+
+     <span class="n">DEFINE_IDTENTRY_RAW_ERRORCODE</span><span class="p">(</span><span class="n">exc_page_fault</span><span class="p">)</span> <span class="cm">/* 函数展开如下：即最终执行函数*/</span>
+     <span class="cm">/* __visible noinstr void exc_page_fault(struct pt_regs *regs,unsigned long error_code) */</span>
+     <span class="p">{</span>
+             <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span> <span class="o">=</span> <span class="n">read_cr2</span><span class="p">();</span><span class="cm">/* 产生page fault 的虚拟地址(线性地址?) */</span>
+             <span class="n">irqentry_state_t</span> <span class="n">state</span><span class="p">;</span>
+             <span class="n">prefetchw</span><span class="p">(</span><span class="o">&amp;</span><span class="n">current</span><span class="o">-&gt;</span><span class="n">mm</span><span class="o">-&gt;</span><span class="n">mmap_lock</span><span class="p">);</span>
+     <span class="cm">/*</span>
+<span class="cm">             For KVM</span>
+<span class="cm">     */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">kvm_handle_async_pf</span><span class="p">(</span><span class="n">regs</span><span class="p">,(</span><span class="n">u32</span><span class="p">)</span><span class="n">address</span><span class="p">))</span><span class="cm">/* 这部分不做说明 */</span>
+                     <span class="k">return</span><span class="p">;</span>
+     <span class="cm">/*</span>
+<span class="cm">             Entry handling for valid #PF from kernel mode is slightly different:RCU is already watching and</span>
+<span class="cm">                 rcu_irq_enter() must not be invoked because a kernel fault on a user space address might sleep.</span>
+<span class="cm">             In case the fault hit a RCU idle region the conditional entry code reenabled RCU to avoid subsequent wreckage which helps debugability.</span>
+<span class="cm">     */</span>
+             <span class="n">state</span> <span class="o">=</span> <span class="n">irqentry_enter</span><span class="p">(</span><span class="n">regs</span><span class="p">);</span>
+         <span class="n">instrumentation_begin</span><span class="p">();</span>
+             <span class="n">handle_page_fault</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span><span class="cm">/* 函数主题 */</span>
+             <span class="n">instrumentation_end</span><span class="p">();</span>
+             <span class="n">irqentry_exit</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">state</span><span class="p">);</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>调用handle_page_fault：</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="k">static</span> <span class="n">__always_inline</span> <span class="kt">void</span> <span class="n">handle_page_fault</span><span class="p">(</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">error_code</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="n">trace_page_fault_entries</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">kmmio_fault</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">address</span><span class="p">)))</span>
+                     <span class="k">return</span><span class="p">;</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">fault_in_kernel_space</span><span class="p">(</span><span class="n">address</span><span class="p">)))</span> <span class="p">{</span>
+                     <span class="n">do_kern_addr_fault</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span><span class="cm">/* 主体:内核空间 */</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                     <span class="n">do_user_addr_fault</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span> <span class="cm">/* 主体:应用空间 */</span>
+                     <span class="n">local_irq_disable</span><span class="p">();</span>
+             <span class="p">}</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>do_kern_addr_fault</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id9" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/*</span>
+<span class="cm">         注意，内核处理部分，因为内核在满足某些要求时不存在换出的问题，具体分析如下。</span>
+<span class="cm">     */</span>
+     <span class="k">static</span> <span class="kt">void</span> <span class="n">do_kern_addr_fault</span><span class="p">(</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">hw_error_code</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">)</span>
+     <span class="p">{</span>
+     <span class="cm">/*</span>
+<span class="cm">             Protection keys exceptions only happen on user pages.We have no user pages in the kernel portion of the address spae,so do not expect them here.</span>
+<span class="cm">     */</span>
+     <span class="n">WARN_ON_ONCE</span><span class="p">(</span><span class="n">hw_error_code</span> <span class="o">&amp;</span> <span class="n">X86_PF_PK</span><span class="p">);</span>
+     <span class="cm">/*</span>
+<span class="cm">            Was the fault spurious,caused by lazy TLB invalidation?</span>
+<span class="cm">     */</span>
+     <span class="k">if</span><span class="p">(</span><span class="n">spurious_kernel_fault</span><span class="p">(</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">))</span><span class="cm">/* 虚拟#PF，这个要深入分析。 */</span>
+             <span class="k">return</span><span class="p">;</span>
+     <span class="cm">/*</span>
+<span class="cm">             kprobes do not want to hook the spurious faults:</span>
+<span class="cm">     */</span>
+     <span class="k">if</span><span class="p">(</span><span class="n">kprobe_page_fault</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">X86_TRAP_PF</span><span class="p">))</span> <span class="cm">/* kprobe来处理page fault:这个要做实验，很重要 */</span>
+             <span class="k">return</span><span class="p">;</span>
+     <span class="cm">/*</span>
+<span class="cm">             Note,despite being a &quot;bad area&quot;,there are quite a few acceptable reasons to get here,such a erratum fixups and handling kernel code that can fault,like get_user().</span>
+<span class="cm">             Do not take the mm semaphore here.If we fixup a prefetch fault we could otherwise deadlock;</span>
+<span class="cm">     */</span>
+     <span class="n">bad_area_nosemaphore</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span><span class="cm">/* 进行详细处理 */</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>do_user_addr_fault</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id10" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/*</span>
+<span class="cm">         用户空间,这部分是重点</span>
+<span class="cm">     */</span>
+     <span class="k">static</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="n">do_user_addr_fault</span><span class="p">(</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">hw_error_code</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="k">struct</span> <span class="nc">vm_area_struct</span> <span class="o">*</span><span class="n">vma</span><span class="p">;</span>
+             <span class="k">struct</span> <span class="nc">task_struct</span> <span class="o">*</span><span class="n">tsk</span><span class="p">;</span>
+             <span class="k">struct</span> <span class="nc">mm_struct</span> <span class="o">*</span><span class="n">mm</span><span class="p">;</span><span class="cm">/* 针对task_struct 的内存空间 */</span>
+             <span class="n">vm_fault_t</span> <span class="n">fault</span><span class="p">;</span>
+             <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">flags</span> <span class="o">=</span> <span class="n">FAULT_FALG_DEFAULT</span><span class="p">;</span>
+
+             <span class="n">tsk</span> <span class="o">=</span> <span class="n">current</span><span class="p">;</span>
+             <span class="n">mm</span> <span class="o">=</span> <span class="n">tsk</span><span class="o">-&gt;</span><span class="n">mm</span><span class="p">;</span>
+             <span class="cm">/*</span>
+<span class="cm">             Kprobes do not want to hook the spurious faults:</span>
+<span class="cm">             */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">kprobe_page_fault</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">X86_TRAP_PF</span><span class="p">)))</span>
+                     <span class="k">return</span><span class="p">;</span>
+          <span class="cm">/*</span>
+<span class="cm">             Reserved bits are never expected to be set on entries in the user portion of the page tables.</span>
+<span class="cm">             */</span>
+          <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">hw_error_code</span> <span class="o">&amp;</span> <span class="n">X86_PF_RSVD</span><span class="p">))</span>
+              <span class="n">pgtable_bad</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">)</span>
+             <span class="cm">/*</span>
+<span class="cm">              If SMAP is on,check for invalid kernel(supervisor) access to user</span>
+<span class="cm">                  page in the user address space.The odd case here is WRUSS which,according to the preliminary documentation,does not respect</span>
+<span class="cm">                      SMAP and will have the USER bit set so,in all cases,SMAP enforcement appears to be consistent whith the USER bit */</span>
+
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">cpu_feature_enabled</span><span class="p">(</span><span class="n">X86_FEATURE_SMAP</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+                     <span class="o">!</span><span class="p">(</span><span class="n">hw_error_code</span> <span class="o">&amp;</span> <span class="n">X86_PF_USER</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+                     <span class="o">!</span><span class="p">(</span><span class="n">regs</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">X86_EFLAGS_AC</span><span class="p">)))</span>
+             <span class="p">{</span>
+                             <span class="n">bad_area_nosemaphore</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+                             <span class="k">return</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="cm">/*</span>
+<span class="cm">                 If we are in an interrupt,have no user context or are running</span>
+<span class="cm">                     in a region with pagefaults disabled then we must not take the fault</span>
+<span class="cm">             */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">faulthandler_disabled</span><span class="p">()</span> <span class="o">||</span> <span class="o">!</span><span class="n">mm</span><span class="p">)){</span>
+                     <span class="n">bad_area_nosemaphore</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+                     <span class="k">return</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="cm">/*</span>
+<span class="cm">                 It is safe to allow irqs after cr2 has been saved and the vmalloc fault has been handled.</span>
+<span class="cm">                 User-mod eregisters count as a user access even for any potential system fault or CPU buglet</span>
+<span class="cm">             */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">user_mode</span><span class="p">(</span><span class="n">regs</span><span class="p">))</span> <span class="p">{</span>
+                     <span class="n">local_irq_enable</span><span class="p">();</span>
+                     <span class="n">flags</span> <span class="o">|=</span> <span class="n">FAULT_FLAG_USER</span><span class="p">;</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">regs</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">X86_EFLAGS_IF</span><span class="p">)</span>
+                             <span class="n">local_irq_enable</span><span class="p">();</span>
+             <span class="p">}</span>
+             <span class="n">perf_sw_event</span><span class="p">(</span><span class="n">PERF_COUNT_SW_PAGE_PAULTS</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">regs</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">hw_error_code</span> <span class="o">&amp;</span> <span class="n">X86_PF_WRITE</span><span class="p">)</span>
+                     <span class="n">flags</span> <span class="o">|=</span> <span class="n">FAULT_FLAG_WRITE</span><span class="p">;</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">hw_error_code</span> <span class="o">&amp;</span> <span class="n">X86_PF_INSTR</span><span class="p">)</span>
+                     <span class="n">flags</span> <span class="o">|=</span> <span class="n">FAULT_FLAG_INSTRUCTION</span><span class="p">;</span>
+             <span class="cm">/*</span>
+<span class="cm">              只描述X86_64:</span>
+<span class="cm">             Faults in the vsyscall page might need emulation:...</span>
+<span class="cm">             此处不作为重点进行分析</span>
+<span class="cm">             */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">is_vsyscall_vaddr</span><span class="p">(</span><span class="n">address</span><span class="p">))</span> <span class="p">{</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">emulate_vsyscall</span><span class="p">(</span><span class="n">hw_error_code</span><span class="p">),</span><span class="n">regs</span><span class="p">,</span><span class="n">address</span><span class="p">))</span>
+                             <span class="k">return</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="cm">/*</span>
+<span class="cm">                     保证正确处理顺序的措施</span>
+<span class="cm">             */</span>
+
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="o">!</span><span class="n">mmap_read_trylock</span><span class="p">(</span><span class="n">mm</span><span class="p">)))</span> <span class="p">{</span>
+                     <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">user_mode</span><span class="p">(</span><span class="n">regs</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">search_exception_tables</span><span class="p">(</span><span class="n">regs</span><span class="o">-&gt;</span><span class="n">ip</span><span class="p">))</span> <span class="p">{</span>
+                             <span class="cm">/*</span>
+<span class="cm">                     Fault from code in kernel from which we do not expect faults.</span>
+<span class="cm">                             */</span>
+                             <span class="n">bad_area_nosemaphore</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+                             <span class="k">return</span><span class="p">;</span>
+                     <span class="p">}</span>
+     <span class="nl">retry</span><span class="p">:</span>
+                     <span class="n">mmap_read_lock</span><span class="p">(</span><span class="n">mm</span><span class="p">);</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+             <span class="cm">/*</span>
+<span class="cm">                 The above down_read_trylock() might have succeeded in which case we will have missed the might_sleep() from down_read():</span>
+<span class="cm">             */</span>
+                     <span class="n">might_sleep</span><span class="p">();</span>
+             <span class="p">}</span>
+             <span class="n">vma</span> <span class="o">=</span> <span class="n">find_vma</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span><span class="n">address</span><span class="p">);</span> <span class="cm">/* 处理主体:找到包含虚拟地址的内存空间 */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="o">!</span><span class="n">vma</span><span class="p">))</span> <span class="p">{</span><span class="cm">/* 不在进程地址空间中 */</span>
+                     <span class="n">bad_area</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+                     <span class="k">return</span><span class="p">;</span>
+             <span class="p">}</span>
+
+             <span class="k">if</span><span class="p">(</span><span class="n">likely</span><span class="p">(</span><span class="n">vma</span><span class="o">-&gt;</span><span class="n">vm_start</span> <span class="o">&lt;=</span> <span class="n">address</span><span class="p">))</span> <span class="cm">/* 包含在空间中 */</span>
+                     <span class="k">goto</span> <span class="n">good_area</span><span class="p">;</span>
+
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">vma</span><span class="o">-&gt;</span><span class="n">vm_flags</span> <span class="o">&amp;</span> <span class="n">VM_GROWSDOWN</span><span class="p">)))</span> <span class="p">{</span><span class="cm">/* 此时 address &lt; vm_start,若非向小增加,则出错. */</span>
+                     <span class="n">bad_area</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+                     <span class="k">return</span><span class="p">;</span>
+             <span class="p">}</span>
+
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">expand_stack</span><span class="p">(</span><span class="n">vma</span><span class="p">,</span><span class="n">address</span><span class="p">)))</span> <span class="p">{</span> <span class="cm">/* 若非栈,则... */</span>
+                     <span class="n">bad_area</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+                     <span class="k">return</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="cm">/*</span>
+<span class="cm">                 处理主题:Ok,we have a good vm_area for this memory access,so we can handle it ...</span>
+<span class="cm">             */</span>
+
+     <span class="nl">good_area</span><span class="p">:</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">access_error</span><span class="p">(</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">vma</span><span class="p">)))</span> <span class="p">{</span><span class="cm">/* 因为权限等错误引起的#PG */</span>
+                     <span class="n">bad_area_access_error</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">vma</span><span class="p">);</span>
+                     <span class="k">return</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="cm">/*</span>
+<span class="cm">             */</span>
+             <span class="n">fault</span> <span class="o">=</span> <span class="n">handle_mm_fault</span><span class="p">(</span><span class="n">vma</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">flags</span><span class="p">,</span><span class="n">regs</span><span class="p">);</span><span class="cm">/* 处理主体 */</span>
+             <span class="cm">/*</span>
+<span class="cm">                 Quick path to respond to signals</span>
+<span class="cm">             */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">fault_signal_pending</span><span class="p">(</span><span class="n">fault</span><span class="p">,</span><span class="n">regs</span><span class="p">))</span> <span class="p">{</span>
+                     <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">user_mode</span><span class="p">(</span><span class="n">regs</span><span class="p">))</span>
+                             <span class="n">no_context</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">SIGBUS</span><span class="p">,</span><span class="n">BUS_ADRERR</span><span class="p">);</span>
+                     <span class="k">return</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="cm">/*</span>
+<span class="cm">                 If we need to retry the mmap_lock has already been released,and if there is fatal signal pending there</span>
+<span class="cm">             is no guarantee that we made any progress.Handle this case first.</span>
+<span class="cm">             */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">((</span><span class="n">fault</span> <span class="o">&amp;</span> <span class="n">VM_FAULT_RETRY</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_ALLOW_RETRY</span><span class="p">)))</span> <span class="p">{</span>
+                     <span class="n">flags</span> <span class="o">|=</span> <span class="n">FAULT_FLAG_TRIED</span><span class="p">;</span>
+                     <span class="k">goto</span> <span class="n">retry</span><span class="p">;</span>
+             <span class="p">}</span>
+
+             <span class="n">mmap_read_unlock</span><span class="p">(</span><span class="n">mm</span><span class="p">);</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">fault</span> <span class="o">&amp;</span> <span class="n">VM_FAULT_ERROR</span><span class="p">))</span> <span class="p">{</span><span class="cm">/* 错误处理 */</span>
+                     <span class="n">mm_fault_error</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">hw_error_code</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">fault</span><span class="p">);</span>
+                     <span class="k">return</span><span class="p">;</span>
+             <span class="p">}</span>
+             <span class="n">check_v8086_mode</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">tsk</span><span class="p">);</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>handle_mm_fault</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id11" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/*</span>
+<span class="cm">         By the time we get here,we already hold the mm semaphore</span>
+<span class="cm">             The mmap_lock may have been released depending on flags and our return value.See filemap_fault() and __lock_page_or_retry().</span>
+<span class="cm">     */</span>
+     <span class="n">vm_fault_t</span> <span class="nf">handle_mm_fault</span><span class="p">(</span><span class="k">struct</span> <span class="nc">vm_area_struct</span> <span class="o">*</span><span class="n">vma</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">flags</span><span class="p">,</span><span class="k">struct</span> <span class="nc">pt_regs</span> <span class="o">*</span><span class="n">regs</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="n">vm_fault_t</span> <span class="n">ret</span><span class="p">;</span>
+             <span class="n">__set_current_state</span><span class="p">(</span><span class="n">TASK_RUNNING</span><span class="p">);</span>
+             <span class="n">count_vm_event</span><span class="p">(</span><span class="n">PGFAULT</span><span class="p">);</span> <span class="cm">/* 计数 */</span>
+             <span class="n">count_memcg_event_mm</span><span class="p">(</span><span class="n">vma</span><span class="o">-&gt;</span><span class="n">vm_mm</span><span class="p">,</span><span class="n">PGFAULT</span><span class="p">);</span>
+             <span class="cm">/*</span>
+<span class="cm">             do counter updates before entering really critical section</span>
+<span class="cm">             */</span>
+             <span class="n">check_sync_rss_stat</span><span class="p">(</span><span class="n">current</span><span class="p">);</span> <span class="cm">/* 统计数据更新 */</span>
+             <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">arch_vma_access_permitted</span><span class="p">(</span><span class="n">vma</span><span class="p">,</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_WRITE</span><span class="p">,</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_INSTRUCTION</span><span class="p">,</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_REMOTE</span><span class="p">))</span>
+                     <span class="k">return</span> <span class="n">VM_FAULT_SIGSEGV</span><span class="p">;</span>
+             <span class="cm">/*</span>
+<span class="cm">                 Enable the memcg OOM handling for faults triggered in user space.Kernel faults are handled more gracefully.</span>
+<span class="cm">             */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_USER</span><span class="p">)</span>
+                     <span class="n">mem_cgroup_enter_user_fault</span><span class="p">();</span>
+
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">is_vm_hugetlb_page</span><span class="p">(</span><span class="n">vma</span><span class="p">)))</span>
+                     <span class="n">ret</span> <span class="o">=</span> <span class="n">hugetlb_fault</span><span class="p">(</span><span class="n">vma</span><span class="o">-&gt;</span><span class="n">vm_mm</span><span class="p">,</span><span class="n">vma</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">flags</span><span class="p">);</span><span class="cm">/* 处理主体 */</span>
+             <span class="k">else</span>
+                     <span class="n">ret</span> <span class="o">=</span> <span class="n">__handle_mm_fault</span><span class="p">(</span><span class="n">vma</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">falgs</span><span class="p">);</span> <span class="cm">/* 处理主体 */</span>
+
+             <span class="k">if</span><span class="p">(</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_USER</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="n">mem_cgroup_exit_user_fault</span><span class="p">();</span>
+                     <span class="cm">/*</span>
+<span class="cm">                 The task may have entered a memcg OOM situation but if the allocation error was handled gracefully(no VM_FAULT_OOM),there is no need to kill anything.Just clean up the OOM state peacefully.</span>
+<span class="cm">                     */</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">task_in_memcg_oom</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="p">(</span><span class="n">ret</span> <span class="o">&amp;</span> <span class="n">VM_FAULT_OOM</span><span class="p">))</span>
+                             <span class="n">mem_cgroup_oom_synchronize</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+             <span class="p">}</span>
+
+             <span class="n">mm_account_fault</span><span class="p">(</span><span class="n">regs</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">flags</span><span class="p">,</span><span class="n">ret</span><span class="p">);</span><span class="cm">/* 统计信息更新 */</span>
+
+             <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>调用__handle_mm_fault</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id12" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/*</span>
+<span class="cm">         By the time we get here,we already hold the mm semaphore</span>
+<span class="cm">             The mmap_lock may have been released depending on flags and our return value.See filemap_fault() and __lock_page_or_retry().</span>
+<span class="cm">     */</span>
+     <span class="k">static</span> <span class="n">vm_fault_t</span> <span class="n">__handle_mm_fault</span><span class="p">(</span><span class="k">struct</span> <span class="nc">vm_area_struct</span> <span class="o">*</span><span class="n">vma</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">,</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">flags</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="k">struct</span> <span class="nc">vm_fault</span> <span class="n">vmf</span> <span class="o">=</span> <span class="p">{</span> <span class="cm">/* 这个结构我们需要注意 */</span>
+                     <span class="p">.</span><span class="n">vma</span> <span class="o">=</span> <span class="n">vma</span><span class="p">,</span>
+                     <span class="p">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span> <span class="o">&amp;</span> <span class="n">PAGE_MASK</span><span class="p">,</span>
+                     <span class="p">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span><span class="p">,</span>
+                     <span class="p">.</span><span class="n">pgoff</span> <span class="o">=</span> <span class="n">linear_page_index</span><span class="p">(</span><span class="n">vma</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+                     <span class="p">.</span><span class="n">gfp_mask</span> <span class="o">=</span> <span class="n">__get_fault_gfp_mask</span><span class="p">(</span><span class="n">vma</span><span class="p">),</span>
+             <span class="p">};</span>
+             <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">dirty</span> <span class="o">=</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_WRITE</span><span class="p">;</span>
+             <span class="k">struct</span> <span class="nc">mm_struct</span> <span class="o">*</span><span class="n">mm</span> <span class="o">=</span> <span class="n">vma</span><span class="o">-&gt;</span><span class="n">vm_mm</span><span class="p">;</span>
+             <span class="n">pgd_t</span> <span class="o">*</span><span class="n">pgd</span><span class="p">;</span>
+             <span class="n">p4d_t</span> <span class="o">*</span><span class="n">p4d</span><span class="p">;</span>
+             <span class="n">vm_fault_t</span> <span class="n">ret</span><span class="p">;</span>
+             <span class="n">pgd</span> <span class="o">=</span> <span class="n">pgd_offset</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+             <span class="n">p4d</span> <span class="o">=</span> <span class="n">p4d_alloc</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span><span class="n">pgd</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+             <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">p4d</span><span class="p">)</span>
+                     <span class="k">return</span> <span class="n">VM_FAULT_OOM</span><span class="p">;</span>
+             <span class="n">vmf</span><span class="p">.</span><span class="n">pud</span> <span class="o">=</span> <span class="n">pud_alloc</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span><span class="n">p4d</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+             <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">vmf</span><span class="p">.</span><span class="n">pud</span><span class="p">)</span>
+                     <span class="k">return</span> <span class="n">VM_FAULT_OOM</span><span class="p">;</span>
+     <span class="nl">retry_pud</span><span class="p">:</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">pud_none</span><span class="p">(</span><span class="o">*</span><span class="n">vmf</span><span class="p">.</span><span class="n">pud</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">__transparent_hugepage_enabled</span><span class="p">(</span><span class="n">vma</span><span class="p">))</span> <span class="p">{</span>
+                     <span class="n">ret</span> <span class="o">=</span> <span class="n">ceate_huge_pud</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vmf</span><span class="p">);</span>
+                     <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">ret</span> <span class="o">&amp;</span> <span class="n">VM_FAULT_FALLBACK</span><span class="p">))</span>
+                             <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                     <span class="n">pud_t</span> <span class="n">orig_pud</span> <span class="o">=</span> <span class="o">*</span><span class="n">vmf</span><span class="p">.</span><span class="n">pud</span><span class="p">;</span>
+
+                     <span class="n">barrier</span><span class="p">();</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">pud_trans_huge</span><span class="p">(</span><span class="n">orig_pud</span><span class="p">)</span> <span class="o">||</span> <span class="n">pud_devmap</span><span class="p">(</span><span class="n">orig_pud</span><span class="p">))</span> <span class="p">{</span>
+                             <span class="cm">/*</span>
+<span class="cm">                                     */</span>
+                             <span class="k">if</span><span class="p">(</span><span class="n">dirty</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">pud_write</span><span class="p">(</span><span class="n">orig_pud</span><span class="p">))</span> <span class="p">{</span>
+                                     <span class="n">ret</span> <span class="o">=</span> <span class="n">wp_huge_pud</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vmf</span><span class="p">,</span><span class="n">orig_pud</span><span class="p">);</span>
+                                     <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">ret</span> <span class="o">&amp;</span> <span class="n">VM_FAULT_FALLBACK</span><span class="p">))</span>
+                                             <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+                             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                                     <span class="n">huge_pud_set_accessed</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vmf</span><span class="p">,</span><span class="n">orig_pud</span><span class="p">);</span>
+                                     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+                             <span class="p">}</span>
+                     <span class="p">}</span>
+             <span class="p">}</span>
+             <span class="n">vmf</span><span class="p">.</span><span class="n">pmd</span> <span class="o">=</span> <span class="n">pmd_alloc</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span><span class="n">vmf</span><span class="p">.</span><span class="n">pud</span><span class="p">,</span><span class="n">address</span><span class="p">);</span>
+             <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">vmf</span><span class="p">.</span><span class="n">pmd</span><span class="p">)</span>
+                     <span class="k">return</span> <span class="n">VM_FAULT_OOM</span><span class="p">;</span>
+             <span class="cm">/*</span>
+<span class="cm">             */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">pud_trans_unstable</span><span class="p">(</span><span class="n">vmf</span><span class="p">.</span><span class="n">pud</span><span class="p">))</span>
+                     <span class="k">goto</span> <span class="n">retry_pud</span><span class="p">;</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">pmd_none</span><span class="p">(</span><span class="o">*</span><span class="n">vmf</span><span class="p">.</span><span class="n">pmd</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">__transparent_hugepage_enabled</span><span class="p">(</span><span class="n">vma</span><span class="p">))</span> <span class="p">{</span>
+                     <span class="n">ret</span> <span class="o">=</span> <span class="n">create_huge_pmd</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vmf</span><span class="p">);</span>
+                     <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">ret</span> <span class="o">&amp;</span> <span class="n">VM_FAULT_FALLBACK</span><span class="p">))</span>
+                             <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                     <span class="n">pmd_t</span> <span class="n">orig_pmd</span> <span class="o">=</span> <span class="o">*</span><span class="n">vmf</span><span class="p">.</span><span class="n">pmd</span><span class="p">;</span>
+                     <span class="n">barrier</span><span class="p">();</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">is_swap_pmd</span><span class="p">(</span><span class="n">orig_pmd</span><span class="p">)))</span> <span class="p">{</span>
+                             <span class="n">VM_BUG_ON</span><span class="p">(</span><span class="n">thp_migration_supported</span><span class="p">()</span> <span class="o">&amp;&amp;</span>
+                                     <span class="o">!</span><span class="n">is_pmd_migration_entry</span><span class="p">(</span><span class="n">orig_pmd</span><span class="p">));</span>
+                             <span class="k">if</span><span class="p">(</span><span class="n">is_pmd_migration_entry</span><span class="p">(</span><span class="n">orig_pmd</span><span class="p">))</span>
+                                     <span class="n">pmd_migration_entry_wait</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span><span class="n">vmf</span><span class="p">.</span><span class="n">pmd</span><span class="p">);</span>
+                             <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+                     <span class="p">}</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">pmd_trans_huge</span><span class="p">(</span><span class="n">orig_pmd</span><span class="p">)</span> <span class="o">||</span> <span class="n">pmd_devmap</span><span class="p">(</span><span class="n">orig_pmd</span><span class="p">))</span> <span class="p">{</span>
+                             <span class="k">if</span><span class="p">(</span><span class="n">pmd_protnone</span><span class="p">(</span><span class="n">orig_pmd</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">vma_is_acessible</span><span class="p">(</span><span class="n">vma</span><span class="p">))</span>
+                                     <span class="k">return</span> <span class="n">do_huge_pmd_numa_page</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vmf</span><span class="p">,</span><span class="n">orig_pmd</span><span class="p">);</span>
+                             <span class="k">if</span><span class="p">(</span><span class="n">dirty</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">pmd_write</span><span class="p">(</span><span class="n">orig_pmd</span><span class="p">))</span> <span class="p">{</span>
+                                     <span class="n">ret</span> <span class="o">=</span> <span class="n">wp_huge_pmd</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vmf</span><span class="p">,</span><span class="n">orig_pmd</span><span class="p">);</span>
+                                     <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">ret</span> <span class="o">&amp;</span> <span class="n">VM_FAULT_FALLBACK</span><span class="p">))</span>
+                                             <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+                             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                                     <span class="n">huge_pmd_set_accessed</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vmf</span><span class="p">,</span><span class="n">orig_pmd</span><span class="p">);</span>
+                                     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+                             <span class="p">}</span>
+                     <span class="p">}</span>
+             <span class="p">}</span>
+             <span class="k">return</span> <span class="n">handle_pte_fault</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vmf</span><span class="p">);</span><span class="cm">/* 处理主体 */</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>调用handle_pte_fault</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id13" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/*</span>
+<span class="cm">         By the time we get here,we already hold the mm semaphore</span>
+<span class="cm">             The mmap_lock may have been released depending on flags and our return value.See filemap_fault() and __lock_page_or_retry().</span>
+<span class="cm">     */</span>
+     <span class="k">static</span> <span class="n">vm_fault_t</span> <span class="n">handle_pte_fault</span><span class="p">(</span><span class="k">struct</span> <span class="nc">vm_fault</span> <span class="o">*</span><span class="n">vmf</span><span class="p">)</span>
+     <span class="p">{</span>
+             <span class="n">pte_t</span> <span class="n">entry</span><span class="p">;</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="n">pmd_none</span><span class="p">(</span><span class="o">*</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pmd</span><span class="p">)))</span> <span class="p">{</span>
+             <span class="cm">/*</span>
+<span class="cm">             */</span>
+                     <span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+             <span class="cm">/* */</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">pmd_devmap_trans_unstable</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pmd</span><span class="p">))</span>
+                             <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+                     <span class="cm">/*</span>
+<span class="cm">                     */</span>
+                     <span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span> <span class="o">=</span> <span class="n">pte_offset_map</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pmd</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">address</span><span class="p">);</span>
+                     <span class="n">vmf</span><span class="o">-&gt;</span><span class="n">orig_pte</span> <span class="o">=</span> <span class="o">*</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span><span class="p">;</span>
+                     <span class="cm">/*</span>
+<span class="cm">                     */</span>
+                     <span class="n">barrier</span><span class="p">();</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">pte_none</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">orig_pte</span><span class="p">)){</span>
+                             <span class="n">pte_unmap</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span><span class="p">);</span>
+                             <span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+                     <span class="p">}</span>
+             <span class="p">}</span>
+             <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span><span class="p">){</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">vma_is_anonymous</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">vma</span><span class="p">))</span>
+                             <span class="k">return</span> <span class="n">do_anonymous_page</span><span class="p">(</span><span class="n">vmf</span><span class="p">);</span><span class="cm">/* 匿名映射:代码段,数据段,栈段: 第一次映射 */</span>
+                     <span class="k">else</span>
+                             <span class="k">return</span> <span class="n">do_fault</span><span class="p">(</span><span class="n">vmf</span><span class="p">);</span> <span class="cm">/* 非匿名映射: 第一次映射*/</span>
+             <span class="p">}</span>
+             <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">pte_present</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">orig_pte</span><span class="p">))</span>
+                     <span class="k">return</span> <span class="n">do_swap_page</span><span class="p">(</span><span class="n">vmf</span><span class="p">);</span> <span class="cm">/* 交换分区部分 */</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">pte_protnone</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">orig_pte</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">vma_is_accessible</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">vma</span><span class="p">))</span>
+                     <span class="k">return</span> <span class="n">do_numa_page</span><span class="p">(</span><span class="n">vmf</span><span class="p">);</span><span class="cm">/* */</span>
+
+             <span class="n">vmf</span><span class="o">-&gt;</span><span class="n">ptl</span> <span class="o">=</span> <span class="n">pte_lockptr</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">vma</span><span class="o">-&gt;</span><span class="n">vm_mm</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pmd</span><span class="p">);</span>
+             <span class="n">spin_lock</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">ptl</span><span class="p">);</span>
+             <span class="n">entry</span> <span class="o">=</span> <span class="n">vmf</span><span class="o">-&gt;</span><span class="n">orig_pte</span><span class="p">;</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">unlikely</span><span class="p">(</span><span class="o">!</span><span class="n">pte_same</span><span class="p">(</span><span class="o">*</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span><span class="p">,</span><span class="n">entry</span><span class="p">)))</span> <span class="p">{</span>
+                     <span class="n">update_mmu_tlb</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">vma</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">address</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span><span class="p">);</span>
+                     <span class="k">goto</span> <span class="n">unlock</span><span class="p">;</span>
+             <span class="p">}</span>
+
+             <span class="k">if</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_WRITE</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">pte_write</span><span class="p">(</span><span class="n">entry</span><span class="p">))</span>
+                             <span class="k">return</span> <span class="n">do_wp_page</span><span class="p">(</span><span class="n">vmf</span><span class="p">);</span>
+                     <span class="n">entry</span> <span class="o">=</span> <span class="n">pte_mkdirty</span><span class="p">(</span><span class="n">entry</span><span class="p">);</span>
+             <span class="p">}</span>
+             <span class="n">entry</span> <span class="o">=</span> <span class="n">pte_mkyoung</span><span class="p">(</span><span class="n">entry</span><span class="p">);</span>
+             <span class="k">if</span><span class="p">(</span><span class="n">ptep_set_access_flags</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">vma</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">address</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span><span class="p">,</span><span class="n">entry</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_WRITE</span><span class="p">))</span> <span class="p">{</span>
+                     <span class="n">update_mmu_cache</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">vma</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">address</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span><span class="p">);</span>
+             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+             <span class="cm">/* */</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_TRIED</span><span class="p">)</span>
+                             <span class="k">goto</span> <span class="n">unlock</span><span class="p">;</span>
+                             <span class="cm">/*</span>
+<span class="cm">                             */</span>
+                     <span class="k">if</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">FAULT_FLAG_WRITE</span><span class="p">)</span>
+                     <span class="n">flush_tlb_fix_spurious_fault</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">vma</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">address</span><span class="p">);</span>
+             <span class="p">}</span>
+
+     <span class="nl">unlock</span><span class="p">:</span>
+             <span class="n">pte_unmap_unlock</span><span class="p">(</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">pte</span><span class="p">,</span><span class="n">vmf</span><span class="o">-&gt;</span><span class="n">ptl</span><span class="p">);</span>
+             <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+     <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>我们先看重要结构：（这个针对32和64进行关注）</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id14" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="cm">/*</span>
+<span class="cm">             由pagefault处理程序填充，并传递给vma&#39;s的fault function句柄。vma&#39;s-&gt;fault负责返回一个以VM_FAULT_XX格式的位掩码标志，描述错误处理细节。</span>
+<span class="cm">             MM层负责为页面分配填充gfp_mask，但是如果其实现需要不同的分配上下文，则故障处理程序可能会对其进行更改 。</span>
+<span class="cm">             如果可能，应该使用pgoff来支持virtual_address。</span>
+<span class="cm">     */</span>
+     <span class="k">struct</span> <span class="nc">vm_fault</span> <span class="p">{</span>
+             <span class="k">struct</span> <span class="nc">vm_area_struct</span> <span class="o">*</span><span class="n">vma</span><span class="p">;</span> <span class="cm">/*目标VMA */</span>
+             <span class="kt">unsigned</span> <span class="n">ing</span> <span class="n">flags</span><span class="p">;</span> <span class="cm">/* FAULT_FLAG_xxx 标志 */</span>
+             <span class="n">gfp_t</span> <span class="n">gfp_mask</span><span class="p">;</span> <span class="cm">/*用于分配器的gfp掩码 */</span>
+             <span class="n">pgoff_t</span> <span class="n">pgoff</span><span class="p">;</span> <span class="cm">/* 基于vma的逻辑页偏移 */</span>
+             <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">;</span> <span class="cm">/* 产生错误的虚拟地址 */</span>
+             <span class="n">pmd_t</span> <span class="o">*</span><span class="n">pmd</span><span class="p">;</span> <span class="cm">/* 与&quot;address&quot;对应的pmd项 */</span>
+             <span class="n">pud_t</span> <span class="o">*</span><span class="n">pud</span><span class="p">;</span> <span class="cm">/* 与 &quot;address&quot;对应的pud项 */</span>
+             <span class="n">pte_t</span> <span class="n">orig_pte</span><span class="p">;</span> <span class="cm">/* 发生错误时的PTE值 */</span>
+             <span class="k">struct</span> <span class="nc">page</span> <span class="o">*</span><span class="n">cow_page</span><span class="p">;</span> <span class="cm">/* COW fault可能用的页处理程序 */</span>
+             <span class="k">struct</span> <span class="nc">page</span> <span class="o">*</span><span class="n">page</span><span class="p">;</span> <span class="cm">/* 除非设置了VM_FAULT_NOPAGE（VM_FAULT_ERROR也暗示了这一点，如何理解？）,否则这个地方的-&gt;fault 处理程序应该返回一个页面*/</span>
+             <span class="cm">/* 以下三个条目，仅在获取到ptl锁时才有效  */</span>
+             <span class="n">pte_t</span> <span class="o">*</span><span class="n">pte</span><span class="p">;</span> <span class="cm">/*指向&quot;address&quot;对应的pte entry。如果页表没有分配，则为NULL。 */</span>
+             <span class="n">spinlock_t</span> <span class="o">*</span><span class="n">ptl</span><span class="p">;</span> <span class="cm">/* 页表锁。</span>
+<span class="cm">                                              * 如果&quot;pte&quot;不为NULL，则保护页表，否则保护pmd。 */</span>
+             <span class="n">pgtable_t</span> <span class="n">prealloc_pte</span><span class="p">;</span> <span class="cm">/* 预分配的PTE 页表。vm_ops-&gt;map_pages()从原子上下文调用alloc_set_pte()。</span>
+
+<span class="cm">     }</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id15">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id15" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     下面看错误对应的处理方式：
+     !vmf-&gt;pte：第一次映射
+                     if(vma_is_anonymous(vmf-&gt;vma))
+                             return do_anonymous_page(vmf);/* 匿名映射 */
+                     else
+                             return do_fault(vmf); /* 文件映射 */
+                     分析：
+     !pte_present(vmf-&gt;orig_pte)：已经有PTE，如果只是不在内存，就在交换分区。
+                     do_swap_page(vmf);
+     ......
+     do_anonymous_page(vmf): mm/memory.c
+     /*
+         匿名映射
+     */
+     static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
+     {
+             handle_userfault(vmf,VM_UFFD_MISSING);/* 分配页面 */
+     }
+     ......
+     do_fault(vmf): mm/memory.c
+     /*
+         文件映射
+     */
+     static vm_fault_t do_fault(struct vm_fault *vmf)
+     {
+          !FAULT_FALG_WRITE: do_read_fault(vmf);
+          FAULT_FLAG_WRITE &amp;&amp; (!VM_SHARED): do_cow_fault(vmf);
+          FAULT_FALG_WRITE &amp;&amp; VM_SHARED: do_shared_fault;
+     }
+
+     ......
+     do_swap_page(vmf)
+     /*
+       顺便把交换分区给搞定了：
+       交换分区应该做为文件系统处理吗？
+       /proc/swaps
+       mkswap /dev/...：将分区或文件创建成swap空间。
+
+       kswapd 进程: mm/vmscan.c
+       内存回收主要针对内存中的文件页面（file cache)和匿名页
+       1：anon 匿名页内存主要回收手段是swap;
+       2:file-backed的文件映射页，主要的释放手段是写回和清空。因为有硬盘文件对应，所以不走交换分区路径，直接写回，并清空内存（也就是说保存映射结构，但释放掉物理页）。
+     */
+     vm_fault_t do_swap_page(struct vm_fault *vmf)
+     {
+             struct vm_area_struct *vma = vmf-&gt;vma;
+             struct page *page = NULL,*swapcache;
+             swp_entry_t entry;
+             pte_t pte;
+             int locked;
+             int exclusive = 0;
+             vm_fault_t ret = 0;
+             void *shadow = NULL;
+
+             entry = pte_to_swp_entry(vmf-&gt;orig_pte);
+             delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+         page = lookup_swap_cache(entry,vma,vmf-&gt;address);
+         swapcache = page;
+
+     }
+</pre></div>
+</td></tr></table></div>
+</div>
+</div></blockquote>
+</li>
+<li><dl>
+<dt>函数流程图</dt><dd><div class="literal-block-wrapper docutils container" id="id16">
+<div class="code-block-caption"><span class="caption-text">基础定义</span><a class="headerlink" href="#id16" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></div></td><td class="code"><div class="highlight"><pre><span></span>     <span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span> <span class="n">class</span><span class="o">=</span><span class="s">&quot;language-mermaid&quot;</span><span class="o">&gt;</span>
+     <span class="n">graph</span> <span class="n">TB</span>
+     <span class="n">pgh0</span><span class="p">(</span><span class="s">&quot;asm_exc_page_fault&quot;</span><span class="p">)</span> <span class="o">--&gt;</span><span class="n">pgh1</span><span class="p">(</span><span class="s">&quot;exc_page_fault&quot;</span><span class="p">);</span>
+     <span class="n">pgh1</span> <span class="o">--&gt;</span> <span class="n">pgh10</span><span class="p">(</span><span class="s">&quot;pre:上下文相关处理&quot;</span><span class="p">)</span>
+     <span class="n">pgh10</span> <span class="o">--&gt;</span> <span class="n">pgh2</span><span class="p">(</span><span class="s">&quot;handle_page_fault&quot;</span><span class="p">);</span>
+     <span class="n">pgh2</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;kmmio_fault:true&quot;</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh20001</span><span class="p">(</span><span class="s">&quot;return&quot;</span><span class="p">)</span>
+     <span class="n">pgh2</span><span class="o">-</span><span class="p">.</span><span class="s">&quot;kmmio_fault:false&quot;</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh20002</span><span class="p">(</span><span class="s">&quot;fault_in_kernel_space&quot;</span><span class="p">)</span>
+     <span class="n">pgh20002</span> <span class="o">-</span><span class="p">.</span> <span class="s">&quot;true:#PF发生在内核空间&quot;</span> <span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh20</span><span class="p">(</span><span class="s">&quot;do_kern_addr_fault:内核空间处理&quot;</span><span class="p">)</span>
+     <span class="n">pgh20</span> <span class="o">-</span><span class="p">.</span> <span class="s">&quot;spurious fault&quot;</span> <span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh201</span><span class="p">(</span><span class="s">&quot;spurious_kernel_fault_check&quot;</span><span class="p">)</span>
+     <span class="n">pgh20</span> <span class="o">-</span><span class="p">.</span> <span class="s">&quot;地址非法&quot;</span> <span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh202</span><span class="p">(</span><span class="s">&quot;bad_area_nosemaphore&quot;</span><span class="p">)</span>
+     <span class="n">pgh202</span> <span class="o">-</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh2020</span><span class="p">(</span><span class="s">&quot;is_f00f_bug&quot;</span><span class="p">)</span>
+     <span class="n">pgh2020</span> <span class="o">-</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh2021</span><span class="p">(</span><span class="s">&quot;no_context&quot;</span><span class="p">)</span>
+     <span class="n">pgh2021</span> <span class="o">-</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">noc0</span><span class="p">(</span><span class="s">&quot;fixup_exception&quot;</span><span class="p">)</span>
+     <span class="n">noc0</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;in_interrupt&quot;</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">noc1</span><span class="p">(</span><span class="s">&quot;return&quot;</span><span class="p">)</span>
+     <span class="n">noc0</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;!in_interrupt&quot;</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">noc2</span><span class="p">(</span><span class="s">&quot;处理信号 SIGSEGV&quot;</span><span class="p">)</span> <span class="o">-</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">noc3</span><span class="p">(</span><span class="s">&quot;return&quot;</span><span class="p">)</span>
+     <span class="n">pgh2021</span> <span class="o">-</span><span class="p">.</span><span class="o">-&gt;</span><span class="n">noc4</span><span class="p">(</span><span class="s">&quot;!fixup_exception&quot;</span><span class="p">)</span>
+     <span class="n">noc4</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;CONFIG_VMAP_STACK:stack overflow&quot;</span><span class="p">.</span><span class="o">-&gt;</span><span class="n">noc5</span><span class="p">(</span><span class="s">&quot;handle_stack_overflow&quot;</span><span class="p">)</span>
+     <span class="n">noc5</span> <span class="o">-</span><span class="p">.</span><span class="o">-&gt;</span><span class="n">noc6</span><span class="p">(</span><span class="s">&quot;1:jmp 1b:kernel stack overflow:进入死循环:系统卡死&quot;</span><span class="p">)</span>
+     <span class="n">noc4</span> <span class="o">-</span><span class="p">.</span> <span class="s">&quot;is_prefetch:&quot;</span> <span class="p">.</span><span class="o">-&gt;</span> <span class="n">noc8</span><span class="p">(</span><span class="s">&quot;return&quot;</span><span class="p">)</span>
+     <span class="n">noc4</span> <span class="o">-</span><span class="p">.</span> <span class="s">&quot;is_errata93:&quot;</span> <span class="p">.</span><span class="o">-&gt;</span> <span class="n">noc9</span><span class="p">(</span><span class="s">&quot;return&quot;</span><span class="p">)</span>
+     <span class="n">noc4</span> <span class="o">-</span><span class="p">.</span> <span class="s">&quot;CONFIG_EFI&quot;</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">noc10</span><span class="p">(</span><span class="s">&quot;efi_recover_from_page_fault&quot;</span><span class="p">)</span>  <span class="o">-</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">noc11</span><span class="p">(</span><span class="s">&quot;oops&quot;</span><span class="p">)</span>
+     <span class="n">noc4</span> <span class="o">-</span><span class="p">.</span> <span class="s">&quot;!CONFIG_EFI&quot;</span><span class="p">.</span><span class="o">-&gt;</span><span class="n">noc12</span><span class="p">(</span><span class="s">&quot;oops&quot;</span><span class="p">)</span>
+     <span class="n">pgh2</span> <span class="o">-</span><span class="p">.</span> <span class="s">&quot;#PF发生在用户空间&quot;</span> <span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh21</span><span class="p">(</span><span class="s">&quot;do_user_addr_fault:用户空间处理&quot;</span><span class="p">)</span>
+     <span class="n">pgh21</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;hw_error_code:合法缺页外的错误码&quot;</span><span class="p">.</span><span class="o">-&gt;</span><span class="n">pgh22</span><span class="p">(</span><span class="s">&quot;hw_error_code:处理&quot;</span><span class="p">)</span>
+     <span class="n">pgh21</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;hw_error_code:缺页: 非进程空间：越界&quot;</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh23</span><span class="p">(</span><span class="s">&quot;bad_area_acess_error:return&quot;</span><span class="p">)</span>
+     <span class="n">pgh21</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;hw_error_code:缺页：vma进程空间内&quot;</span><span class="p">.</span><span class="o">-&gt;</span><span class="n">pgh24</span><span class="p">(</span><span class="s">&quot;handle_mm_fault&quot;</span><span class="p">)</span>
+     <span class="n">pgh24</span> <span class="o">-</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh25</span><span class="p">(</span><span class="s">&quot;__handle_mm_fault&quot;</span><span class="p">)</span>
+     <span class="n">pgh25</span> <span class="o">-</span><span class="p">.</span><span class="o">-&gt;</span> <span class="n">pgh26</span><span class="p">(</span><span class="s">&quot;handle_pte_fault&quot;</span><span class="p">)</span>
+     <span class="n">pgh26</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;匿名空间:无pte&quot;</span><span class="p">.</span><span class="o">-&gt;</span><span class="n">pgh27</span><span class="p">(</span><span class="s">&quot;do_anonymous_page&quot;</span><span class="p">)</span>
+     <span class="n">pgh26</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;非匿名空间:无pte&quot;</span><span class="p">.</span><span class="o">-&gt;</span><span class="n">pgh28</span><span class="p">(</span><span class="s">&quot;do_fault&quot;</span><span class="p">)</span>
+     <span class="n">pgh26</span> <span class="o">-</span><span class="p">.</span><span class="s">&quot;pte:!pte_present:交换空间&quot;</span><span class="p">.</span><span class="o">-&gt;</span><span class="n">pgh29</span><span class="p">(</span><span class="s">&quot;do_swap_page&quot;</span><span class="p">)</span>
+     <span class="n">pgh2</span> <span class="o">--&gt;</span> <span class="n">pgh55</span><span class="p">(</span><span class="s">&quot;post:上下文处理:返回&quot;</span><span class="p">)</span> <span class="o">--&gt;</span> <span class="n">pgh56</span><span class="p">(</span><span class="s">&quot;INTERRUPT_RETURN&quot;</span><span class="p">)</span>
+     <span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>总结<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>以上是缺页中断的所有描述，针对linux 代码后期会完善所有注释，注意最终的页面分配，在内存部分进行整理。针对x86-64重新走一边，得出对内核内存和用户内存的管理概括。</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="syscall.html" class="btn btn-neutral float-left" title="linux 系统调用原理" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../yocto_kernel.html" class="btn btn-neutral float-right" title="yocto uboot与内核模块、内核开发总结" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

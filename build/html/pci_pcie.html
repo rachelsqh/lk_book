@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pci/pcie分析(待修正) &mdash; Rachel&#39;s E-book 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="can通信总结(待修正)" href="can.html" />
+    <link rel="prev" title="spi分析(待修正）" href="spi.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Rachel's E-book
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="os_base/index.html">linux 操作系统概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_devel/index.html">linux 内核开发基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lk_code/index.html">linux 内核基础代码分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="yocto_kernel.html">yocto uboot与内核模块、内核开发总结</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uboot.html">uboot理解</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="driver.html">设备驱动(待修正）</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="i2c.html">i2c分析(待修正）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="uart.html">串口分析(待修正)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spi.html">spi分析(待修正）</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pci/pcie分析(待修正)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pci">pci总线协议</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">硬件引脚</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pcie">PCIE总线协议</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">PCIe配置空间</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pci-capability">pci capability分析</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">PCI驱动总结</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">pci驱动开发</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pci-e">pci-e端口总线驱动指南</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">pci/pcie错误处理</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">PCI端点框架</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="can.html">can通信总结(待修正)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#linux">linux设备架构：</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#kset-kobject-kref">kset/kobject/kref描述</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id59">设备驱动</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#dma">DMA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id64">驱动资源</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id65">开源固件和设备树</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#i2c">i2c驱动架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#spi">spi驱动架构</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#id127">驱动分类</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html#api">驱动api</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gitlab.html">基于gitlab的项目管理(待修正)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rachel's E-book</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="driver.html">设备驱动(待修正）</a> &raquo;</li>
+      <li>pci/pcie分析(待修正)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pci_pcie.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="pci-pcie">
+<h1>pci/pcie分析(待修正)<a class="headerlink" href="#pci-pcie" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pci">
+<h2>pci总线协议<a class="headerlink" href="#pci" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>硬件引脚<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>pci局部总线：Peripheral Component Interconnect,理论峰值为132Mbytes/s。</p></li>
+<li><p>pci引脚
+- CLK ：system –&gt; pci，系统为pci设备提供，系统时钟，为所有PCI上的传输及总线仲裁提供时序。除了RST#及四个中断引脚外，其他的CPI信号都在CLK信号的上升沿采样，所有别的时间参数都是基于这个上升沿而定义。CLK最小频率是直流（0HZ),最高达33Mhz.
+- RST#: system –&gt; pci,异步复位。让PCI寄存器、配置寄存器、顺序发生器和信号处于一个固定的状态。在RST#有效期间，所有PCI信号都要重置到初始状态。
+- 地址和数据引脚：</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>AD[31…00]:双向，地址/数据复用：FRAME#变为有效的那个时钟周期为地址段，AD[31..00]包含一个物理地址。对于配置空间和存储器空间，这是一个双字地址，对于I/O空间，这是一个字节地址。在数据段，AD[7..0]包含最低字节数据，而AD[31..24]包含最高字节数据。</p></li>
+<li><p>C/BE[3..0]#:双向，总线命令和字节服用使能引脚。传输地址时，C[3..0]上定义了总线命令。在传输数据时，BE[3..0]#作为字节允许位，表示哪些通道上的数据有意义，BE0#对应于最低字节BE3对应于最高字节。（其实就是定义哪些字节有意义？？？）。</p></li>
+<li><p>PAR：双向，AD[31..00]和C/BE[3..0]#上的数据偶校验。通常PCI单元都要求奇偶校验。PAR与AD[31..00]有相同的时序，但延迟一个时钟，在地址传输后的一个始终，PAR稳定并有效；对于数据传输，在写传输中，PAR在IRDY#有效后一个时钟稳定并有效，而读传输中，PAR在TRDY#有效后的一个时钟稳定并有效。一旦PAR有效，必须保持到数据传输完成后的一个始终。在地址传输和写数据阶段，总线主设备驱动APR，在读数据时，目标设备驱动PAR。（所以总结：以什么视角？）</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>接口控制引脚：</dt><dd><ul>
+<li><p>FRAME#：双向，帧周期（cycle Frame)。由主设备驱动，说明操作的开始和延续。FRAME#有效，说明总线传输开始。当FRAME#维持有效时，说明总线传输继续进行，当FRAME#无效时（高电平），说明传送最后一个字节。</p></li>
+<li><p>IRDY#: 双向，启动者就绪（Initiator Ready).</p></li>
+<li><p>TRDY#：双向，目标设备就绪</p></li>
+<li><p>STOP#:双向，当前目标设备要求总线主设备停止当前传输。</p></li>
+<li><p>LOCK#：双向，锁定信号，原子级操作相关。</p></li>
+<li><p>IDSEL：输入，初始化设备选择（Initialization Device Select)。在配置空间读写操作中，用作片选。</p></li>
+<li><dl class="simple">
+<dt>DEVSEL#：双向，设备选择。</dt><dd><ul>
+<li><p>输出：</p></li>
+<li><p>输入：</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>仲裁引脚（只针对总线主设备）：</dt><dd><ul>
+<li><p>REQ#：双向，申请，向仲裁器说明该单元想使用总线。这是一个点-点信号，每个总线主控都有自己的REQ#。</p></li>
+<li><p>GNT#：双向，允许。仲裁向申请单元说明对总线的操作已被允许。点到点的信号，每个总线主设备都有自己的GNT#。</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>错误反馈引脚（所有设备都要求有错误反馈引脚）</dt><dd><ul>
+<li><p>PERR#：</p></li>
+<li><p>SERR#：</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>中断引脚：点评触发，低有效，用漏极开路输出驱动器驱动，与时钟异步。PCI为每一个单一功能设备定义一根中断线，由硬件工程师设置并与软件工程师沟通。：INTA# ～ INTD#。中断引脚寄存器决定该功能用哪一条中断线去请求中断。硬件工程师负责将PCI联接器上热和组合方式将中断线链接到中断控制器上，可以是硬连线方式，也可以是程序控制的电子开关切换方式。</p></li>
+<li><dl class="simple">
+<dt>高速缓存（cache):能高速缓存的PCI存储器利用这两条引脚作为输入，支持write-through和write-back功能：（理解起来很难？？？）</dt><dd><ul>
+<li><p>SBO#：输入/输出：监视补偿（Snoop Backoff)。当有效时，说明命中。</p></li>
+<li><p>SDONE：输入/输出：</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>位总线扩充引脚（可选）：</dt><dd><ul>
+<li><p>AD[63 .. 32]:32个附加位。</p></li>
+<li><p>C[7 .. 4]:</p></li>
+<li><p>REQ64:</p></li>
+<li><p>PAR64:</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>JTAG:</p></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<div><p>PCI 2.2规范定义了三种配置头的格式，分别是类型0、1和2。
+- 类型0：类型1和类型2意外的所有PCI设备；
+- 类型1：PCI-PCI桥设备，用于将了条PCI总线进行链接；
+- 类型2： PCI-CardBus桥（主要用于笔记本的插卡式总线）。</p>
+<p>类型0进行描述。</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>决定PCI设备驱动程序匹配信息：</dt><dd><ul>
+<li><p>VID；设备供应商ID配置寄存器：16位，代表PCI设备的制造商，只读，由硬件通过烧录器进行烧录，由PCI SIG为设备制造商分配的编号。0xffffh代表PCI插槽上不存在设备。（PCI_VENDOR_ID)</p></li>
+<li><p>DID；设备ID配置寄存器：16位，由设备制造商自行定义，表示设备的用途。与供应商ID配置寄存器来对与驱动程序进行匹配。(PCI_DEVICE_ID)</p></li>
+<li><p>VERSION；版本ID：8位，表示设备的版本号；</p></li>
+<li><p>CLASS ID；24位的只读寄存器，共分为三个独立的8位单元：基本类型字节、子类型字节和变成接口字节。分别代表设备的基本功能（如大容量存储控制器）、细化的设备子类型（例如IDE打容量存储控制器）以及在一些情况下寄存器制定的编程接口（例如IDE寄存器组的指定格式，一边为0）。（理解起来还是有点问题）以此对应。存在的目的更多是为了让设备更加规范化。(PCI_CLASS_DEVICE)</p></li>
+<li><p>S-VID；子系统供应商ID寄存器，由PCI SIG进行管理；</p></li>
+<li><dl class="simple">
+<dt>S-DID；子系统ID寄存器，由设备厂商决定。</dt><dd><p>注意，如果使用了两块相同的PCI接口芯片，这两块芯片的VID和DID相同，不能改变，此时这两个设备通过S-VID和S-DID来区分。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>命令寄存器：提供了控制设备对于PCI访问的控制。是一个16位的寄存器，只有低端的10位有意义，高6位保留。(PCI_COMMAND)</dt><dd><ul>
+<li><p>0：使能IO空间：1表示使能PCI IO地址，0则禁止。（PCI_COMMAND_IO)</p></li>
+<li><p>1：使能memory空间：1表示使能memory空间；(PCI_COMMAND_MEMORY)</p></li>
+<li><p>2：使能bus mastering：1表示是能当前设备为主设备；(PCI_COMMAND_MASTER)</p></li>
+<li><p>3：特殊周期：1表示使能。（PCI_COMMAND_SPECIAL)</p></li>
+<li><p>4: use memory write and invalidate:如何理解？产生写失效指令？（PCI_COMMAND_INVALIDATE);</p></li>
+<li><p>5：VGA调色板检测：PCI_COMMAND_VGA_PALETTE;Enable palette snooping;</p></li>
+<li><p>6：使能奇偶校验：PCI_COMMAND_PARITY;</p></li>
+<li><p>7：使能地址/数据步进：PCI_COMMAND_WAIT;</p></li>
+<li><p>8：SERR#使能：1使能SERR，PCI_COMMAD_SERR;</p></li>
+<li><p>9：使能背靠背写入：PCI_COMMAND_FAST_BACK;</p></li>
+<li><p>10: 禁止INTx仿真：PCI_COMMAND_INTX_DISABLE;</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>状态寄存器：用于记录PCI设备状态。寄存器可读。写时如果相应位为1表示将状态寄存器对应的位设为0,同时如果状态寄存器某个位为0,则写时不能将对应位写为1。</dt><dd><ul>
+<li><p>0：Immediate Readiness;PCI_STATUS_IMM_READY;</p></li>
+<li><p>1 ~ 2:保留；</p></li>
+<li><p>3：中断状态；PCI_STATUS_INTERRUPT;</p></li>
+<li><p>4：支持能力列表：PCI_STATUS_CAP_LIST;</p></li>
+<li><p>5：支持66MHZ PCI 2.1 bus;（0：33MHZ，1：66MHZ）：PCI_STATUS_66MHZ;</p></li>
+<li><p>6： PCI_STATUS_UDF;</p></li>
+<li><p>7: PCI_STATUS_FAST_BACK;</p></li>
+<li><p>8: PCI_STATUS_PARITY;</p></li>
+<li><p>9 - 10: PCI_STATUS_DEVSEL_MASK;</p></li>
+<li><p>11:PCI_STATUS_SIG_TARGET_ABORT;</p></li>
+<li><p>12: PCI_STATUS_REC_TARGET_ABORT;</p></li>
+<li><p>13: PCI_STATUS_REC_MASTER_ABORT;</p></li>
+<li><p>14: PCI_STATUS_SIG_SYSTEM_ERROR;</p></li>
+<li><p>15: PCI_STATUS_DETECTED_PARITY;</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Cache 行寄存器：PCI_CACHE_LINE_SIZE,8 位；</p></li>
+<li><p>延迟定时器：PCI_LATENCY_TIMER,8位；</p></li>
+<li><p>基地址寄存器：6个段，（0x10,0x14,0x18,0x1c,0x20,0x24),存放PCI设备映射的memory地址或者使用的IO空间的首地址。基地址寄存器的最低位如果是0表示memory空间，1表示IO空间。地址空间长度获取：向基地址寄存器写全1,然后读回寄存器的值，读回这个寄存器就可以获取空间长度。此时通过驱动程序向系统注册设备时先请求空间长度的地址空间，然后将地址范围协会到及地址寄存器，然后就可以通过对基地址寄存器的读取来判断映射的IO和存储器地址。（也就是说PCI设备地址空间的设置可以完全在驱动中实现）。具体过程：这就是系统重新遍历，重新设置的过程（很重要！！！！！！！！！）</p></li>
+<li><p>PCI_CAPABILITY_LIST:0x34:offset of first capability list entry;这其实就是Capabilities Pointer.</p></li>
+<li><p>中断引脚寄存器：01h 到 04h分别代表设备使用的四个引脚（INTA ～ INTD），返回0表示没有使用中断。PCI_INTERRUPT_LINE:0x3c;可读可写。</p></li>
+<li><p>中断线寄存器：中断线寄存器：可读写，用来表示PCI设备的中断链接到主机中断控制器的哪个引脚上。从00h到0fh，ffh表示中断线未知，其他值保留。RST#信号有效时，寄存器的值初始化为ffh.PCI_INTERRUPT_PIN：8 bits.</p></li>
+<li><p>Min_Gnt寄存器：PCI_MIN_GNT;</p></li>
+<li><p>Min_Lat寄存器：PCI_MAX_LAT;</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="pcie">
+<h2>PCIE总线协议<a class="headerlink" href="#pcie" title="Permalink to this headline">¶</a></h2>
+<p>PCI Express的体系结构兼容PCI地址结构模式，已有应用和驱动程序均不需做任何修改即可应用到新总线系统中。
+PCI总线使用并行总线结构，在同一条总线上的所有外部设备共享总线带宽，PCIe总线使用告诉差分信号，采用端到端的连接方式，因此每条PCIe链路中只能链接两个设备。这样PCIe与PCI总线采用的拓扑结构不同。PCIe总线除了在连接方式上与PCI总线不同之外，还使用了一些在网络通信中使用的技术，如支持多种数据路由方式，基于多通路的数据传递方式，和基于报文的数据传送方式，并充分考虑了在数据传送中出现服务质量QoS (Quality of Service)问题。如今PCIe 6.0 时代已经到来（PCIe 6.0正式发布！有史以来变化最大一次：x16带宽增至256GB/s），实际商用主流PCIe4.0 ，其发展使服务器硬件间信息交互速度再次跃升，但随之而来的是不可忽视的信号衰减问题，今天我们科普下PCIe简介及引脚定义.
+PCIe引脚定义
+<strong>********</strong></p>
+<blockquote>
+<div><p>使用PCIe会降低主板的生产成本，因为它的连接要比PCI需要更少的针脚。它也可以支持更多的设备，包括以太网卡、USC 2.0和显卡,PCI Express,对于台式机和笔记本都是可用的，和很多的串行总线一样，PCIe采用了全双工的传输设计，即允许在同一时刻，同时进行发送和接收数据。由于是串行总线，因此所有的数据（包括配置信息等）都是以数据包为单位进行发送的，32位的PCI总线最大频率可以达到 33 MHz，对应最大传输速度是 133 MB/s。64位的PCI-x总线宽度则是PCI总线的两倍。一根PCI Express lane则可以在量高方向上传输 200MB/s 的数据。x16 的PCIe连接可以达到惊人的 6.4GB/s，而且是每个方向上。在这种高速支持下，x1 的连接可以轻易支持 GB 级别的网络连接、声卡和应用，所以x16的连接则可以轻易支持更强劲的图形接口。在PCIe 4.0时代，服务器厂商开始推出众多支持PCIe 4.0的服务器主板，用来支持对应的设备，如NVMe硬盘、GPU或网卡等，当使用PCIe4.0的服务器主板的设备增加时，将逐步增加相关Cable的需求。在PCIe 5.0商用时代，市场规模将持续增大，当然最终还是由服务器厂商的配置来决定，即任何一块支持PCIe 5.0的服务器主板都需要相关的Cable需求。我们测算，2021年PCIe 4.0 开始起量，在2023-2025年PCIe 5.0大规模应用之后，市场规模有望更上一层楼，目前相关Cable的主要参与者都是传统大厂，基于我们在迈向更高信号速率的同时，数据中心互联领域的高速线需求将面临巨大市场的机遇,高频，高速，高带宽，高传输等等都将在线缆行业聚焦，</p>
+</div></blockquote>
+<div class="section" id="id2">
+<h3>PCIe配置空间<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>PCIe是在PCI基础上发展的协议，PCIe也有PCI配置空间，并且进行了扩展，扩展形式通过称为Capability的寄存器块来完成。
+PCI配置空间大小为256个字节：0x00 ~ 0xff,而PCIe的配置空间扩大到了0x00 ~ 0xfff.在原来的配置空间中，有寄存器指定了第一个Capability的位置，第一个Capability又指定下一个Capability,构成了一串Capability,具体为：    。。。。。。
+PCI域：PCI域ID，目的是为了突破pcie256条总线的限制。
+PCI总线号：pci设备的总线ID，占用8位，所以PCIe总线最多支持256个子总线。
+PCI设备号：指定总线上，pci的设备ID，Device Number占用5位， 所以每个子总线最多支持32个设备
+PCI功能号：指定设备上，pci设备的功能ID， 一个pci 物理设备可以实现多个功能设备，且逻辑功能相互独立，Function Number占用3位，所以每个物理设备最多支持8个功能。
+BDF（Bus，device，function）构成了每个PCIe设备节点的身份标识。</p>
+<p>PCIe设备的每一个功能(function)都对应一个独立的配置空间， pcie的配置空间布局如下：</p>
+<blockquote>
+<div><p>PCIe的配置空间前256字节与PCI保持一致，256~4096字节是pcie 扩展配置空间，包含pcie的扩展能力如AER。(0x100 ~ 0xfff扩展配置空间，最大为4KB，扩展配置空间中，存放PCIe设备所独有的一些Capability结构，PCI设备不能使用这段空间。</p>
+</div></blockquote>
+<p>PCI总线的基本配置空间中，包含一个Capabilities Pointer寄存器，存放Capabilities结构链表的头指针。多个Capability结构组成一个链表。</p>
+<div class="section" id="int-pci-find-capability">
+<h4>int pci_find_capability();<a class="headerlink" href="#int-pci-find-capability" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+<div class="section" id="pci-capability">
+<h3>pci capability分析<a class="headerlink" href="#pci-capability" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>PCI驱动总结<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h3>pci驱动开发<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="pci-e">
+<h3>pci-e端口总线驱动指南<a class="headerlink" href="#pci-e" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id5">
+<h3>pci/pcie错误处理<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id6">
+<h3>PCI端点框架<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="spi.html" class="btn btn-neutral float-left" title="spi分析(待修正）" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="can.html" class="btn btn-neutral float-right" title="can通信总结(待修正)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rachel.Sun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

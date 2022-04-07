@@ -543,8 +543,9 @@ linux内核实现方式
 .. image:: ../img/syscall.svg
    :align: center
 
-
-
+ARM系统调用实现
+""""""""""""""
+Syscall是通过中断方式实现的，ARM平台上通过swi中断来实现系统调用，实现从用户态切换到内核态，发送软中断swi时，从中断向量表中查看跳转代码，其中异常向量表定义在文件/kernelarch/arm/kernel/entry-armv.S(汇编语言文件)。当执行系统调用时会根据系统调用号从系统调用表中来查看目标函数的入口地址，在calls.S文件中声明了入口地址信息。
 
 
 
